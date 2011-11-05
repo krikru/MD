@@ -32,6 +32,8 @@ struct base_int_vec3
     int&   operator[](const int   );
     int    operator[](const int   ) const;
 
+    base_int_vec3<T> operator-() const;
+
     base_int_vec3<T> operator+(const base_int_vec3<T>&) const;
     base_int_vec3<T> operator-(const base_int_vec3<T>&) const;
     int   operator*(const base_int_vec3<T>&) const; // Scalar product
@@ -112,19 +114,27 @@ int base_int_vec3<T>::operator[](const int i) const
 }
 
 template<typename T>
+base_int_vec3<T> base_int_vec3<T>::operator-() const
+{
+    return base_int_vec3<T>(-e[0],
+                            -e[1],
+                            -e[2]);
+}
+
+template<typename T>
 base_int_vec3<T> base_int_vec3<T>::operator+(const base_int_vec3<T>& rhs) const
 {
     return base_int_vec3<T>(e[0] + rhs.e[0],
-                 e[1] + rhs.e[1],
-                 e[2] + rhs.e[2]);
+                            e[1] + rhs.e[1],
+                            e[2] + rhs.e[2]);
 }
 
 template<typename T>
 base_int_vec3<T> base_int_vec3<T>::operator-(const base_int_vec3<T>& rhs) const
 {
     return base_int_vec3<T>(e[0] - rhs.e[0],
-                 e[1] - rhs.e[1],
-                 e[2] - rhs.e[2]);
+                            e[1] - rhs.e[1],
+                            e[2] - rhs.e[2]);
 }
 
 template<typename T>
@@ -137,8 +147,8 @@ template<typename T>
 base_int_vec3<T> base_int_vec3<T>::operator&(const base_int_vec3<T>& rhs) const
 {
     return base_int_vec3<T>(e[1]*rhs.e[2] - e[2]*rhs.e[1],
-                 e[2]*rhs.e[0] - e[0]*rhs.e[2],
-                 e[0]*rhs.e[1] - e[1]*rhs.e[0]);
+                            e[2]*rhs.e[0] - e[0]*rhs.e[2],
+                            e[0]*rhs.e[1] - e[1]*rhs.e[0]);
 }
 
 template<typename T>

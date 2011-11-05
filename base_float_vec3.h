@@ -38,7 +38,6 @@ struct base_float_vec3
     T& operator[](const int   );
     T  operator[](const int   ) const;
 
-    
     base_float_vec3<T> operator-() const;
 
     base_float_vec3<T> operator+(const base_float_vec3<T>&) const;
@@ -161,8 +160,8 @@ template<typename T>
 base_float_vec3<T> base_float_vec3<T>::operator-(const base_float_vec3<T>& rhs) const
 {
     return base_float_vec3<T>(e[0] - rhs.e[0],
-                 e[1] - rhs.e[1],
-                 e[2] - rhs.e[2]);
+                              e[1] - rhs.e[1],
+                              e[2] - rhs.e[2]);
 }
 
 template<typename T>
@@ -175,8 +174,8 @@ template<typename T>
 base_float_vec3<T> base_float_vec3<T>::operator&(const base_float_vec3<T>& rhs) const
 {
     return base_float_vec3<T>(e[1]*rhs.e[2] - e[2]*rhs.e[1],
-                 e[2]*rhs.e[0] - e[0]*rhs.e[2],
-                 e[0]*rhs.e[1] - e[1]*rhs.e[0]);
+                              e[2]*rhs.e[0] - e[0]*rhs.e[2],
+                              e[0]*rhs.e[1] - e[1]*rhs.e[0]);
 }
 
 template<typename T>
