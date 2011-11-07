@@ -16,6 +16,17 @@ public:
 	void create_linked_cells();//see .cpp-file
 	void create_verlet_list_using_linked_cell_list();//see .cpp-file
 	void force_calculation();//not done
+	void md();
+	void init();
+	void calculate_diffusion_coefficient();
+	void calculate_temperature();
+	void calculate_Ep();
+	void calculate_Ek();
+	void initpos();
+	void calculate_properties();
+	void calculate_specific_heat();
+	void calculate_pressure();
+	void calculate_mean_square_displacement();
 	
 	system(int nrparticles_in, int nrsteps_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrcells_in, int nrinst_in);
 	~system();
@@ -35,11 +46,11 @@ private:
 	vector<float> Ep;
 	vector<float> instEk;
 	vector<float> instEp;
-	float dt;//Whats the difference between dt and timestep?
+	float dt;//length of each timestep
 	float inner_cutoff;
 	float outer_cutoff;
 	int nrsteps;
-	int timestep;//Whats the difference between dt and timestep?
+	int timestep;//gives the current iteration
 	int nrparticles;
 	float mass;
 	float sigma;

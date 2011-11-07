@@ -5,10 +5,22 @@ void system::leapfrog() {
 float sumvsq = 0;
 
 for (int i = 0; i < nrparticles; i++) {
-	(*particles[i]).vel = (*particles[i]).vel + dt*(*particles[i]).acc;
-	(*particles[i]).pos = (*particles[i]).pos + dt*(*particles[i]).vel;
-	sumv = sumv + (*particles[i]).vel;
-	sumvsq = sumvsq + ((*particles[i]).vel)*((*particles[i]).vel);
+	particles[i].vel = particles[i].vel + dt*particles[i].acc;
+	base_float_vec3 newpos = particles[i].pos + dt*particles[i].vel;
+	if (newpos[0] < a*n)
+		particles[i].pos[0] = newpos[0];
+	else
+		particles[i].pos[0] = newpos[0] - a*n;
+	if (newpos[1] < a*n)
+		particles[i].pos[1] = newpos[1];
+	else
+		particles[i].pos[1] = newpos[1] - a*n;
+	if (newpos[2] < a*n)
+		particles[i].pos[2] = newpos[2];
+	else
+		particles[i].pos[2] = newpos[2] - a*n;
+	sumv = sumv + particles[i].vel;
+	sumvsq = sumvsq + (particles[i].vel)*(particles[i].vel);
 	}
 insttemp[timestep % nrinst] = mass*sumvsq/(3*nrparticles*epsilon);
 instEk[timestep % nrinst] = mass*sumvsq/(2*epsilon);
@@ -109,6 +121,127 @@ epsilon = epsilon_in;
 nrinst = nrinst_in;
 }
 
-system::~system() {
+void system::md() {
+init();
+create_linked_cells();
+create_verlet_list_using_linked_cell_list();
+while (timestep <= nrtimesteps) {
+	force_calculation();
+	leapfrog();
+	calculate_properties();
+	if (neighbors should be updated) {
+		create_linked_cells();
+		create_verlet_list_using_linked_cell_list();
+		}
+	timestep++;
+	}
+}
 
+void system::init() {
+3d_vector sumv = 0;
+float sumvsq = 0;
+initpos();
+srand(time(NULL));
+for (i = 0; i < nrparticles; i++) {
+	for (j = 0; j < 3; j++) {
+		particles[i].vel[j] = ((float) rand())/((float) RAND_MAX) - 0.5;
+		}
+	sumv += particles[i].vel;
+	sumvsq += particles[i].vel*particles[i].vel;
+	}
+sumv = sumv/nrparticles;
+sumvsq = sumvsq/nrparticles;
+float s = sqrt(3*init_temp/sumvsq);
+for (i = 0; i < nrparticles; i++) {
+	particles[i].vel = (particles[i].vel - sumv)*s;
+	}
+}
+
+void system::calculate_diffusion_coefficient() {				//not finished
+
+}
+
+void system::calculate_temperature() {
+float sum = 0;
+for (i = 0; i < nrinst; i++) {
+	sum += insttemp[i];
+	}
+temp[timestep/nrinst] = sum/nrinst; 
+}
+
+void system::calculate_Ep() {
+float sum = 0;
+for (i = 0; i < nrinst; i++) {
+	sum += instEp[i];
+	}
+Ep[timestep/nrinst] = sum/nrinst; 
+}
+
+void system::calculate_Ek() {
+float sum = 0;
+for (i = 0; i < nrinst; i++) {
+	sum += instEk[i];
+	}
+Ek[timestep/nrinst] = sum/nrinst; 
+}
+
+void system::initpos() {
+for (i = 0; i < n; i++) {
+	for (j = 0; j < n; j++) {
+		for (k = 0; k < n; k++) {
+			(*particles[4*(i*n*n + j*n + k)]).fcc_pos[0] = i*a;
+			(*particles[4*(i*n*n + j*n + k)]).fcc_pos[1] = j*a;
+			(*particles[4*(i*n*n + j*n + k)]).fcc_pos[2] = k*a;
+			(*particles[4*(i*n*n + j*n + k) + 1]).fcc_pos[0] = (i + 0.5)*a;
+			(*particles[4*(i*n*n + j*n + k) + 1]).fcc_pos[1] = (j + 0.5)*a;
+			(*particles[4*(i*n*n + j*n + k) + 1]).fcc_pos[2] = k*a;
+			(*particles[4*(i*n*n + j*n + k) + 2]).fcc_pos[0] = (i + 0.5)*a;
+			(*particles[4*(i*n*n + j*n + k) + 2]).fcc_pos[1] = j*a;
+			(*particles[4*(i*n*n + j*n + k) + 2]).fcc_pos[2] = (k + 0.5)*a;
+			(*particles[4*(i*n*n + j*n + k) + 3]).fcc_pos[0] = i*a;
+			(*particles[4*(i*n*n + j*n + k) + 3]).fcc_pos[1] = (j + 0.5)*a;
+			(*particles[4*(i*n*n + j*n + k) + 3]).fcc_pos[2] = (k + 0.5)*a;
+			}
+		}
+	}
+for (i = 0; i < nrparticles; i++) {
+	(*particles[i]).pos = (*particles[i]).fcc_pos;
+	}
+}
+
+
+void system::calculate_properties() {
+if ((timestep % nrinst) == 0) {
+	calculate_specific_heat();			
+	calculate_pressure();
+	calculate_mean_square_displacement();
+	calculate_diffusion_coefficient();
+	calculate_temperature();
+	calculate_Ep();
+	calculate_Ek();
+	}
+}
+
+void system::calculate_specific_heat() {
+float T2 = 0;
+for (i = 0; i < nrinst; i++){
+	T2 += insttemp[i];
+	}
+T2 = T2/nrinst;
+Cv[timestep/nrinst] = 9*kB/(6/nrparticles+4-4*T2/temp[timestep/nrinst]);
+}
+
+void system::calculate_pressure() {
+float V = nrcells*nrcells*nrcells*outer_cutoff*outer_cutoff*outer_cutoff;
+pressure[timestep/nrinst] = nrparticles*kB*temp[timestep/nrinst]/V + distanceforcesum/(6*V*nrinst);
+distanceforcesum = 0;
+}
+
+void system::calculate_mean_square_displacement() {
+float sum = 0;
+for (i = 0; i < nrparticles;i++) {
+	sum += ((*particles[i]).pos - (*particles[i]).fcc_pos)*((*particles[i]).pos - (*particles[i]).fcc_pos);
+	}
+sum = sum/nrparticles;
+msd[timestep/nrinst] = sum;
 }
