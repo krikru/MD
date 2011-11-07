@@ -93,10 +93,10 @@ void system::force_calculation() {//Not done
 
 }
 
-system::system(int nrparticles_in, int nrsteps_in, float sigma_in, float epsilon_in, float outer_cutoff_in, float inner_cutoff_in, float mass_in, float dt_in, int nrcells_in, int nrinst_in):
-cell_linklist(nrparticles_in),
-cell_list(nrcells_in), 
-particles(nrparticles_in), 
+system::system(int nrparticles_in, int nrsteps_in, float sigma_in, float epsilon_in, float outer_cutoff_in, float inner_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
+cell_linklist(4*((int) pow(nrparticles_in/4, 1/3))*((int) pow(nrparticles_in/4, 1/3))*((int) pow(nrparticles_in/4, 1/3))),
+cell_list((floor(n*a/outer_cutoff))*(floor(n*a/outer_cutoff))*(floor(n*a/outer_cutoff))), 
+particles(4*((int) pow(nrparticles_in/4, 1/3))*((int) pow(nrparticles_in/4, 1/3))*((int) pow(nrparticles_in/4, 1/3))), 
 insttemp(nrinst_in), 
 instEk(nrinst_in), 
 instEp(nrinst_in), 
@@ -114,11 +114,19 @@ outer_cutoff = outer_cutoff_in;
 inner_cutoff = inner_cutoff_in;
 nrsteps = nrsteps_in;
 timestep = 1;
-nrparticles = nrparticles_in;
+n = (int) pow(nrparticles_in/4, 1/3); 
+nrparticles = 4*n*n*n;
 mass = mass_in;
 sigma = sigma_in;
 epsilon = epsilon_in;
 nrinst = nrinst_in;
+init_temp = temperature_in;
+nrtimesteps = nrtimesteps_in;
+distanceforcesum = 0;
+kB = 1.381e-23;
+a = latticeconstant_in;
+nrcells = floor(n*a/outer_cutoff);
+cellsize = n*a/nrcells;
 }
 
 void system::md() {

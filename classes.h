@@ -28,8 +28,7 @@ public:
 	void calculate_pressure();
 	void calculate_mean_square_displacement();
 	
-	system(int nrparticles_in, int nrsteps_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrcells_in, int nrinst_in);
-	~system();
+	system(int nrparticles_in, int nrsteps_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in);
 
 private:
 	vector<int> cell_linklist;//List with indexnumbers reached through the cell_list, each index number corresponds to a particleindex but also next element in the cell_linklist which are in the same cell. a index equal to zero means end off particle-chain in one cell.
@@ -51,6 +50,7 @@ private:
 	float outer_cutoff;
 	int nrsteps;
 	int timestep;//gives the current iteration
+	int n;			//length of lattice in conventional unit cells
 	int nrparticles;
 	float mass;
 	float sigma;
@@ -58,4 +58,10 @@ private:
 	int nrinst;//nr of instantaneously measured values before taking the average...
 	int nrcells;//given in one dimension
 	float cellsize;//Could be the same as outer_cutoff but perhaps we should think about that...
+	float init_temp;
+	int nrtimesteps;
+	base_float_vec3 fcc_pos;
+	float distanceforcesum;
+	float kB;
+	float a;
 };
