@@ -90,7 +90,39 @@ void system::create_verlet_list_using_linked_cell_list() { // This function ctre
     }
 }
 
-void system::force_calculation() {//Not done
+void system::force_calculation() {
+	void system::force_calculation() { //using reduced unit
+					vector<float> force_x ;
+					vector<float> force_y ;
+					vector<float> force_z ;
+					float distance = inner_cutoff ;
+					float distance_inv = 1/distance ;
+					float distance6_inv = pow(distance_i,6) ;
+					float E_c = 4 * distance6_inv * (distance6_inv - 1)
+					
+					for (i=0, i<nrparticles , i++) { 
+						for (j = verlet_particles_list[i] + 1, j < verlet_particles_list[i+1] , j++) { 
+							base_float_vec3 dr = particles[i].pos-particles[j].pos ;
+							distance = (dr).lenght ;
+							distance_inv = 1/distance ;
+							distance6_inv = pow(distance_i,6) ;
+							float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5) ;
+							dr.normalize();
+							fvec3 x_hat = fvec3(1, 0, 0);
+							fvec3 y_hat = fvec3(0, 1, 0);
+							fvec3 z_hat = fvec3(0, 0, 1);
+							force_x[i]+ =	force * (dr *  x_hat) ;
+							force_x[j]- =	force * (dr *  x_hat) ;
+							force_y[i]+ =	force * (dr *  y_hat) ;
+							force_y[j]- =	force * (dr *  y_hat) ;
+							force_z[i]+ =	force * (dr *  z_hat) ;
+							force_z[j]- =	force * (dr *  z_hat) ;
+							Ep[i] += 4 * distance6_i * (distance6_i - 1) - E_c ; 
+							Ep[j] += 4 * distance6_i * (distance6_i - 1) - E_c ;
+							float sigma_r_dot_f += force * distance ; // for pressure (shoude be global?)
+						}
+					}
+}
 
 }
 
