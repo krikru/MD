@@ -119,7 +119,7 @@ void system::force_calculation() { //using reduced unit
             force_z[j]- =    force * (dr *  z_hat) ;
             Ep[i] += 4 * distance6_i * (distance6_i - 1) - E_c ; 
             Ep[j] += 4 * distance6_i * (distance6_i - 1) - E_c ;
-            float sigma_r_dot_f += force * distance ; // for pressure (shoude be global?)
+            float sigma_r_dot_f += force * distance ; // for pressure
         }
     }
 }
