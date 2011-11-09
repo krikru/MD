@@ -6,7 +6,8 @@
 #pragma once
 
 #include "targetver.h"
-#include "classes.h"
+#include "particle.h"
+#include "mdsystem.h"
 #include <stdio.h>
 #include <tchar.h>
 
