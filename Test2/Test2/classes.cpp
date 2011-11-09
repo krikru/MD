@@ -4,8 +4,8 @@
 
 void mdsystem::leapfrog()
 {
-	fvec3 zero_vector = fvec3(0, 0, 0); 
-	fvec3 sumv = zero_vector;
+    fvec3 zero_vector = fvec3(0, 0, 0); 
+    fvec3 sumv = zero_vector;
     float sumvsq = 0;
 
     for (int i = 0; i < nrparticles; i++) {
@@ -108,12 +108,12 @@ void mdsystem::force_calculation() { //using reduced unit
     for (int i=0; i < nrparticles ; i++) { 
         for (int j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
             fvec3 dr = particles[i].pos-particles[j].pos ;
-			distance = dr.length() ;
+            distance = dr.length() ;
             distance_inv = 1/distance ;
             distance6_inv = pow(distance_inv,6) ;
             float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f) ;
             dr.normalize();
-			force_x[i] +=  force * (dr * x_hat) ;
+            force_x[i] +=  force * (dr * x_hat) ;
             force_x[j] -=  force * (dr * x_hat) ;
             force_y[i] +=  force * (dr * y_hat) ;
             force_y[j] -=  force * (dr * y_hat) ;
@@ -161,31 +161,31 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     cellsize =float( n*a/nrcells);
 }
 /*
-mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
-	cell_linklist(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))),
-	cell_list((int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))),
-    //particles(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))), 
-	verlet_neighbors_list(),
-	insttemp(nrinst_in)
-{
-    dt = dt_in;
-    outer_cutoff = outer_cutoff_in;
-    inner_cutoff = inner_cutoff_in;
-    timestep = 1;
-    n = int (pow(float (nrparticles_in/4),float (1/3))); 
-    nrparticles = 4*n*n*n;
-    mass = mass_in;
-    sigma = sigma_in;
-    epsilon = epsilon_in;
-    nrinst = nrinst_in;
-    init_temp = temperature_in;
-    nrtimesteps = nrtimesteps_in;
-    distanceforcesum = 0;
-    kB = float (1.381e-23);
-    a = latticeconstant_in;
-    nrcells = int(n*a/outer_cutoff);
-    cellsize =float( n*a/nrcells);
-}
+  mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
+  cell_linklist(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))),
+  cell_list((int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))),
+  //particles(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))), 
+  verlet_neighbors_list(),
+  insttemp(nrinst_in)
+  {
+  dt = dt_in;
+  outer_cutoff = outer_cutoff_in;
+  inner_cutoff = inner_cutoff_in;
+  timestep = 1;
+  n = int (pow(float (nrparticles_in/4),float (1/3))); 
+  nrparticles = 4*n*n*n;
+  mass = mass_in;
+  sigma = sigma_in;
+  epsilon = epsilon_in;
+  nrinst = nrinst_in;
+  init_temp = temperature_in;
+  nrtimesteps = nrtimesteps_in;
+  distanceforcesum = 0;
+  kB = float (1.381e-23);
+  a = latticeconstant_in;
+  nrcells = int(n*a/outer_cutoff);
+  cellsize =float( n*a/nrcells);
+  }
 */
 void mdsystem::md() {
     init();
@@ -196,9 +196,9 @@ void mdsystem::md() {
         leapfrog();
         calculate_properties();
         //if (neighbors should be updated) {
-            create_linked_cells();
-            create_verlet_list_using_linked_cell_list();
-       // }
+        create_linked_cells();
+        create_verlet_list_using_linked_cell_list();
+        // }
         timestep++;
     }
 }
@@ -306,7 +306,7 @@ void mdsystem::calculate_pressure() {
 void mdsystem::calculate_mean_square_displacement() {
     float sum = 0;
     for (int i = 0; i < nrparticles;i++) {
-		sum += (particles[i].pos - particles[i].fcc_pos)*(particles[i].pos - particles[i].fcc_pos);
+        sum += (particles[i].pos - particles[i].fcc_pos)*(particles[i].pos - particles[i].fcc_pos);
     }
     sum = sum/nrparticles;
     msd[timestep/nrinst] = sum;
