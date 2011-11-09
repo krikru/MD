@@ -1,16 +1,19 @@
 #include <vector>
+#include "base_float_vec3.h"
 using namespace std;
 
 class particle {//Maybe we should have an additional prev_position which we use when we calculate how far the particles has moved when deciding if we should update the verlet lists
-    3d_vector pos;  // and if we update the verlet list we should also update the prev_position...
-    3d_vector prev_pos;
-    3d_vector vel;
-    3d_vector prev_vel;
-    3d_vector acc;
+public:
+	fvec3 pos;  // and if we update the verlet list we should also update the prev_position...
+    fvec3 prev_pos;
+    fvec3 vel;
+    fvec3 prev_vel;
+    fvec3 acc;
+	fvec3 fcc_pos;
     int part_nr; // Might not be needed (part_nr = i is the i-1 element of the vector particles (if part_nr goes from 1 to total number of particles) ) 
 };
 
-class system {
+class mdsystem {
  public:
     void leapfrog();
     void create_linked_cells();//see .cpp-file
@@ -28,7 +31,7 @@ class system {
     void calculate_pressure();
     void calculate_mean_square_displacement();
     
-    system(int nrparticles_in, int nrsteps_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in);
+    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in);
 
  private:
     vector<int> cell_linklist;//List with indexnumbers reached through the cell_list, each index number corresponds to a particleindex but also next element in the cell_linklist which are in the same cell. a index equal to zero means end off particle-chain in one cell.
@@ -48,7 +51,6 @@ class system {
     float dt;//length of each timestep
     float inner_cutoff;
     float outer_cutoff;
-    int nrsteps;
     int timestep;//gives the current iteration
     int n;            //length of lattice in conventional unit cells
     int nrparticles;
@@ -60,7 +62,6 @@ class system {
     float cellsize;//Could be the same as outer_cutoff but perhaps we should think about that...
     float init_temp;
     int nrtimesteps;
-    base_float_vec3 fcc_pos;
     float distanceforcesum;
     float kB;
     float a;
