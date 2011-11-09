@@ -146,8 +146,8 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     outer_cutoff = outer_cutoff_in;
     inner_cutoff = inner_cutoff_in;
     timestep = 1;
-    n = int (pow(float (nrparticles_in/4),float (1/3))); 
-    nrparticles = 4*n*n*n;
+    n = int( std::pow((nrparticles_in / 4 ) , float ( 1.0 / 3.0 ))); 
+    nrparticles = 4*n*n*n;   // some particles lost? now we get only 8788 atoms instead of input value=10000
     mass = mass_in;
     sigma = sigma_in;
     epsilon = epsilon_in;
@@ -157,7 +157,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     distanceforcesum = 0;
     kB = float (1.381e-23);
     a = latticeconstant_in;
-    nrcells = int(n*a/outer_cutoff);
+    nrcells = int(n*a/outer_cutoff) + 1;  //should +1 ??? 
     cellsize =float( n*a/nrcells);
 }
 /*
