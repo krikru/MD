@@ -158,7 +158,7 @@ void mdsystem::force_calculation() { //using reduced unit
 mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
     cell_linklist(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))),
     cell_list((int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))),
-    particles(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))), 
+    particles(nrparticles_in), 
     insttemp(nrinst_in), 
     instEk(nrinst_in), 
     instEp(nrinst_in), 
@@ -304,11 +304,11 @@ void mdsystem::initpos() {
                 (particles[help_index + 1]).start_pos[0] = (i + 0.5f)*a;
                 (particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
                 (particles[help_index + 1]).start_pos[2] = k*a;
-            }
-        }
-    }
+			}
+		}
+	}
     for (int i = 0; i < nrparticles; i++) {
-        particles[i].pos = particles[i].start_pos;
+        particles[i].pos = particles[i].fcc_pos;
     }
 }
 
