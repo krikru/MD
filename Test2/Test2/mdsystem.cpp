@@ -4,28 +4,60 @@
 
 void mdsystem::leapfrog()
 {
-    fvec3 zero_vector = fvec3(0, 0, 0); 
+    fvec3 zero_vector = fvec3(0, 0, 0);
     fvec3 sumv = zero_vector;
     float sumvsq = 0;
+	float box_size = a*n;
 
-    for (int i = 0; i < nrparticles; i++) {
-        particles[i].vel = particles[i].vel + dt*particles[i].acc;
-        fvec3 newpos = particles[i].pos + dt*particles[i].vel;
-        if (newpos[0] < a*n)
-            particles[i].pos[0] = newpos[0];
-        else
-            particles[i].pos[0] = newpos[0] - a*n;
-        if (newpos[1] < a*n)
-            particles[i].pos[1] = newpos[1];
-        else
-            particles[i].pos[1] = newpos[1] - a*n;
-        if (newpos[2] < a*n)
-            particles[i].pos[2] = newpos[2];
-        else
-            particles[i].pos[2] = newpos[2] - a*n;
-        sumv = sumv + particles[i].vel;
-        sumvsq = sumvsq + (particles[i].vel)*(particles[i].vel);
+    for (int i = 0; i < nrparticles; i++) { // Update velocities
+        particles[i].vel += dt * particles[i].acc;
+        //sumv = sumv + particles[i].vel;
+        //sumvsq = sumvsq + (particles[i].vel)*(particles[i].vel);
     }
+	for (int i = 0; i < nrparticles; i++) { // Update positions
+        particles[i].pos += dt * particles[i].vel;
+		// Check boundaries in x-dir
+        if (particles[i].pos[0] >= box_size) {
+            particles[i].pos[0] -= box_size;
+			while (particles[i].pos[0] >= box_size) {
+				particles[i].pos[0] -= box_size;
+			}
+		}
+        else if (particles[i].pos[0] < 0) {
+            particles[i].pos[0] += box_size;
+			while (particles[i].pos[0] < 0) {
+				particles[i].pos[0] += box_size;
+			}
+		}
+		// Check boundaries in y-dir
+        if (particles[i].pos[1] >= box_size) {
+            particles[i].pos[1] -= box_size;
+			while (particles[i].pos[1] >= box_size) {
+				particles[i].pos[1] -= box_size;
+			}
+		}
+        else if (particles[i].pos[1] < 0) {
+            particles[i].pos[1] += box_size;
+			while (particles[i].pos[1] < 0) {
+				particles[i].pos[1] += box_size;
+			}
+		}
+		// Check boundaries in z-dir
+        if (particles[i].pos[2] >= box_size) {
+            particles[i].pos[2] -= box_size;
+			while (particles[i].pos[2] >= box_size) {
+				particles[i].pos[2] -= box_size;
+			}
+		}
+        else if (particles[i].pos[2] < 0) {
+            particles[i].pos[2] += box_size;
+			while (particles[i].pos[2] < 0) {
+				particles[i].pos[2] += box_size;
+			}
+		}
+
+
+	}
     insttemp[timestep % nrinst] = mass*sumvsq/(3*nrparticles*epsilon);
     instEk[timestep % nrinst] = mass*sumvsq/(2*epsilon);
 }
