@@ -3,7 +3,15 @@
 #include <time.h>
 using namespace std;
 
-class mdsystem {
+enum enum_lattice_types
+{
+	LT_NO_LATTICE,
+	LT_FCC,
+	LT_NUM_LATTICE_TYPES
+}
+
+class mdsystem
+{
  public:
     void leapfrog();
     void create_linked_cells();//see .cpp-file
@@ -38,7 +46,7 @@ class mdsystem {
     vector<float> Ep;
     vector<float> instEk;
     vector<float> instEp;
-	string lattice_type;
+	enum_lattice_types lattice_type;
     float dt; //length of each timestep
     float inner_cutoff;
     float outer_cutoff;

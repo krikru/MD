@@ -178,8 +178,10 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     outer_cutoff = outer_cutoff_in;
     inner_cutoff = inner_cutoff_in;
     timestep = 1;
-    n = int(std::pow(float(nrparticles_in / 4 ), float( 1.0 / 3.0 ))); 
-    nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+	if (lattice_type == LT_FCC) {
+		n = int(std::pow(float(nrparticles_in / 4 ), float( 1.0 / 3.0 )));
+		nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+	}
     mass = mass_in;
     sigma = sigma_in;
     epsilon = epsilon_in;
@@ -288,7 +290,7 @@ void mdsystem::calculate_Ek() {
 
 void mdsystem::initpos() {
     particles.resize(nrparticles);
-	if (lattice_type == "fcc") {
+	if (lattice_type == LT_FCC) {
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				for (int k = 0; k < n; k++) {
