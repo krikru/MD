@@ -9,6 +9,6 @@ public:
     fvec3 vel;
     fvec3 prev_vel;
     fvec3 acc;
-	fvec3 fcc_pos;
+	fvec3 start_pos;
     int part_nr; // Might not be needed (part_nr = i is the i-1 element of the vector particles (if part_nr goes from 1 to total number of particles) ) 
 };

@@ -5,16 +5,13 @@
 void mdsystem::leapfrog()
 {
     fvec3 zero_vector = fvec3(0, 0, 0);
-    fvec3 sumv = zero_vector;
     float sumvsq = 0;
-	float box_size = a*n;
+	float box_size = a*n; //TODO
 
-    for (int i = 0; i < nrparticles; i++) { // Update velocities
+    for (int i = 0; i < nrparticles; i++) {
+		// Update velocities
         particles[i].vel += dt * particles[i].acc;
-        //sumv = sumv + particles[i].vel;
-        //sumvsq = sumvsq + (particles[i].vel)*(particles[i].vel);
-    }
-	for (int i = 0; i < nrparticles; i++) { // Update positions
+		// Update positions
         particles[i].pos += dt * particles[i].vel;
 		// Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
@@ -56,7 +53,7 @@ void mdsystem::leapfrog()
 			}
 		}
 
-
+        sumvsq = sumvsq + particles[i].vel.sqr_length();
 	}
     insttemp[timestep % nrinst] = mass*sumvsq/(3*nrparticles*epsilon);
     instEk[timestep % nrinst] = mass*sumvsq/(2*epsilon);
@@ -75,6 +72,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
         cell_list[cellindex] = i;
     }
 }
+
 void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ctreates the verlet_lists (verlet_vectors) using the linked cell lists
     int cellindex = 0;
     int particle_index = 0;
@@ -124,7 +122,6 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         }
     }
 }
-
 
 void mdsystem::force_calculation() { //using reduced unit
     vector<float> force_x;
@@ -179,7 +176,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     inner_cutoff = inner_cutoff_in;
     timestep = 1;
     n = int( std::pow((nrparticles_in / 4 ) , float ( 1.0 / 3.0 ))); 
-    nrparticles = 4*n*n*n;   // some particles lost? now we get only 8788 atoms instead of input value=10000
+    nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     mass = mass_in;
     sigma = sigma_in;
     epsilon = epsilon_in;
@@ -187,10 +184,13 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     init_temp = temperature_in;
     nrtimesteps = nrtimesteps_in;
     distanceforcesum = 0;
-    kB = float (1.381e-23);
+    kB = 1.381e-23f;
     a = latticeconstant_in;
-    nrcells = int(n*a/outer_cutoff) + 1;  //should +1 ??? 
-    cellsize =float( n*a/nrcells);
+    nrcells = int(n*a/outer_cutoff);
+	if (!nrcells) {
+		nrcells = 1;
+	}
+    cellsize = n*a/nrcells;
 }
 /*
   mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
@@ -287,23 +287,26 @@ void mdsystem::initpos() {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             for (int k = 0; k < n; k++) {
-                (particles[4*(i*n*n + j*n + k)]).fcc_pos[0] = i*a;
-                (particles[4*(i*n*n + j*n + k)]).fcc_pos[1] = j*a;
-                (particles[4*(i*n*n + j*n + k)]).fcc_pos[2] = k*a;
-                (particles[4*(i*n*n + j*n + k) + 1]).fcc_pos[0] = (i + 0.5f)*a;
-                (particles[4*(i*n*n + j*n + k) + 1]).fcc_pos[1] = (j + 0.5f)*a;
-                (particles[4*(i*n*n + j*n + k) + 1]).fcc_pos[2] = k*a;
-                (particles[4*(i*n*n + j*n + k) + 2]).fcc_pos[0] = (i + 0.5f)*a;
-                (particles[4*(i*n*n + j*n + k) + 2]).fcc_pos[1] = j*a;
-                (particles[4*(i*n*n + j*n + k) + 2]).fcc_pos[2] = (k + 0.5f)*a;
-                (particles[4*(i*n*n + j*n + k) + 3]).fcc_pos[0] = i*a;
-                (particles[4*(i*n*n + j*n + k) + 3]).fcc_pos[1] = (j + 0.5f)*a;
-                (particles[4*(i*n*n + j*n + k) + 3]).fcc_pos[2] = (k + 0.5f)*a;
+                (particles[4*(i*n*n + j*n + k) + 0]).start_pos[0] = i*a;
+                (particles[4*(i*n*n + j*n + k) + 0]).start_pos[1] = j*a;
+                (particles[4*(i*n*n + j*n + k) + 0]).start_pos[2] = k*a;
+
+                (particles[4*(i*n*n + j*n + k) + 1]).start_pos[0] = i*a;
+                (particles[4*(i*n*n + j*n + k) + 1]).start_pos[1] = (j + 0.5f)*a;
+                (particles[4*(i*n*n + j*n + k) + 1]).start_pos[2] = (k + 0.5f)*a;
+
+                (particles[4*(i*n*n + j*n + k) + 2]).start_pos[0] = (i + 0.5f)*a;
+                (particles[4*(i*n*n + j*n + k) + 2]).start_pos[1] = j*a;
+                (particles[4*(i*n*n + j*n + k) + 2]).start_pos[2] = (k + 0.5f)*a;
+
+                (particles[4*(i*n*n + j*n + k) + 3]).start_pos[0] = (i + 0.5f)*a;
+                (particles[4*(i*n*n + j*n + k) + 3]).start_pos[1] = (j + 0.5f)*a;
+                (particles[4*(i*n*n + j*n + k) + 3]).start_pos[2] = k*a;
             }
         }
     }
     for (int i = 0; i < nrparticles; i++) {
-        particles[i].pos = particles[i].fcc_pos;
+        particles[i].pos = particles[i].start_pos;
     }
 }
 
@@ -338,7 +341,7 @@ void mdsystem::calculate_pressure() {
 void mdsystem::calculate_mean_square_displacement() {
     float sum = 0;
     for (int i = 0; i < nrparticles;i++) {
-        sum += (particles[i].pos - particles[i].fcc_pos)*(particles[i].pos - particles[i].fcc_pos);
+        sum += (particles[i].pos - particles[i].start_pos)*(particles[i].pos - particles[i].start_pos);
     }
     sum = sum/nrparticles;
     msd[timestep/nrinst] = sum;
