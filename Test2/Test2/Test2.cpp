@@ -6,7 +6,7 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-    int nrparticles_in = 10000;
+    int nrparticles_in = 50;
     float sigma_in = 1;
     float epsilon_in = 2;
     float inner_cutoff_in = 1;

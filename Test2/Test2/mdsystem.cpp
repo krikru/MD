@@ -2,6 +2,22 @@
 #include "stdafx.h"
 
 
+
+void mdsystem::md() {
+    init();
+    create_linked_cells();
+    create_verlet_list_using_linked_cell_list();
+    while (timestep <= nrtimesteps) {
+        force_calculation();
+        leapfrog();
+        calculate_properties();
+        //if (neighbors should be updated) {
+        create_linked_cells();
+        create_verlet_list_using_linked_cell_list();
+        // }
+        timestep++;
+    }
+}
 void mdsystem::leapfrog()
 {
     fvec3 zero_vector = fvec3(0, 0, 0); 
@@ -37,10 +53,11 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
     for (int i = 0; i < cell_list.size() ; i++) {
         cell_list[i] = 0;
     }
-    for (int i = 0; i < nrparticles; i++) {  //stops here
-        cellindex = 1 + int(particles[i].pos[0] / cellsize)
-            + (int(particles[i].pos[1] / cellsize)) * nrcells
-            + (int(particles[i].pos[2] / cellsize)) * nrcells * nrcells;
+    for (int i = 0; i < nrparticles ; i++) {  //stops here
+        int help_x = int(particles[i].pos[0] / cellsize);
+        int help_y = int(particles[i].pos[1] / cellsize);
+        int help_z = int(particles[i].pos[2] / cellsize);
+        cellindex = help_x + help_y * nrcells + help_z * nrcells * nrcells;
         cell_linklist[i] = cell_list[cellindex];
         cell_list[cellindex] = i;
     }
@@ -159,8 +176,8 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     distanceforcesum = 0;
     kB = float (1.381e-23);
     a = latticeconstant_in;
-    nrcells = int(n*a/outer_cutoff) + 1;  //should +1 ??? 
-    cellsize =float( n*a/nrcells);
+    nrcells = int(n*a/outer_cutoff) + 1;
+    cellsize =float(n*a/nrcells);
 }
 /*
   mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
@@ -189,21 +206,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
   cellsize =float( n*a/nrcells);
   }
 */
-void mdsystem::md() {
-    init();
-    create_linked_cells();
-    create_verlet_list_using_linked_cell_list();
-    while (timestep <= nrtimesteps) {
-        force_calculation();
-        leapfrog();
-        calculate_properties();
-        //if (neighbors should be updated) {
-        create_linked_cells();
-        create_verlet_list_using_linked_cell_list();
-        // }
-        timestep++;
-    }
-}
+
 
 void mdsystem::init() {
     fvec3 sumv = fvec3(0, 0, 0);
