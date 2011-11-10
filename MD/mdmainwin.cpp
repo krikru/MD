@@ -12,3 +12,8 @@ mdmainwin::~mdmainwin()
 {
     delete ui;
 }
+
+void mdmainwin::on_actionExit_triggered()
+{
+    QCoreApplication::exit();
+}

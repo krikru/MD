@@ -15,6 +15,9 @@ public:
     explicit mdmainwin(QWidget *parent = 0);
     ~mdmainwin();
 
+private slots:
+    void on_actionExit_triggered();
+
 private:
     Ui::mdmainwin *ui;
 };
