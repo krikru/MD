@@ -8,7 +8,7 @@ enum enum_lattice_types
 	LT_NO_LATTICE,
 	LT_FCC,
 	LT_NUM_LATTICE_TYPES
-}
+};
 
 class mdsystem
 {
@@ -29,7 +29,7 @@ class mdsystem
     void calculate_pressure();
     void calculate_mean_square_displacement();
     
-    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, string lattice_type_in);
+    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in);
 
  private:
     vector<int> cell_linklist;         //List with indexnumbers reached through the cell_list, each index number corresponds to a particleindex but also next element in the cell_linklist which are in the same cell. a index equal to zero means end off particle-chain in one cell.
@@ -46,20 +46,6 @@ class mdsystem
     vector<float> Ep;       // Potential energy
     vector<float> instEk;   // Instat kinetic energy
     vector<float> instEp;   // Instat potential energy
-    vector<int> cell_linklist;//List with indexnumbers reached through the cell_list, each index number corresponds to a particleindex but also next element in the cell_linklist which are in the same cell. a index equal to zero means end off particle-chain in one cell.
-    vector<int> cell_list;//List of integernumber, each index corresponds to an element in the cell_linklist, it is also the "head"-particle in the particle-chain in corresponding cell.
-    vector<particle> particles; //The elements in the vector particles are particle objects
-    vector<int> verlet_particles_list;//List of integernumber, each index points to an element in the verlet_neighbors_list which is the first neighbor to corresponding particle.
-    vector<int> verlet_neighbors_list;//List with index numbers to neighbors.
-    vector<float> temp;
-    vector<float> insttemp;
-    vector<float> Cv;
-    vector<float> pressure;
-    vector<float> msd;
-    vector<float> Ek;
-    vector<float> Ep;
-    vector<float> instEk;
-    vector<float> instEp;
     enum_lattice_types lattice_type;
     float dt; //length of each timestep
     float inner_cutoff; // Parameter for the Verlet list
