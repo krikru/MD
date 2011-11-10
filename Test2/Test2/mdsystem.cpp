@@ -157,7 +157,7 @@ void mdsystem::force_calculation() { //using reduced unit
     }
 }
 
-mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
+mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, string lattice_type_in):
     cell_linklist(1),
     cell_list(1),
     particles(1), //TODO: we will resize it later (remove rwo?)
@@ -173,6 +173,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     verlet_particles_list(), 
     verlet_neighbors_list()
 {
+	lattice_type = lattice_type_in;
     dt = dt_in;
     outer_cutoff = outer_cutoff_in;
     inner_cutoff = inner_cutoff_in;
@@ -287,30 +288,32 @@ void mdsystem::calculate_Ek() {
 
 void mdsystem::initpos() {
     particles.resize(nrparticles);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            for (int k = 0; k < n; k++) {
-                int help_index = 4*(i*n*n + j*n + k);
-                (particles[help_index + 0]).start_pos[0] = i*a;
-                (particles[help_index + 0]).start_pos[1] = j*a;
-                (particles[help_index + 0]).start_pos[2] = k*a;
+	if (lattice_type == "fcc") {
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				for (int k = 0; k < n; k++) {
+					int help_index = 4*(i*n*n + j*n + k);
+					(particles[help_index + 0]).start_pos[0] = i*a;
+					(particles[help_index + 0]).start_pos[1] = j*a;
+					(particles[help_index + 0]).start_pos[2] = k*a;
 
-                (particles[help_index + 3]).start_pos[0] = i*a;
-                (particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
-                (particles[help_index + 3]).start_pos[2] = (k + 0.5f)*a;
+					(particles[help_index + 1]).start_pos[0] = i*a;
+					(particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
+					(particles[help_index + 1]).start_pos[2] = (k + 0.5f)*a;
 
-                (particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
-                (particles[help_index + 2]).start_pos[1] = j*a;
-                (particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
+					(particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
+					(particles[help_index + 2]).start_pos[1] = j*a;
+					(particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
 
-                (particles[help_index + 1]).start_pos[0] = (i + 0.5f)*a;
-                (particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
-                (particles[help_index + 1]).start_pos[2] = k*a;
+					(particles[help_index + 3]).start_pos[0] = (i + 0.5f)*a;
+					(particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
+					(particles[help_index + 3]).start_pos[2] = k*a;
+				}
 			}
 		}
 	}
     for (int i = 0; i < nrparticles; i++) {
-        particles[i].pos = particles[i].fcc_pos;
+        particles[i].pos = particles[i].start_pos;
     }
 }
 
