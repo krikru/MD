@@ -33,10 +33,11 @@ struct base_float_vec3
     base_float_vec3<T>& operator =(const ivec3&);
     base_float_vec3<T>& operator+=(const base_float_vec3<T>&);
     base_float_vec3<T>& operator-=(const base_float_vec3<T>&);
-    base_float_vec3<T>& operator*=(const T);
-    base_float_vec3<T>& operator/=(const T);
-    T& operator[](const int   );
-    T  operator[](const int   ) const;
+    //base_float_vec3<T>& operator&=(const base_float_vec3<T>&); // Yet to define
+    base_float_vec3<T>& operator*=(const T                  );
+    base_float_vec3<T>& operator/=(const T                  );
+    T&                  operator[](const int)      ;
+    T                   operator[](const int) const;
 
     base_float_vec3<T> operator-() const;
 

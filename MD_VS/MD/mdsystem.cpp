@@ -1,6 +1,6 @@
-//#include "classes.h"
-#include "stdafx.h"
 
+// Own includes
+#include "mdsystem.h"
 
 void mdsystem::md() {
     init();

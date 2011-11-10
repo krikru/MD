@@ -1,3 +1,6 @@
+#ifndef  MDSYSTEM_H
+#define  MDSYSTEM_H
+
 //Standard includes
 #include <vector>
 #include <time.h>
@@ -6,6 +9,7 @@ using namespace std;
 // Own includes
 #include "definitions.h"
 #include "base_float_vec3.h"
+#include "particle.h"
 
 enum enum_lattice_types
 {
@@ -69,3 +73,5 @@ class mdsystem
     float kB;
     float a;
 };
+
+#endif  /* MDSYSTEM_H */

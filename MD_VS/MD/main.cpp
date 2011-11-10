@@ -1,8 +1,11 @@
 // Test2.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+// Standard includes
+#include <tchar.h>
 
+// Own includes
+#include "mdsystem.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {

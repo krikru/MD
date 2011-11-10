@@ -19,29 +19,30 @@ using std::domain_error;
 template<typename T> 
 struct base_int_vec3
 {
-    int e[3];
+    T e[3];
 
     /* Constructors */
     base_int_vec3<T>(); // Default constructor
-    base_int_vec3<T>(int e0, int e1, int e2);
+    base_int_vec3<T>(T e0, T e1, T e2);
 
     base_int_vec3<T>& operator+=(const base_int_vec3<T>&);
     base_int_vec3<T>& operator-=(const base_int_vec3<T>&);
-    base_int_vec3<T>& operator*=(const int   );
-    base_int_vec3<T>& operator/=(const int   );
-    int&   operator[](const int   );
-    int    operator[](const int   ) const;
+    //base_int_vec3<T>& operator&=(const base_int_vec3<T>&); // Yet to define
+    base_int_vec3<T>& operator*=(const T                );
+    base_int_vec3<T>& operator/=(const T                );
+    T&                operator[](const T)      ;
+    T                 operator[](const T) const;
 
     base_int_vec3<T> operator-() const;
 
     base_int_vec3<T> operator+(const base_int_vec3<T>&) const;
     base_int_vec3<T> operator-(const base_int_vec3<T>&) const;
-    int   operator*(const base_int_vec3<T>&) const; // Scalar product
+    T                operator*(const base_int_vec3<T>&) const; // Scalar product
     base_int_vec3<T> operator&(const base_int_vec3<T>&) const; // Crossproduct
-    base_int_vec3<T> operator*(const int   ) const;
-    base_int_vec3<T> operator/(const int   ) const;
+    base_int_vec3<T> operator*(const T                ) const;
+    base_int_vec3<T> operator/(const T                ) const;
 
-    int sqr_length() const;
+    T sqr_length() const;
 };
 
 typedef  base_int_vec3<int>  ivec3;
@@ -51,7 +52,7 @@ typedef  base_int_vec3<int>  ivec3;
  ****************************************************************/
 
 template<typename T>
-base_int_vec3<T> operator* (const int, const base_int_vec3<T>&);
+base_int_vec3<T> operator* (const T, const base_int_vec3<T>&);
 
 /****************************************************************
  * Public functions
@@ -65,7 +66,7 @@ base_int_vec3<T>::base_int_vec3()
 }
 
 template<typename T>
-base_int_vec3<T>::base_int_vec3(int e0, int e1, int e2)
+base_int_vec3<T>::base_int_vec3(T e0, T e1, T e2)
 {
     e[0] = e0;
     e[1] = e1;
@@ -75,40 +76,40 @@ base_int_vec3<T>::base_int_vec3(int e0, int e1, int e2)
 template<typename T>
 base_int_vec3<T>& base_int_vec3<T>::operator+=(const base_int_vec3<T>& rhs)
 {
-    for (int i = 0; i < 3; i++) e[i] += rhs.e[i];
+    for (T i = 0; i < 3; i++) e[i] += rhs.e[i];
     return *this;
 }
 
 template<typename T>
 base_int_vec3<T>& base_int_vec3<T>::operator-=(const base_int_vec3<T>& rhs)
 {
-    for (int i = 0; i < 3; i++) e[i] -= rhs.e[i];
+    for (T i = 0; i < 3; i++) e[i] -= rhs.e[i];
     return *this;
 }
 
 template<typename T>
-base_int_vec3<T>& base_int_vec3<T>::operator*=(const int k)
+base_int_vec3<T>& base_int_vec3<T>::operator*=(const T k)
 {
-    for (int i = 0; i < 3; i++) e[i] *= k;
+    for (T i = 0; i < 3; i++) e[i] *= k;
     return *this;
 }
 
 template<typename T>
-base_int_vec3<T>& base_int_vec3<T>::operator/=(const int den)
+base_int_vec3<T>& base_int_vec3<T>::operator/=(const T den)
 {
     if (!den) throw domain_error("Trying to divide a vector by zero");
-    for (int i = 0; i < 3; i++) e[i] /= den;
+    for (T i = 0; i < 3; i++) e[i] /= den;
     return *this;
 }
 
 template<typename T>
-int& base_int_vec3<T>::operator[](const int i)
+T& base_int_vec3<T>::operator[](const T i)
 {
     return e[i];
 }
 
 template<typename T>
-int base_int_vec3<T>::operator[](const int i) const
+T base_int_vec3<T>::operator[](const T i) const
 {
     return e[i];
 }
@@ -138,7 +139,7 @@ base_int_vec3<T> base_int_vec3<T>::operator-(const base_int_vec3<T>& rhs) const
 }
 
 template<typename T>
-int base_int_vec3<T>::operator*(const base_int_vec3<T>& rhs) const
+T base_int_vec3<T>::operator*(const base_int_vec3<T>& rhs) const
 {
     return e[0]*rhs.e[0] + e[1]*rhs.e[1] + e[2]*rhs.e[2];
 }
@@ -152,20 +153,20 @@ base_int_vec3<T> base_int_vec3<T>::operator&(const base_int_vec3<T>& rhs) const
 }
 
 template<typename T>
-base_int_vec3<T> base_int_vec3<T>::operator*(const int k) const
+base_int_vec3<T> base_int_vec3<T>::operator*(const T k) const
 {
     return base_int_vec3<T>(e[0]*k, e[1]*k, e[2]*k);
 }
 
 template<typename T>
-base_int_vec3<T> base_int_vec3<T>::operator/(const int den) const
+base_int_vec3<T> base_int_vec3<T>::operator/(const T den) const
 {
     if(!den) throw domain_error("Not defined to divide with zero");
     return base_int_vec3<T>(e[0]/den, e[1]/den, e[2]/den);
 }
 
 template<typename T>
-int base_int_vec3<T>::sqr_length() const
+T base_int_vec3<T>::sqr_length() const
 {
     return (e[0]*e[0] + e[1]*e[1] + e[2]*e[2]);
 }
@@ -175,9 +176,9 @@ int base_int_vec3<T>::sqr_length() const
  ****************************************************************/
 
 template<typename T>
-base_int_vec3<T> operator*(const int lhs, const base_int_vec3<T>& rhs)
+base_int_vec3<T> operator*(const T lhs, const base_int_vec3<T>& rhs)
 {
     return base_int_vec3<T>(lhs*rhs.e[0], lhs*rhs.e[1], lhs*rhs.e[2]);
 }
 
-#endif  /* base_int_vec3<T>_H */
+#endif  /* BASE_INT_VEC3_H */
