@@ -251,7 +251,7 @@ void mdsystem::calculate_Ek() {
     Ek[timestep/nrinst] = sum/nrinst; 
 }
 
-void mdsystem::initpos() {
+void mdsystem::initpos() { //some error happened!!
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             for (int k = 0; k < n; k++) {
