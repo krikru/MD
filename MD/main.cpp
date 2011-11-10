@@ -1,13 +1,11 @@
-#include <QApplication>
-#include <QPushButton>
+#include <QtGui/QApplication>
+#include "mdmainwin.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
-    QPushButton hello("Hello World!");
-    hello.resize(100, 30);
-    QObject::connect(&hello, SIGNAL(clicked()),
-        &app, SLOT(quit()));
-    hello.show();
-    return app.exec();
+    QApplication a(argc, argv);
+    mdmainwin w;
+    w.show();
+
+    return a.exec();
 }
