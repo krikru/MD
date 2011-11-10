@@ -61,13 +61,15 @@ void mdsystem::leapfrog()
 
 void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
     int cellindex = 0;
-    for (int i = 0; i < nrcells; i++) {
+    cell_list.resize(nrcells*nrcells*nrcells);
+    cell_linklist.resize(nrparticles);
+    for (int i = 0; i < cell_list.size() ; i++) {
         cell_list[i] = 0;
     }
-    for (int i = 0; i < nrparticles; i++) {
-        cellindex = 1 + int(particles[i].pos[0]/cellsize)
-            + (int(particles[i].pos[1]/cellsize)) * nrcells
-            + (int(particles[i].pos[2]/cellsize)) * nrcells * nrcells;
+    for (int i = 0; i < nrparticles; i++) {  //stops here
+        cellindex = 1 + int(particles[i].pos[0] / cellsize)
+            + (int(particles[i].pos[1] / cellsize)) * nrcells
+            + (int(particles[i].pos[2] / cellsize)) * nrcells * nrcells;
         cell_linklist[i] = cell_list[cellindex];
         cell_list[cellindex] = i;
     }
@@ -156,9 +158,9 @@ void mdsystem::force_calculation() { //using reduced unit
 }
 
 mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
-    cell_linklist(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))),
-    cell_list((int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))),
-    particles(nrparticles_in), 
+    cell_linklist(1),
+    cell_list(1),
+    particles(1), //TODO: we will resize it later (remove rwo?)
     insttemp(nrinst_in), 
     instEk(nrinst_in), 
     instEp(nrinst_in), 
