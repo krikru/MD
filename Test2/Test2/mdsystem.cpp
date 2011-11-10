@@ -157,7 +157,7 @@ void mdsystem::force_calculation() { //using reduced unit
     }
 }
 
-mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, string lattice_type_in):
+mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in):
     cell_linklist(1),
     cell_list(1),
     particles(1), //TODO: we will resize it later (remove rwo?)

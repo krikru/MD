@@ -29,7 +29,7 @@ class mdsystem
     void calculate_pressure();
     void calculate_mean_square_displacement();
     
-    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, string lattice_type_in);
+    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in);
 
  private:
     vector<int> cell_linklist;//List with indexnumbers reached through the cell_list, each index number corresponds to a particleindex but also next element in the cell_linklist which are in the same cell. a index equal to zero means end off particle-chain in one cell.
