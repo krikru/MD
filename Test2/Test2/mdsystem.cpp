@@ -175,7 +175,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     outer_cutoff = outer_cutoff_in;
     inner_cutoff = inner_cutoff_in;
     timestep = 1;
-    n = int(std::pow((nrparticles_in / 4 ) , float ( 1.0 / 3.0 ))); 
+    n = int(std::pow(float(nrparticles_in / 4 ), float( 1.0 / 3.0 ))); 
     nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     mass = mass_in;
     sigma = sigma_in;
@@ -239,7 +239,7 @@ void mdsystem::init() {
     fvec3 sumv = fvec3(0, 0, 0);
     float sumvsq = 0;
     initpos();
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     for (int i = 0; i < nrparticles; i++) {
         for (int j = 0; j < 3; j++) {
             particles[i].vel[j] = ((float) rand())/((float) RAND_MAX) - 0.5f;
@@ -280,7 +280,7 @@ void mdsystem::calculate_Ek() {
     for (int i = 0; i < nrinst; i++) {
         sum += instEk[i];
     }
-    Ek[timestep/nrinst] = sum/nrinst; 
+    Ek[timestep/nrinst] = sum/nrinst;
 }
 
 void mdsystem::initpos() {
@@ -289,20 +289,21 @@ void mdsystem::initpos() {
         for (int j = 0; j < n; j++) {
             for (int k = 0; k < n; k++) {
                 int help_index = 4*(i*n*n + j*n + k);
-                (particles[help_index]).fcc_pos[0] = i*a;
-                (particles[help_index]).fcc_pos[1] = j*a;
-                (particles[help_index]).fcc_pos[2] = k*a;
-                (particles[(help_index + 1)]).fcc_pos[0] = (i + 0.5f)*a;
-                (particles[(help_index + 1)]).fcc_pos[1] = (j + 0.5f)*a;
-                (particles[(help_index + 1)]).fcc_pos[2] = k*a;
-                (particles[(help_index + 2)]).fcc_pos[0] = (i + 0.5f)*a;
-                (particles[(help_index + 2)]).fcc_pos[1] = j*a;
-                (particles[(help_index + 2)]).fcc_pos[2] = (k + 0.5f)*a;
-                (particles[(help_index + 3)]).fcc_pos[0] = i*a;
-                (particles[(help_index + 3)]).fcc_pos[1] = (j + 0.5f)*a;
-                (particles[(help_index + 3)]).fcc_pos[2] = (k + 0.5f)*a;
-                (particles[4*(i*n*n + j*n + k) + 3]).start_pos[1] = (j + 0.5f)*a;
-                (particles[4*(i*n*n + j*n + k) + 3]).start_pos[2] = k*a;
+                (particles[help_index + 0]).start_pos[0] = i*a;
+                (particles[help_index + 0]).start_pos[1] = j*a;
+                (particles[help_index + 0]).start_pos[2] = k*a;
+
+                (particles[help_index + 3]).start_pos[0] = i*a;
+                (particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
+                (particles[help_index + 3]).start_pos[2] = (k + 0.5f)*a;
+
+                (particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
+                (particles[help_index + 2]).start_pos[1] = j*a;
+                (particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
+
+                (particles[help_index + 1]).start_pos[0] = (i + 0.5f)*a;
+                (particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
+                (particles[help_index + 1]).start_pos[2] = k*a;
             }
         }
     }

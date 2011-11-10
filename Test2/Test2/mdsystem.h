@@ -38,17 +38,17 @@ class mdsystem {
     vector<float> Ep;
     vector<float> instEk;
     vector<float> instEp;
-    float dt;//length of each timestep
+    float dt; //length of each timestep
     float inner_cutoff;
     float outer_cutoff;
-    int timestep;//gives the current iteration
+    int timestep; //gives the current iteration
     int n;            //length of lattice in conventional unit cells
     int nrparticles;
     float mass;
     float sigma;
     float epsilon;
-    int nrinst;//nr of instantaneously measured values before taking the average...
-    int nrcells;//given in one dimension
+    int nrinst; //nr of instantaneously measured values before taking the average...
+    int nrcells; //given in one dimension TODO: Change name?
     float cellsize;//Could be the same as outer_cutoff but perhaps we should think about that...
     float init_temp;
     int nrtimesteps;
