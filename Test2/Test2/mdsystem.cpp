@@ -32,15 +32,12 @@ void mdsystem::leapfrog()
 
 void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
     int cellindex = 0;
-    cell_list.resize(std::pow(nrcells,3));
+    cell_list.resize(nrcells*nrcells*nrcells);
     cell_linklist.resize(nrparticles);
-    for (int i = 0; i < nrcells; i++) {
+    for (int i = 0; i < cell_list.size() ; i++) {
         cell_list[i] = 0;
     }
     for (int i = 0; i < nrparticles; i++) {  //stops here
-        int help_x_index = int(particles[i].pos[0] / cellsize);
-        int help_y_index = particles[i].pos[1] / cellsize;
-        int help_z_index = particles[i].pos[2] / cellsize;
         cellindex = 1 + int(particles[i].pos[0] / cellsize)
             + (int(particles[i].pos[1] / cellsize)) * nrcells
             + (int(particles[i].pos[2] / cellsize)) * nrcells * nrcells;
