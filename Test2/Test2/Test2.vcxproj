@@ -77,6 +77,7 @@
   <ItemGroup>
     <ClInclude Include="base_float_vec3.h" />
     <ClInclude Include="base_int_vec3.h" />
+    <ClInclude Include="definitions.h" />
     <ClInclude Include="mdsystem.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="stdafx.h" />
