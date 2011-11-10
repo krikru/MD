@@ -129,7 +129,7 @@ void mdsystem::force_calculation() { //using reduced unit
 mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
     cell_linklist(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))),
     cell_list((int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))*(int((int (pow(float (nrparticles_in/4),float (1/3))))*a/outer_cutoff))),
-    particles(4*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))*((int) pow(float (nrparticles_in/4), 1/3))), 
+    particles(nrparticles_in), 
     insttemp(nrinst_in), 
     instEk(nrinst_in), 
     instEp(nrinst_in), 
@@ -157,7 +157,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     distanceforcesum = 0;
     kB = float (1.381e-23);
     a = latticeconstant_in;
-    nrcells = int(n*a/outer_cutoff) + 1;  //should +1 ??? 
+    nrcells = int(n*a/outer_cutoff);
     cellsize =float( n*a/nrcells);
 }
 /*
@@ -253,27 +253,29 @@ void mdsystem::calculate_Ek() {
 
 void mdsystem::initpos() {
     particles.resize(nrparticles);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            for (int k = 0; k < n; k++) {
-                int help_index = 4*(i*n*n + j*n + k);
-                (particles[help_index]).fcc_pos[0] = i*a;
-                (particles[help_index]).fcc_pos[1] = j*a;
-                (particles[help_index]).fcc_pos[2] = k*a;
-                (particles[(help_index + 1)]).fcc_pos[0] = (i + 0.5f)*a;
-                (particles[(help_index + 1)]).fcc_pos[1] = (j + 0.5f)*a;
-                (particles[(help_index + 1)]).fcc_pos[2] = k*a;
-                (particles[(help_index + 2)]).fcc_pos[0] = (i + 0.5f)*a;
-                (particles[(help_index + 2)]).fcc_pos[1] = j*a;
-                (particles[(help_index + 2)]).fcc_pos[2] = (k + 0.5f)*a;
-                (particles[(help_index + 3)]).fcc_pos[0] = i*a;
-                (particles[(help_index + 3)]).fcc_pos[1] = (j + 0.5f)*a;
-                (particles[(help_index + 3)]).fcc_pos[2] = (k + 0.5f)*a;
-            }
-        }
-    }
+	if (lattice_type == "fcc") {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    int help_index = 4*(i*n*n + j*n + k);
+                    (particles[help_index]).init_pos[0] = i*a;
+                    (particles[help_index]).init_pos[1] = j*a;
+                    (particles[help_index]).init_pos[2] = k*a;
+                    (particles[(help_index + 1)]).init_pos[0] = (i + 0.5f)*a;
+                    (particles[(help_index + 1)]).init_pos[1] = (j + 0.5f)*a;
+                    (particles[(help_index + 1)]).init_pos[2] = k*a;
+                    (particles[(help_index + 2)]).init_pos[0] = (i + 0.5f)*a;
+                    (particles[(help_index + 2)]).init_pos[1] = j*a;
+                    (particles[(help_index + 2)]).init_pos[2] = (k + 0.5f)*a;
+					(particles[(help_index + 3)]).init_pos[0] = i*a;
+					(particles[(help_index + 3)]).init_pos[1] = (j + 0.5f)*a;
+					(particles[(help_index + 3)]).init_pos[2] = (k + 0.5f)*a;
+				}
+			}
+		}
+	}
     for (int i = 0; i < nrparticles; i++) {
-        particles[i].pos = particles[i].fcc_pos;
+        particles[i].pos = particles[i].init_pos;
     }
 }
 
