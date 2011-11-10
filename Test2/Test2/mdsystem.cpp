@@ -11,8 +11,10 @@ void mdsystem::leapfrog()
     for (int i = 0; i < nrparticles; i++) {
 		// Update velocities
         particles[i].vel += dt * particles[i].acc;
+
 		// Update positions
         particles[i].pos += dt * particles[i].vel;
+
 		// Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
             particles[i].pos[0] -= box_size;
