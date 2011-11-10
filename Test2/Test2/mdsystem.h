@@ -1,5 +1,6 @@
 #include <vector>
 #include "base_float_vec3.h"
+#include <time.h>
 using namespace std;
 
 class mdsystem {
