@@ -7,4 +7,4 @@
 
 typedef  unsigned int  uint;
 
-#endif
+#endif  /* DEFINITIONS_H */
