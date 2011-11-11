@@ -9,6 +9,8 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+    //srand((unsigned int)time(NULL)); // Pick a random seed based on the current time
+
     int nrparticles_in = 32;
     float sigma_in = 1;
     float epsilon_in = 2;
