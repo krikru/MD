@@ -118,43 +118,32 @@ void mdsystem::leapfrog()
         if (msd_on) particles[i].no_bound_pos += dt * particles[i].vel;
 
 		// Check boundaries in x-dir
-        if (particles[i].pos[0] >= box_size) {
-            particles[i].pos[0] -= box_size;
-			while (particles[i].pos[0] >= box_size) {
+
+		while (particles[i].pos[0] >= box_size) {
 				particles[i].pos[0] -= box_size;
-			}
 		}
-        else if (particles[i].pos[0] < 0) {
-            particles[i].pos[0] += box_size;
-			while (particles[i].pos[0] < 0) {
+		while (particles[i].pos[0] < 0) {
 				particles[i].pos[0] += box_size;
-			}
 		}
+
 		// Check boundaries in y-dir
-        if (particles[i].pos[1] >= box_size) {
-            particles[i].pos[1] -= box_size;
-			while (particles[i].pos[1] >= box_size) {
+
+		while (particles[i].pos[1] >= box_size) {
 				particles[i].pos[1] -= box_size;
-			}
 		}
-        else if (particles[i].pos[1] < 0) {
-            particles[i].pos[1] += box_size;
-			while (particles[i].pos[1] < 0) {
+		
+		while (particles[i].pos[1] < 0) {
 				particles[i].pos[1] += box_size;
-			}
 		}
+
 		// Check boundaries in z-dir
-        if (particles[i].pos[2] >= box_size) {
-            particles[i].pos[2] -= box_size;
-			while (particles[i].pos[2] >= box_size) {
+
+		while (particles[i].pos[2] >= box_size) {
 				particles[i].pos[2] -= box_size;
-			}
 		}
-        else if (particles[i].pos[2] < 0) {
-            particles[i].pos[2] += box_size;
-			while (particles[i].pos[2] < 0) {
+
+		while (particles[i].pos[2] < 0) {
 				particles[i].pos[2] += box_size;
-			}
 		}
 
         sumvsq = sumvsq + particles[i].vel.sqr_length();
@@ -253,9 +242,9 @@ void mdsystem::force_calculation() { //using reduced unit
             if (distance >= inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one
             }
-            distance_inv = 1 / distance;
+            distance_inv = sigma / distance;
             distance6_inv = pow(distance_inv, 6);
-			float acceleration = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv;
+			float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv;
             dr.normalize();
             particles[i].acc +=  acceleration * dr;
 			particles[verlet_neighbors_list[j]].acc -=  acceleration * dr;
