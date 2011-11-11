@@ -233,9 +233,9 @@ void mdsystem::force_calculation() { //using reduced unit
             if (distance >= inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one
             }
-            distance_inv = 1 / distance;
+            distance_inv = sigma / distance;
             distance6_inv = pow(distance_inv, 6);
-			float acceleration = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv;
+			float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv;
             dr.normalize();
             particles[i].acc +=  acceleration * dr;
 			particles[verlet_neighbors_list[j]].acc -=  acceleration * dr;
