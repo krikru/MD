@@ -167,13 +167,16 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     for (uint i = 0; i < nrparticles; i++) {
         verlet_particles_list[i] = 0;
     }
+	for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
+        verlet_neighbors_list[i] = 0;
+    }
     for (uint i = 0; i < nrparticles; i++) {
         if (i==0)
             verlet_neighbors_list[0] = 0;
         else
             verlet_neighbors_list[verlet_particles_list[i]] = 0;
         if (i < (nrparticles-1))
-            verlet_particles_list[i+1] = verlet_particles_list[i];
+            verlet_particles_list[i+1] = verlet_particles_list[i]+1;
         for (float x =(particles[i].pos[0]-cellsize); x <= (particles[i].pos[0]-cellsize); x += cellsize) {
             for (float y =(particles[i].pos[1]-cellsize); y <= (particles[i].pos[1]-cellsize); y += cellsize) {
                 for (float z =(particles[i].pos[2]-cellsize); z <= (particles[i].pos[2]-cellsize); z += cellsize) {
@@ -196,7 +199,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                     int j = 0;
                     while (particle_index != 0) {
                         float distance = (particles[i].pos-particles[particle_index].pos).length(); //Asuming 3d_vector has function lenght that calculates the lenght of a vector.
-                        if(distance < outer_cutoff) {
+                        if((distance < outer_cutoff)&&(particle_index>i)) {
                             j += 1;
                             if (i < (nrparticles-1))
                                 verlet_particles_list[i+1]=verlet_particles_list[i+1]+1;
@@ -222,8 +225,8 @@ void mdsystem::force_calculation() { //using reduced unit
     fvec3 x_hat = fvec3(1, 0, 0);
     fvec3 y_hat = fvec3(0, 1, 0);
     fvec3 z_hat = fvec3(0, 0, 1);                
-    for (int i=0; i < nrparticles ; i++) { 
-        for (int j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
+    for (uint i=0; i < nrparticles ; i++) { 
+        for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
             fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
             distance = dr.length();
             distance_inv = 1 / distance;
