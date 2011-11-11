@@ -148,7 +148,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
 
 void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ctreates the verlet_lists (verlet_vectors) using the linked cell lists
     int cellindex = 0;
-    int particle_index = 0;
+    uint particle_index = 0;
 	verlet_particles_list.resize(nrparticles);
 	verlet_neighbors_list.resize(nrparticles*nrparticles);
     for (uint i = 0; i < nrparticles; i++) {
@@ -186,7 +186,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                     int j = 0;
                     while (particle_index != 0) {
                         float distance = (particles[i].pos-particles[particle_index].pos).length(); //Asuming 3d_vector has function lenght that calculates the lenght of a vector.
-                        if((distance < outer_cutoff)&&(particle_index>i)) {
+                        if((distance < outer_cutoff)&&(particle_index > i)) {
                             j += 1;
                             if (i < (nrparticles-1))
                                 verlet_particles_list[i+1]=verlet_particles_list[i+1]+1;
@@ -226,7 +226,11 @@ void mdsystem::force_calculation() { //using reduced unit
             force_x[i] +=  force * (dr * x_hat);
             force_y[i] +=  force * (dr * y_hat);
             force_z[i] +=  force * (dr * z_hat);
-            Ep[i] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff; 
+			force_x[verlet_neighbors_list[j]] -=  force * (dr * x_hat);
+            force_y[verlet_neighbors_list[j]] -=  force * (dr * y_hat);
+            force_z[verlet_neighbors_list[j]] -=  force * (dr * z_hat);
+            Ep[i] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
+			Ep[verlet_neighbors_list[j]] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff; 
             distanceforcesum += force * distance;
         }
     }
