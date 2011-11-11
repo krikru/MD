@@ -84,7 +84,7 @@ void mdsystem::run_simulation() {
         // }
 #if 1 //TODO
         std::cout << loop_num << std::endl;
-        if (loop_num == 3) {
+        if (loop_num == 9) {
             loop_num = loop_num;
         }
 #endif
@@ -97,8 +97,17 @@ void mdsystem::leapfrog()
     fvec3 zero_vector = fvec3(0, 0, 0);
     float sumvsq = 0;
 	float box_size = a*n; //TODO
-
+    if (loop_num == 10) {
+        loop_num = loop_num; //TODO
+    }
     for (uint i = 0; i < nrparticles; i++) {
+        if (loop_num == 10) {
+            std::cout << i << endl;
+            if (i == 4)
+            {
+                i = i;
+            }
+        }
 		// Update velocities
         particles[i].vel += dt * particles[i].acc;
 
