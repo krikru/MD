@@ -1,3 +1,6 @@
+#ifndef  PARTICLE_H
+#define  PARTICLE_H
+
 #include <vector>
 #include "base_float_vec3.h"
 using namespace std;
@@ -12,3 +15,5 @@ public:
 	fvec3 start_pos;
     int part_nr; // Might not be needed (part_nr = i is the i-1 element of the vector particles (if part_nr goes from 1 to total number of particles) ) 
 };
+
+#endif  /* PARTICLE_H */
