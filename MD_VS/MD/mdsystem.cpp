@@ -50,12 +50,12 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
 
 void mdsystem::init() {
     init_particles();
+    create_linked_cells();
+    create_verlet_list_using_linked_cell_list();
 }
 
 void mdsystem::run_simulation() {
     init();
-    create_linked_cells();
-    create_verlet_list_using_linked_cell_list();
     while (loop_num < nrtimesteps) {
         force_calculation();
         leapfrog();
@@ -186,8 +186,8 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                             j += 1;
                             if (i < (nrparticles-1))
                                 verlet_particles_list[i+1]=verlet_particles_list[i+1]+1;
-                            verlet_neighbors_list[i] += 1;
-                            verlet_neighbors_list[i+j] = particle_index;
+                            verlet_neighbors_list[verlet_particles_list[i]] += 1;
+                            verlet_neighbors_list[verlet_particles_list[i]+j] = particle_index;
                         }
                         particle_index = cell_linklist[particle_index];
                     }
@@ -198,9 +198,9 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 }
 
 void mdsystem::force_calculation() { //using reduced unit
-    vector<float> force_x;
-    vector<float> force_y;
-    vector<float> force_z;
+    fvec3 force_x;
+    fvec3 force_y;
+    fvec3 force_z;
     float distance = inner_cutoff ;
     float distance_inv = 1/distance ;
     float distance6_inv = pow(distance_inv,6) ;
