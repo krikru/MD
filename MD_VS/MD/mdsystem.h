@@ -22,7 +22,7 @@ class mdsystem
 {
  public:
     // Constructor 
-    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in);
+    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
 
     // Public functions
     void init();
@@ -74,6 +74,12 @@ private:
     float kB;
     float a;
     float diffusion_coefficient;
+    bool diff_c_on;
+    bool Cv_on;
+    bool pressure_on;
+    bool msd_on;
+    bool Ep_on;
+    bool Ek_on;
 
     // Private functions
     void init_particles();
