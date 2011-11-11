@@ -20,7 +20,13 @@ int _tmain(int argc, _TCHAR* argv[])
     float temperature_in = 300;
     int nrtimesteps_in = 5;
     float latticeconstant_in = 5;
-    mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_coutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, LT_FCC);
+    bool diff_c_on_in = true;
+    bool Cv_on_in = true;
+    bool pressure_on_in = true;
+    bool msd_on_in = true;
+    bool Ep_on_in = true;
+    bool Ek_on_in = true;
+    mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_coutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, LT_FCC, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
     return 0;
 }

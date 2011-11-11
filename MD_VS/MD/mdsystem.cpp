@@ -6,7 +6,7 @@
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in):
+mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
     cell_linklist(),
     cell_list(),
     particles(), //TODO: we will resize it later (remove rwo?)
@@ -46,6 +46,12 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     }
     cellsize = n*a/nrcells;
     diffusion_coefficient = 0;
+    diff_c_on = diff_c_on_in;
+    Cv_on = Cv_on_in;
+    pressure_on = pressure_on_in;
+    msd_on = msd_on_in;
+    Ep_on = Ep_on_in;
+    Ek_on = Ek_on_in;
 }
 
 void mdsystem::init() {
@@ -77,11 +83,11 @@ void mdsystem::leapfrog()
 		// Update velocities
         particles[i].vel += dt * particles[i].acc;
 
-        diffusion_coefficient += dt*particles[i].vel*particles[i].start_vel/(3*nrparticles);
+        if (diff_c_on) diffusion_coefficient += dt*particles[i].vel*particles[i].start_vel/(3*nrparticles);
 
 		// Update positions
         particles[i].pos += dt * particles[i].vel;
-        particles[i].no_bound_pos += dt * particles[i].vel;
+        if (msd_on) particles[i].no_bound_pos += dt * particles[i].vel;
 
 		// Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
@@ -126,7 +132,7 @@ void mdsystem::leapfrog()
         sumvsq = sumvsq + particles[i].vel.sqr_length();
 	}
     insttemp[loop_num % nrinst] = mass*sumvsq/(3*nrparticles*epsilon);
-    instEk[loop_num % nrinst] = mass*sumvsq/(2*epsilon);
+    if (Ek_on) instEk[loop_num % nrinst] = mass*sumvsq/(2*epsilon);
 }
 
 void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
@@ -209,7 +215,7 @@ void mdsystem::force_calculation() { //using reduced unit
     float distance_inv = 1/distance ;
     float distance6_inv = pow(distance_inv,6) ;
     float E_cutoff = 4 * distance6_inv * (distance6_inv - 1);
-	float mass_inv=1/mass;
+    float mass_inv=1/mass;
     fvec3 x_hat = fvec3(1, 0, 0);
     fvec3 y_hat = fvec3(0, 1, 0);
     fvec3 z_hat = fvec3(0, 0, 1);                
@@ -232,7 +238,7 @@ void mdsystem::force_calculation() { //using reduced unit
             particles[verlet_neighbors_list[j]].acc[2] -=  acceleration * (dr * z_hat);
             Ep[loop_num] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
 			 
-            distanceforcesum += mass * acceleration * distance;
+            if (pressure_on) distanceforcesum += mass * acceleration * distance;
         }
     }
 }
@@ -264,12 +270,12 @@ void mdsystem::calculate_Ek() {
 
 void mdsystem::calculate_properties() {
     if ((loop_num % nrinst) == 0) {
-        calculate_specific_heat();            
-        calculate_pressure();
-        calculate_mean_square_displacement();
+        if (Cv_on)calculate_specific_heat();            
+        if (pressure_on) calculate_pressure();
+        if (msd_on) calculate_mean_square_displacement();
         calculate_temperature();
-        calculate_Ep();
-        calculate_Ek();
+        if (Ep_on) calculate_Ep();
+        if (Ek_on) calculate_Ek();
     }
 }
 
