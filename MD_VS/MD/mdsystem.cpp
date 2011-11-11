@@ -94,6 +94,7 @@ void mdsystem::leapfrog()
 
 		// Update positions
         particles[i].pos += dt * particles[i].vel;
+        particles[i].no_bound_pos += dt * particles[i].vel;
 
 		// Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
@@ -324,7 +325,7 @@ void mdsystem::calculate_pressure() {
 void mdsystem::calculate_mean_square_displacement() {
     float sum = 0;
     for (uint i = 0; i < nrparticles;i++) {
-        sum += (particles[i].pos - particles[i].start_pos)*(particles[i].pos - particles[i].start_pos);
+        sum += (particles[i].no_bound_pos - particles[i].start_pos)*(particles[i].no_bound_pos - particles[i].start_pos);
     }
     sum = sum/nrparticles;
     msd[loop_num/nrinst] = sum;
