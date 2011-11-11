@@ -12,18 +12,19 @@ using std::cout;
 
 mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
     cell_linklist(),
-    cell_list(),
-    particles(), //TODO: we will resize it later (remove rwo?)
+    cell_list    (),
+    particles    (), //TODO: we will resize it later (remove rwo?)
     insttemp(nrinst_in), 
     instEk  (nrinst_in), 
     instEp  (nrinst_in), 
     // Measure values
-    temp    (0),
-    Ek      (0),
-    Ep      (0),
-    Cv      (0),
-    pressure(0),
-    msd     (0),
+    temp    (),
+    Ek      (),
+    Ep      (),
+    Cv      (),
+    pressure(),
+    msd     (),
+    // For the verlet list
     verlet_particles_list(), 
     verlet_neighbors_list()
 {
@@ -76,19 +77,20 @@ void mdsystem::init() {
 void mdsystem::run_simulation() {
     init();
     while (loop_num <= nrtimesteps) {
-        force_calculation();
-        leapfrog();
-        calculate_properties();
-        //if (neighbors should be updated) {
-        create_linked_cells();
-        create_verlet_list_using_linked_cell_list();
-        // }
 #if 1 //TODO
-        std::cout << loop_num << std::endl;
+        std::cout << "loop number = " << loop_num << std::endl;
         if (loop_num == 9) {
             loop_num = loop_num;
         }
 #endif
+        force_calculation();
+        leapfrog();
+        calculate_properties();
+        if (1) {
+        //if (neighbors should be updated) {
+            create_linked_cells();
+            create_verlet_list_using_linked_cell_list();
+        }
         loop_num++;
     }
 }
@@ -99,9 +101,9 @@ void mdsystem::leapfrog()
     float sumvsq = 0;
 	float box_size = a*n; //TODO
     for (uint i = 0; i < nrparticles; i++) {
-
-        if (loop_num == 10) {
-            cout << "i = " << i << endl;
+        cout << "\ti = " << i << endl;
+        if (loop_num == 1) {
+            //cout << "i = " << i << endl;
             if (i == 4) {
                 i = i; //TODO
             }
@@ -386,7 +388,7 @@ void mdsystem::init_particles() {
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
     fvec3 average_vel = sum_vel/float(nrparticles);
     float vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
-    float scale_factor = sqrt(3 * init_temp / vel_variance);
+    float scale_factor = sqrt(1.5 * P_KB * init_temp / (0.5 * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].start_vel = (particles[i].start_vel - sum_vel)*scale_factor;
         particles[i].vel = particles[i].start_vel;
