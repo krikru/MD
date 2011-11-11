@@ -2,6 +2,10 @@
 // Own includes
 #include "mdsystem.h"
 
+////////////////////////////////////////////////////////////////
+// PUBLIC FUNCTIONS
+////////////////////////////////////////////////////////////////
+
 mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in):
     cell_linklist(),
     cell_list(),
@@ -45,24 +49,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
 }
 
 void mdsystem::init() {
-    fvec3 sumv = fvec3(0, 0, 0);
-    float sumvsq = 0;
-    initpos();
-    srand((unsigned int)time(NULL));
-    for (uint i = 0; i < nrparticles; i++) {
-        for (uint j = 0; j < 3; j++) {
-            particles[i].vel[j] = ((float) rand())/((float) RAND_MAX) - 0.5f;
-        }
-        sumv += particles[i].vel;
-        sumvsq += particles[i].vel*particles[i].vel;
-    }
-    sumv = sumv/(float(nrparticles));
-    sumvsq = sumvsq/nrparticles;
-    float s = sqrt(3*init_temp/sumvsq);
-    for (uint i = 0; i < nrparticles; i++) {
-        particles[i].vel = (particles[i].vel - sumv)*s;
-        particles[i].start_vel = particles[i].vel;
-    }
+    init_particles();
     create_linked_cells();
     create_verlet_list_using_linked_cell_list();
 }
@@ -229,8 +216,11 @@ void mdsystem::force_calculation() { //using reduced unit
         for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
             fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
             distance = dr.length();
+            if (distance >= inner_cutoff) {
+                continue; // Skip this interaction and continue with the next one
+            }
             distance_inv = 1 / distance;
-            distance6_inv = pow(distance_inv,6);
+            distance6_inv = pow(distance_inv, 6);
             float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f);
             dr.normalize();
             force_x[i] +=  force * (dr * x_hat);
@@ -267,13 +257,56 @@ void mdsystem::calculate_Ek() {
     Ek[loop_num/nrinst] = sum/nrinst;
 }
 
-void mdsystem::initpos() {
+void mdsystem::calculate_properties() {
+    if ((loop_num % nrinst) == 0) {
+        calculate_specific_heat();            
+        calculate_pressure();
+        calculate_mean_square_displacement();
+        calculate_temperature();
+        calculate_Ep();
+        calculate_Ek();
+    }
+}
+
+void mdsystem::calculate_specific_heat() {
+    float T2 = 0;
+    for (uint i = 0; i < nrinst; i++){
+        T2 += insttemp[i]*insttemp[i];
+    }
+    T2 = T2/nrinst;
+    Cv[loop_num/nrinst] = 9*kB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]));
+}
+
+void mdsystem::calculate_pressure() {
+    float V = n*a*n*a*n*a;
+    pressure[loop_num/nrinst] = nrparticles*kB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
+    distanceforcesum = 0;
+}
+
+void mdsystem::calculate_mean_square_displacement() {
+    float sum = 0;
+    for (uint i = 0; i < nrparticles;i++) {
+        sum += (particles[i].no_bound_pos - particles[i].start_pos)*(particles[i].no_bound_pos - particles[i].start_pos);
+    }
+    sum = sum/nrparticles;
+    msd[loop_num/nrinst] = sum;
+}
+
+////////////////////////////////////////////////////////////////
+// PRIVATE FUNCTIONS
+////////////////////////////////////////////////////////////////
+
+void mdsystem::init_particles() {
+    // Allocate space for particles
     particles.resize(nrparticles);
+
+    //Place out particles according to the lattice pattern
 	if (lattice_type == LT_FCC) {
 		for (uint i = 0; i < n; i++) {
 			for (uint j = 0; j < n; j++) {
 				for (uint k = 0; k < n; k++) {
 					int help_index = 4*(i*n*n + j*n + k);
+
 					(particles[help_index + 0]).start_pos[0] = i*a;
 					(particles[help_index + 0]).start_pos[1] = j*a;
 					(particles[help_index + 0]).start_pos[2] = k*a;
@@ -293,43 +326,26 @@ void mdsystem::initpos() {
 			}
 		}
 	}
+    
+    //Randomixe the velocities
+    srand((unsigned int)time(NULL)); // Pick a random seed based on the current time
+    fvec3 sum_vel = fvec3(0, 0, 0);
+    float sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
+        for (uint j = 0; j < 3; j++) {
+            particles[i].start_vel[j] = ((float) rand())/((float) RAND_MAX) - 0.5f;
+        }
+        sum_vel    += particles[i].start_vel;
+        sum_sqr_vel += particles[i].start_vel.sqr_length();
+    }
+
+    // Compensate for incorrect start temperature and total velocities and finalize the initialization values
+    fvec3 average_vel = sum_vel/float(nrparticles);
+    float vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
+    float scale_factor = sqrt(3 * init_temp / vel_variance);
+    for (uint i = 0; i < nrparticles; i++) {
+        particles[i].start_vel = (particles[i].start_vel - sum_vel)*scale_factor;
+        particles[i].vel = particles[i].start_vel;
         particles[i].pos = particles[i].start_pos;
     }
-}
-
-
-void mdsystem::calculate_properties() {
-    if ((loop_num % nrinst) == 0) {
-        calculate_specific_heat();            
-        calculate_pressure();
-        calculate_mean_square_displacement();
-        calculate_temperature();
-        calculate_Ep();
-        calculate_Ek();
-    }
-}
-
-void mdsystem::calculate_specific_heat() {
-    float T2 = 0;
-    for (uint i = 0; i < nrinst; i++){
-        T2 += insttemp[i];
-    }
-    T2 = T2/nrinst;
-    Cv[loop_num/nrinst] = 9*kB/(6/nrparticles+4-4*T2/temp[loop_num/nrinst]);
-}
-
-void mdsystem::calculate_pressure() {
-    float V = n*a*n*a*n*a;
-    pressure[loop_num/nrinst] = nrparticles*kB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
-    distanceforcesum = 0;
-}
-
-void mdsystem::calculate_mean_square_displacement() {
-    float sum = 0;
-    for (uint i = 0; i < nrparticles;i++) {
-        sum += (particles[i].no_bound_pos - particles[i].start_pos)*(particles[i].no_bound_pos - particles[i].start_pos);
-    }
-    sum = sum/nrparticles;
-    msd[loop_num/nrinst] = sum;
 }
