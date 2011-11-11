@@ -227,17 +227,16 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 }
 
 void mdsystem::force_calculation() { //using reduced unit
-    vector<float> force_x(nrparticles);
-    vector<float> force_y(nrparticles);
-    vector<float> force_z(nrparticles);
-    float distance = inner_cutoff ;
+	for (int k; k < particles.size(); k++)
+	{
+		particles[k].acc = fvec3(0, 0, 0);
+	}
+	float distance = inner_cutoff ;
     float distance_inv = 1/distance ;
     float distance6_inv = pow(distance_inv,6) ;
     float E_cutoff = 4 * distance6_inv * (distance6_inv - 1);
-    float mass_inv=1/mass;
-    fvec3 x_hat = fvec3(1, 0, 0);
-    fvec3 y_hat = fvec3(0, 1, 0);
-    fvec3 z_hat = fvec3(0, 0, 1);                
+    float mass_inv=1/mass;             
+    instEp[loop_num % nrinst] = 0;
     for (uint i=0; i < nrparticles ; i++) { 
         for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
             fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
@@ -249,13 +248,10 @@ void mdsystem::force_calculation() { //using reduced unit
             distance6_inv = pow(distance_inv, 6);
 			float acceleration = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv;
             dr.normalize();
-            particles[i].acc[0] +=  acceleration * (dr * x_hat);
-            particles[i].acc[1] +=  acceleration * (dr * y_hat);
-            particles[i].acc[2] +=  acceleration * (dr * z_hat);
-			particles[verlet_neighbors_list[j]].acc[0] -=  acceleration * (dr * x_hat);
-            particles[verlet_neighbors_list[j]].acc[1] -=  acceleration * (dr * y_hat);
-            particles[verlet_neighbors_list[j]].acc[2] -=  acceleration * (dr * z_hat);
-            Ep[loop_num] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
+            particles[i].acc +=  acceleration * dr;
+			particles[verlet_neighbors_list[j]].acc -=  acceleration * dr;
+
+            if (Ep_on) instEp[loop_num % nrinst] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
 			 
             if (pressure_on) distanceforcesum += mass * acceleration * distance;
         }
@@ -289,7 +285,7 @@ void mdsystem::calculate_Ek() {
 
 void mdsystem::calculate_properties() {
     if ((loop_num % nrinst) == 0) {
-        if (Cv_on)calculate_specific_heat();            
+        if (Cv_on) calculate_specific_heat();            
         if (pressure_on) calculate_pressure();
         if (msd_on) calculate_mean_square_displacement();
         calculate_temperature();
