@@ -1,4 +1,7 @@
 
+// Standard includes
+#include <iostream>
+
 // Own includes
 #include "mdsystem.h"
 
@@ -11,14 +14,15 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     cell_list(),
     particles(), //TODO: we will resize it later (remove rwo?)
     insttemp(nrinst_in), 
-    instEk(nrinst_in), 
-    instEp(nrinst_in), 
-    temp((int) nrtimesteps_in/nrinst_in), 
-    Ek((int) nrtimesteps_in/nrinst_in), 
-    Ep((int) nrtimesteps_in/nrinst_in),
-    Cv((int) nrtimesteps_in/nrinst_in),
-    pressure((int) nrtimesteps_in/nrinst_in),
-    msd((int) nrtimesteps_in/nrinst_in),
+    instEk  (nrinst_in), 
+    instEp  (nrinst_in), 
+    // Measure values
+    temp    (0),
+    Ek      (0),
+    Ep      (0),
+    Cv      (0),
+    pressure(0),
+    msd     (0),
     verlet_particles_list(), 
     verlet_neighbors_list()
 {
@@ -26,7 +30,16 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
     outer_cutoff = outer_cutoff_in; // Parameter for the Verlet list
     inner_cutoff = inner_cutoff_in; // Parameter for the Verlet list
-    loop_num = 0;                   
+
+    loop_num = 0;
+    nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+
+    temp    .resize(nrtimesteps/nrinst_in + 1); 
+    Ek      .resize(nrtimesteps/nrinst_in + 1); 
+    Ep      .resize(nrtimesteps/nrinst_in + 1);
+    Cv      .resize(nrtimesteps/nrinst_in + 1);
+    pressure.resize(nrtimesteps/nrinst_in + 1);
+    msd     .resize(nrtimesteps/nrinst_in + 1);
     if (lattice_type == LT_FCC) {
         n = int(std::pow(float(nrparticles_in / 4 ), float( 1.0 / 3.0 )));
         nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
@@ -36,7 +49,6 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     epsilon = epsilon_in;
     nrinst = nrinst_in;
     init_temp = temperature_in;
-    nrtimesteps = nrtimesteps_in;
     distanceforcesum = 0;
     kB = 1.381e-23f;
     a = latticeconstant_in;
@@ -62,7 +74,7 @@ void mdsystem::init() {
 
 void mdsystem::run_simulation() {
     init();
-    while (loop_num < nrtimesteps) {
+    while (loop_num <= nrtimesteps) {
         force_calculation();
         leapfrog();
         calculate_properties();
@@ -70,9 +82,10 @@ void mdsystem::run_simulation() {
         create_linked_cells();
         create_verlet_list_using_linked_cell_list();
         // }
-        loop_num++;
+        std::cout << loop_num++ << std::endl;
     }
 }
+
 void mdsystem::leapfrog()
 {
     fvec3 zero_vector = fvec3(0, 0, 0);
@@ -217,6 +230,7 @@ void mdsystem::force_calculation() { //using reduced unit
     float distance6_inv = pow(distance_inv,6) ;
     float E_cutoff = 4 * distance6_inv * (distance6_inv - 1);
     float mass_inv=1/mass;             
+    instEp[loop_num % nrinst] = 0;
     for (uint i=0; i < nrparticles ; i++) { 
         for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
             fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
@@ -231,7 +245,7 @@ void mdsystem::force_calculation() { //using reduced unit
             particles[i].acc +=  acceleration * dr;
 			particles[verlet_neighbors_list[j]].acc -=  acceleration * dr;
 
-            Ep[loop_num] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
+            if (Ep_on) instEp[loop_num % nrinst] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
 			 
             if (pressure_on) distanceforcesum += mass * acceleration * distance;
         }
@@ -265,7 +279,7 @@ void mdsystem::calculate_Ek() {
 
 void mdsystem::calculate_properties() {
     if ((loop_num % nrinst) == 0) {
-        if (Cv_on)calculate_specific_heat();            
+        if (Cv_on) calculate_specific_heat();            
         if (pressure_on) calculate_pressure();
         if (msd_on) calculate_mean_square_displacement();
         calculate_temperature();
@@ -334,7 +348,6 @@ void mdsystem::init_particles() {
 	}
     
     //Randomixe the velocities
-    srand((unsigned int)time(NULL)); // Pick a random seed based on the current time
     fvec3 sum_vel = fvec3(0, 0, 0);
     float sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
