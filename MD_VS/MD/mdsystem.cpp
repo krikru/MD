@@ -61,6 +61,7 @@ void mdsystem::init() {
     float s = sqrt(3*init_temp/sumvsq);
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].vel = (particles[i].vel - sumv)*s;
+        particles[i].start_vel = particles[i].vel;
     }
 }
 
@@ -89,7 +90,7 @@ void mdsystem::leapfrog()
 		// Update velocities
         particles[i].vel += dt * particles[i].acc;
 
-        diffusion_coefficient += dt*particles[i].vel*particles[i].init_vel/(3*nrparticles);
+        diffusion_coefficient += dt*particles[i].vel*particles[i].start_vel/(3*nrparticles);
 
 		// Update positions
         particles[i].pos += dt * particles[i].vel;
