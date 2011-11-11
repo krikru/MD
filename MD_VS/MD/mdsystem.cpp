@@ -27,6 +27,8 @@ void mdsystem::leapfrog()
 		// Update velocities
         particles[i].vel += dt * particles[i].acc;
 
+        diffusion_coefficient += dt*particles[i].vel*particles[i].init_vel/(3*nrparticles);
+
 		// Update positions
         particles[i].pos += dt * particles[i].vel;
 
@@ -214,6 +216,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
         nrcells = 1;
     }
     cellsize = n*a/nrcells;
+    diffusion_coefficient = 0;
 }
 /*
   mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in):
@@ -262,10 +265,6 @@ void mdsystem::init() {
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].vel = (particles[i].vel - sumv)*s;
     }
-}
-
-void mdsystem::calculate_diffusion_coefficient() {                //not finished
-
 }
 
 void mdsystem::calculate_temperature() {
@@ -329,7 +328,6 @@ void mdsystem::calculate_properties() {
         calculate_specific_heat();            
         calculate_pressure();
         calculate_mean_square_displacement();
-        calculate_diffusion_coefficient();
         calculate_temperature();
         calculate_Ep();
         calculate_Ek();
@@ -346,7 +344,7 @@ void mdsystem::calculate_specific_heat() {
 }
 
 void mdsystem::calculate_pressure() {
-    float V = nrcells*nrcells*nrcells*outer_cutoff*outer_cutoff*outer_cutoff;
+    float V = n*a*n*a*n*a;
     pressure[timestep/nrinst] = nrparticles*kB*temp[timestep/nrinst]/V + distanceforcesum/(6*V*nrinst);
     distanceforcesum = 0;
 }

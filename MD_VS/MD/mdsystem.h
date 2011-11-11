@@ -27,7 +27,6 @@ class mdsystem
     void force_calculation();//not done
     void md();
     void init();
-    void calculate_diffusion_coefficient();
     void calculate_temperature();
     void calculate_Ep();
     void calculate_Ek();
@@ -72,6 +71,7 @@ class mdsystem
     float distanceforcesum;
     float kB;
     float a;
+    float diffusion_coefficient;
 };
 
 #endif  /* MDSYSTEM_H */
