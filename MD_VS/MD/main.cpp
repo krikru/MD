@@ -9,11 +9,11 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-    int nrparticles_in = 50;
+    int nrparticles_in = 32;
     float sigma_in = 1;
     float epsilon_in = 2;
     float inner_cutoff_in = 1;
-    float outer_coutoff_in = 10;
+    float outer_coutoff_in = 6;
     float mass_in = 2;
     float dt_in = 3;
     int nrinst_in = 3;

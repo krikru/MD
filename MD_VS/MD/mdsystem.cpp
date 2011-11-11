@@ -2,6 +2,10 @@
 // Own includes
 #include "mdsystem.h"
 
+////////////////////////////////////////////////////////////////
+// PUBLIC FUNCTIONS
+////////////////////////////////////////////////////////////////
+
 mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in):
     cell_linklist(),
     cell_list(),
@@ -45,24 +49,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
 }
 
 void mdsystem::init() {
-    fvec3 sumv = fvec3(0, 0, 0);
-    float sumvsq = 0;
-    initpos();
-    srand((unsigned int)time(NULL));
-    for (uint i = 0; i < nrparticles; i++) {
-        for (uint j = 0; j < 3; j++) {
-            particles[i].vel[j] = ((float) rand())/((float) RAND_MAX) - 0.5f;
-        }
-        sumv += particles[i].vel;
-        sumvsq += particles[i].vel*particles[i].vel;
-    }
-    sumv = sumv/(float(nrparticles));
-    sumvsq = sumvsq/nrparticles;
-    float s = sqrt(3*init_temp/sumvsq);
-    for (uint i = 0; i < nrparticles; i++) {
-        particles[i].vel = (particles[i].vel - sumv)*s;
-        particles[i].start_vel = particles[i].vel;
-    }
+    init_particles();
     create_linked_cells();
     create_verlet_list_using_linked_cell_list();
 }
@@ -212,9 +199,9 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 }
 
 void mdsystem::force_calculation() { //using reduced unit
-    fvec3 force_x;
-    fvec3 force_y;
-    fvec3 force_z;
+    vector<float> force_x(nrparticles);
+    vector<float> force_y(nrparticles);
+    vector<float> force_z(nrparticles);
     float distance = inner_cutoff ;
     float distance_inv = 1/distance ;
     float distance6_inv = pow(distance_inv,6) ;
@@ -222,23 +209,19 @@ void mdsystem::force_calculation() { //using reduced unit
     fvec3 x_hat = fvec3(1, 0, 0);
     fvec3 y_hat = fvec3(0, 1, 0);
     fvec3 z_hat = fvec3(0, 0, 1);                
-    for (uint i=0; i < nrparticles ; i++) { 
-        for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
-            fvec3 dr = particles[i].pos-particles[j].pos ;
-            distance = dr.length() ;
-            distance_inv = 1/distance ;
-            distance6_inv = pow(distance_inv,6) ;
-            float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f) ;
+    for (int i=0; i < nrparticles ; i++) { 
+        for (int j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
+            fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
+            distance = dr.length();
+            distance_inv = 1 / distance;
+            distance6_inv = pow(distance_inv,6);
+            float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f);
             dr.normalize();
-            force_x[i] +=  force * (dr * x_hat) ;
-            force_x[j] -=  force * (dr * x_hat) ;
-            force_y[i] +=  force * (dr * y_hat) ;
-            force_y[j] -=  force * (dr * y_hat) ;
-            force_z[i] +=  force * (dr * z_hat) ;
-            force_z[j] -=  force * (dr * z_hat) ;
-            Ep[i] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff ; 
-            Ep[j] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff ;
-            distanceforcesum += force * distance ; // for pressure
+            force_x[i] +=  force * (dr * x_hat);
+            force_y[i] +=  force * (dr * y_hat);
+            force_z[i] +=  force * (dr * z_hat);
+            Ep[i] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff; 
+            distanceforcesum += force * distance;
         }
     }
 }
@@ -267,38 +250,6 @@ void mdsystem::calculate_Ek() {
     }
     Ek[loop_num/nrinst] = sum/nrinst;
 }
-
-void mdsystem::initpos() {
-    particles.resize(nrparticles);
-	if (lattice_type == LT_FCC) {
-		for (uint i = 0; i < n; i++) {
-			for (uint j = 0; j < n; j++) {
-				for (uint k = 0; k < n; k++) {
-					int help_index = 4*(i*n*n + j*n + k);
-					(particles[help_index + 0]).start_pos[0] = i*a;
-					(particles[help_index + 0]).start_pos[1] = j*a;
-					(particles[help_index + 0]).start_pos[2] = k*a;
-
-					(particles[help_index + 1]).start_pos[0] = i*a;
-					(particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
-					(particles[help_index + 1]).start_pos[2] = (k + 0.5f)*a;
-
-					(particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
-					(particles[help_index + 2]).start_pos[1] = j*a;
-					(particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
-
-					(particles[help_index + 3]).start_pos[0] = (i + 0.5f)*a;
-					(particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
-					(particles[help_index + 3]).start_pos[2] = k*a;
-				}
-			}
-		}
-	}
-    for (uint i = 0; i < nrparticles; i++) {
-        particles[i].pos = particles[i].start_pos;
-    }
-}
-
 
 void mdsystem::calculate_properties() {
     if ((loop_num % nrinst) == 0) {
@@ -333,4 +284,62 @@ void mdsystem::calculate_mean_square_displacement() {
     }
     sum = sum/nrparticles;
     msd[loop_num/nrinst] = sum;
+}
+
+////////////////////////////////////////////////////////////////
+// PRIVATE FUNCTIONS
+////////////////////////////////////////////////////////////////
+
+void mdsystem::init_particles() {
+    // Allocate space for particles
+    particles.resize(nrparticles);
+
+    //Place out particles according to the lattice pattern
+	if (lattice_type == LT_FCC) {
+		for (uint i = 0; i < n; i++) {
+			for (uint j = 0; j < n; j++) {
+				for (uint k = 0; k < n; k++) {
+					int help_index = 4*(i*n*n + j*n + k);
+
+					(particles[help_index + 0]).start_pos[0] = i*a;
+					(particles[help_index + 0]).start_pos[1] = j*a;
+					(particles[help_index + 0]).start_pos[2] = k*a;
+
+					(particles[help_index + 1]).start_pos[0] = i*a;
+					(particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
+					(particles[help_index + 1]).start_pos[2] = (k + 0.5f)*a;
+
+					(particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
+					(particles[help_index + 2]).start_pos[1] = j*a;
+					(particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
+
+					(particles[help_index + 3]).start_pos[0] = (i + 0.5f)*a;
+					(particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
+					(particles[help_index + 3]).start_pos[2] = k*a;
+				}
+			}
+		}
+	}
+    
+    //Randomixe the velocities
+    srand((unsigned int)time(NULL)); // Pick a random seed based on the current time
+    fvec3 sum_vel = fvec3(0, 0, 0);
+    float sum_sqr_vel = 0;
+    for (uint i = 0; i < nrparticles; i++) {
+        for (uint j = 0; j < 3; j++) {
+            particles[i].start_vel[j] = ((float) rand())/((float) RAND_MAX) - 0.5f;
+        }
+        sum_vel    += particles[i].start_vel;
+        sum_sqr_vel += particles[i].start_vel.sqr_length();
+    }
+
+    // Compensate for incorrect start temperature and total velocities and finalize the initialization values
+    fvec3 average_vel = sum_vel/float(nrparticles);
+    float vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
+    float scale_factor = sqrt(3 * init_temp / vel_variance);
+    for (uint i = 0; i < nrparticles; i++) {
+        particles[i].start_vel = (particles[i].start_vel - sum_vel)*scale_factor;
+        particles[i].vel = particles[i].start_vel;
+        particles[i].pos = particles[i].start_pos;
+    }
 }
