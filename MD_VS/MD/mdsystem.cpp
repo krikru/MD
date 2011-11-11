@@ -231,7 +231,8 @@ void mdsystem::force_calculation() { //using reduced unit
     float mass_inv=1/mass;
     fvec3 x_hat = fvec3(1, 0, 0);
     fvec3 y_hat = fvec3(0, 1, 0);
-    fvec3 z_hat = fvec3(0, 0, 1);                
+    fvec3 z_hat = fvec3(0, 0, 1);
+    instEp[loop_num % nrinst] = 0;
     for (uint i=0; i < nrparticles ; i++) { 
         for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
             fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
@@ -249,7 +250,7 @@ void mdsystem::force_calculation() { //using reduced unit
 			particles[verlet_neighbors_list[j]].acc[0] -=  acceleration * (dr * x_hat);
             particles[verlet_neighbors_list[j]].acc[1] -=  acceleration * (dr * y_hat);
             particles[verlet_neighbors_list[j]].acc[2] -=  acceleration * (dr * z_hat);
-            Ep[loop_num] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
+            if (Ep_on) instEp[loop_num % nrinst] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
 			 
             if (pressure_on) distanceforcesum += mass * acceleration * distance;
         }
@@ -283,7 +284,7 @@ void mdsystem::calculate_Ek() {
 
 void mdsystem::calculate_properties() {
     if ((loop_num % nrinst) == 0) {
-        if (Cv_on)calculate_specific_heat();            
+        if (Cv_on) calculate_specific_heat();            
         if (pressure_on) calculate_pressure();
         if (msd_on) calculate_mean_square_displacement();
         calculate_temperature();
