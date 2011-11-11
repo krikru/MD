@@ -5,23 +5,32 @@
 #include <tchar.h>
 
 // Own includes
+#include "definitions.h"
 #include "mdsystem.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
     //srand((unsigned int)time(NULL)); // Pick a random seed based on the current time
 
-    int nrparticles_in = 32;
-    float sigma_in = 1;
-    float epsilon_in = 2;
-    float inner_cutoff_in = 1;
-    float outer_coutoff_in = 6;
-    float mass_in = 2;
-    float dt_in = 3;
-    int nrinst_in = 3;
-    float temperature_in = 300;
-    int nrtimesteps_in = 20;
-    float latticeconstant_in = 5;
+#if 1
+    //Let's use the Xenon (Xe) atom for the fcc lattice (Melting point 161.4 K)
+    // Element constants
+    float sigma_in = 3.98f * P_ANGSTROM;
+    float epsilon_in = 320e-16f * P_ERG; //1 erg = 10^-7 J
+    float mass_in = 131.293f * P_U;
+    float latticeconstant_in = sigma_in * M_SQRT2;
+
+    //Simulation constants
+    float dt_in = 1 * P_PS; // [s]
+    float temperature_in = 100; // [K]
+#endif
+
+    int nrparticles_in = 32; // The number of particles
+    int nrinst_in = 3;       // Number of timesteps between measurements of properties
+    int nrtimesteps_in = 20; // Desired (or minimum) total number of timesteps
+
+    float inner_cutoff_in = 2.5f * sigma_in;
+    float outer_coutoff_in = 2.0f * inner_cutoff_in;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;

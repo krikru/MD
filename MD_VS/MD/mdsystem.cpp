@@ -1,6 +1,7 @@
 
 // Standard includes
 #include <iostream>
+using std::cout;
 
 // Own includes
 #include "mdsystem.h"
@@ -97,54 +98,67 @@ void mdsystem::leapfrog()
     fvec3 zero_vector = fvec3(0, 0, 0);
     float sumvsq = 0;
 	float box_size = a*n; //TODO
-    if (loop_num == 10) {
-        loop_num = loop_num; //TODO
-    }
     for (uint i = 0; i < nrparticles; i++) {
+
         if (loop_num == 10) {
-            std::cout << i << endl;
-            if (i == 4)
-            {
-                i = i;
+            cout << "i = " << i << endl;
+            if (i == 4) {
+                i = i; //TODO
             }
         }
+
+        //TODO: Check if vel and pos are stored for the same time or not, in that case, compensate for that
+
 		// Update velocities
         particles[i].vel += dt * particles[i].acc;
-
-        if (diff_c_on) diffusion_coefficient += dt*particles[i].vel*particles[i].start_vel/(3*nrparticles);
 
 		// Update positions
         particles[i].pos += dt * particles[i].vel;
         if (msd_on) particles[i].no_bound_pos += dt * particles[i].vel;
 
-		// Check boundaries in x-dir
+        if (diff_c_on) diffusion_coefficient += dt*particles[i].vel*particles[i].start_vel/(3*nrparticles);
 
-		while (particles[i].pos[0] >= box_size) {
-				particles[i].pos[0] -= box_size;
-		}
-		while (particles[i].pos[0] < 0) {
-				particles[i].pos[0] += box_size;
-		}
+		// Check boundaries in x-dir
+        if (particles[i].pos[0] >= box_size) {
+            particles[i].pos[0] -= box_size;
+		    while (particles[i].pos[0] >= box_size) {
+                particles[i].pos[0] -= box_size;
+		    }
+        }
+        else if (particles[i].pos[0] < 0) {
+            particles[i].pos[0] += box_size;
+		    while (particles[i].pos[0] < 0) {
+			    particles[i].pos[0] += box_size;
+		    }
+        }
 
 		// Check boundaries in y-dir
-
-		while (particles[i].pos[1] >= box_size) {
-				particles[i].pos[1] -= box_size;
-		}
-		
-		while (particles[i].pos[1] < 0) {
-				particles[i].pos[1] += box_size;
-		}
+        if (particles[i].pos[1] >= box_size) {
+            particles[i].pos[1] -= box_size;
+		    while (particles[i].pos[1] >= box_size) {
+                particles[i].pos[1] -= box_size;
+		    }
+        }
+        else if (particles[i].pos[1] < 0) {
+            particles[i].pos[1] += box_size;
+		    while (particles[i].pos[1] < 0) {
+			    particles[i].pos[1] += box_size;
+		    }
+        }
 
 		// Check boundaries in z-dir
-
-		while (particles[i].pos[2] >= box_size) {
-				particles[i].pos[2] -= box_size;
-		}
-
-		while (particles[i].pos[2] < 0) {
-				particles[i].pos[2] += box_size;
-		}
+        if (particles[i].pos[2] >= box_size) {
+            particles[i].pos[2] -= box_size;
+		    while (particles[i].pos[2] >= box_size) {
+                particles[i].pos[2] -= box_size;
+		    }
+        }
+        else if (particles[i].pos[2] < 0) {
+            particles[i].pos[2] += box_size;
+		    while (particles[i].pos[2] < 0) {
+			    particles[i].pos[2] += box_size;
+		    }
+        }
 
         sumvsq = sumvsq + particles[i].vel.sqr_length();
 	}
@@ -235,19 +249,26 @@ void mdsystem::force_calculation() { //using reduced unit
     float E_cutoff = 4 * distance6_inv * (distance6_inv - 1);
     float mass_inv=1/mass;             
     instEp[loop_num % nrinst] = 0;
-    for (uint i=0; i < nrparticles ; i++) { 
-        for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
-            fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
+    for (uint i1 = 0; i1 < nrparticles ; i1++) { 
+        for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
+            uint i2 = verlet_neighbors_list[j];
+            fvec3 dr = particles[i1].pos - particles[i2].pos;
             distance = dr.length();
             if (distance >= inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one
             }
+#if 0 //Emil's code
             distance_inv = sigma / distance;
             distance6_inv = pow(distance_inv, 6);
-			float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv;
-            dr.normalize();
-            particles[i].acc +=  acceleration * dr;
-			particles[verlet_neighbors_list[j]].acc -=  acceleration * dr;
+			float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv; // Emil's formula is incorrect!!! ;P
+#endif //Kristofer's code
+            distance_inv = 1 / distance;
+            float p = pow(sigma * distance_inv, 6);
+			float acceleration = 48 * epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
+
+            dr *= distance_inv;
+            particles[i1].acc +=  acceleration * dr;
+			particles[i2].acc -=  acceleration * dr;
 
             if (Ep_on) instEp[loop_num % nrinst] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
 			 
