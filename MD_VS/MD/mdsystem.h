@@ -21,13 +21,16 @@ enum enum_lattice_types
 class mdsystem
 {
  public:
+    // Constructor 
+    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in);
+
+    // Miscellaneous functions
     void leapfrog();
     void create_linked_cells();//see .cpp-file
     void create_verlet_list_using_linked_cell_list();//see .cpp-file
     void force_calculation();//not done
-    void md();
+    void run_simulation();
     void init();
-    void calculate_diffusion_coefficient();
     void calculate_temperature();
     void calculate_Ep();
     void calculate_Ek();
@@ -36,8 +39,6 @@ class mdsystem
     void calculate_specific_heat();
     void calculate_pressure();
     void calculate_mean_square_displacement();
-    
-    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_coutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in);
 
  private:
     vector<uint> cell_linklist;         //List with indexnumbers reached through the cell_list, each index number corresponds to a particleindex but also next element in the cell_linklist which are in the same cell. a index equal to zero means end off particle-chain in one cell.
@@ -58,7 +59,7 @@ class mdsystem
     float dt; //length of each timestep
     float inner_cutoff; // Parameter for the Verlet list
     float outer_cutoff; // Parameter for the Verlet list
-    uint timestep; //gives the current iteration
+    uint loop_num; //gives the current iteration
     uint n;            //length of lattice in conventional unit cells
     uint nrparticles;
     float mass;
@@ -72,6 +73,7 @@ class mdsystem
     float distanceforcesum;
     float kB;
     float a;
+    float diffusion_coefficient;
 };
 
 #endif  /* MDSYSTEM_H */
