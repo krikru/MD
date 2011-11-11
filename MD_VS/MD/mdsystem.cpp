@@ -211,9 +211,9 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 }
 
 void mdsystem::force_calculation() { //using reduced unit
-    vector<float> force_x;
-    vector<float> force_y;
-    vector<float> force_z;
+    fvec3 force_x;
+    fvec3 force_y;
+    fvec3 force_z;
     float distance = inner_cutoff ;
     float distance_inv = 1/distance ;
     float distance6_inv = pow(distance_inv,6) ;
