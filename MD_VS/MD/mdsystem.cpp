@@ -314,10 +314,10 @@ void mdsystem::calculate_properties() {
 void mdsystem::calculate_specific_heat() {
     float T2 = 0;
     for (uint i = 0; i < nrinst; i++){
-        T2 += insttemp[i];
+        T2 += insttemp[i]*insttemp[i];
     }
     T2 = T2/nrinst;
-    Cv[loop_num/nrinst] = 9*kB/(6/nrparticles+4-4*T2/temp[loop_num/nrinst]);
+    Cv[loop_num/nrinst] = 9*kB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]));
 }
 
 void mdsystem::calculate_pressure() {
