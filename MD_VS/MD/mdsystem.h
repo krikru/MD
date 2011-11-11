@@ -59,7 +59,7 @@ class mdsystem
     float dt; //length of each timestep
     float inner_cutoff; // Parameter for the Verlet list
     float outer_cutoff; // Parameter for the Verlet list
-    uint timestep; //gives the current iteration
+    uint loop_num; //gives the current iteration
     uint n;            //length of lattice in conventional unit cells
     uint nrparticles;
     float mass;
