@@ -82,7 +82,13 @@ void mdsystem::run_simulation() {
         create_linked_cells();
         create_verlet_list_using_linked_cell_list();
         // }
-        std::cout << loop_num++ << std::endl;
+#if 1 //TODO
+        std::cout << loop_num << std::endl;
+        if (loop_num == 3) {
+            loop_num = loop_num;
+        }
+#endif
+        loop_num++;
     }
 }
 
