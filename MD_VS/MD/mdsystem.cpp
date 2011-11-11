@@ -209,7 +209,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                         z = z + nrcells*cellsize;
                     if (z > nrcells*cellsize)
                         z = z - nrcells*cellsize;
-                    cellindex = 1 + int(x/cellsize)
+                    cellindex = int(x/cellsize)
                         + (int(y/cellsize)) * nrcells
                         + (int(z/cellsize)) * nrcells * nrcells;
                     particle_index = cell_list[cellindex];
