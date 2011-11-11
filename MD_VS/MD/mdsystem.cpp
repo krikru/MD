@@ -209,6 +209,7 @@ void mdsystem::force_calculation() { //using reduced unit
     float distance_inv = 1/distance ;
     float distance6_inv = pow(distance_inv,6) ;
     float E_cutoff = 4 * distance6_inv * (distance6_inv - 1);
+	float mass_inv=1/mass;
     fvec3 x_hat = fvec3(1, 0, 0);
     fvec3 y_hat = fvec3(0, 1, 0);
     fvec3 z_hat = fvec3(0, 0, 1);                
@@ -221,17 +222,17 @@ void mdsystem::force_calculation() { //using reduced unit
             }
             distance_inv = 1 / distance;
             distance6_inv = pow(distance_inv, 6);
-            float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f);
+			float acceleration = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv;
             dr.normalize();
-            force_x[i] +=  force * (dr * x_hat);
-            force_y[i] +=  force * (dr * y_hat);
-            force_z[i] +=  force * (dr * z_hat);
-			force_x[verlet_neighbors_list[j]] -=  force * (dr * x_hat);
-            force_y[verlet_neighbors_list[j]] -=  force * (dr * y_hat);
-            force_z[verlet_neighbors_list[j]] -=  force * (dr * z_hat);
-            Ep[i] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
-			Ep[verlet_neighbors_list[j]] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff; 
-            distanceforcesum += force * distance;
+            particles[i].acc[0] +=  acceleration * (dr * x_hat);
+            particles[i].acc[1] +=  acceleration * (dr * y_hat);
+            particles[i].acc[2] +=  acceleration * (dr * z_hat);
+			particles[verlet_neighbors_list[j]].acc[0] -=  acceleration * (dr * x_hat);
+            particles[verlet_neighbors_list[j]].acc[1] -=  acceleration * (dr * y_hat);
+            particles[verlet_neighbors_list[j]].acc[2] -=  acceleration * (dr * z_hat);
+            Ep[loop_num] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
+			 
+            distanceforcesum += mass * acceleration * distance;
         }
     }
 }
