@@ -109,43 +109,32 @@ void mdsystem::leapfrog()
         if (msd_on) particles[i].no_bound_pos += dt * particles[i].vel;
 
 		// Check boundaries in x-dir
-        if (particles[i].pos[0] >= box_size) {
-            particles[i].pos[0] -= box_size;
-			while (particles[i].pos[0] >= box_size) {
+
+		while (particles[i].pos[0] >= box_size) {
 				particles[i].pos[0] -= box_size;
-			}
 		}
-        else if (particles[i].pos[0] < 0) {
-            particles[i].pos[0] += box_size;
-			while (particles[i].pos[0] < 0) {
+		while (particles[i].pos[0] < 0) {
 				particles[i].pos[0] += box_size;
-			}
 		}
+
 		// Check boundaries in y-dir
-        if (particles[i].pos[1] >= box_size) {
-            particles[i].pos[1] -= box_size;
-			while (particles[i].pos[1] >= box_size) {
+
+		while (particles[i].pos[1] >= box_size) {
 				particles[i].pos[1] -= box_size;
-			}
 		}
-        else if (particles[i].pos[1] < 0) {
-            particles[i].pos[1] += box_size;
-			while (particles[i].pos[1] < 0) {
+		
+		while (particles[i].pos[1] < 0) {
 				particles[i].pos[1] += box_size;
-			}
 		}
+
 		// Check boundaries in z-dir
-        if (particles[i].pos[2] >= box_size) {
-            particles[i].pos[2] -= box_size;
-			while (particles[i].pos[2] >= box_size) {
+
+		while (particles[i].pos[2] >= box_size) {
 				particles[i].pos[2] -= box_size;
-			}
 		}
-        else if (particles[i].pos[2] < 0) {
-            particles[i].pos[2] += box_size;
-			while (particles[i].pos[2] < 0) {
+
+		while (particles[i].pos[2] < 0) {
 				particles[i].pos[2] += box_size;
-			}
 		}
 
         sumvsq = sumvsq + particles[i].vel.sqr_length();
