@@ -20,7 +20,7 @@ int _tmain(int argc, _TCHAR* argv[])
     float dt_in = 3;
     int nrinst_in = 3;
     float temperature_in = 300;
-    int nrtimesteps_in = 5;
+    int nrtimesteps_in = 10;
     float latticeconstant_in = 5;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
