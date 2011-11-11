@@ -199,9 +199,9 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 }
 
 void mdsystem::force_calculation() { //using reduced unit
-    fvec3 force_x;
-    fvec3 force_y;
-    fvec3 force_z;
+    vector<float> force_x(nrparticles);
+    vector<float> force_y(nrparticles);
+    vector<float> force_z(nrparticles);
     float distance = inner_cutoff ;
     float distance_inv = 1/distance ;
     float distance6_inv = pow(distance_inv,6) ;
@@ -209,23 +209,19 @@ void mdsystem::force_calculation() { //using reduced unit
     fvec3 x_hat = fvec3(1, 0, 0);
     fvec3 y_hat = fvec3(0, 1, 0);
     fvec3 z_hat = fvec3(0, 0, 1);                
-    for (uint i=0; i < nrparticles ; i++) { 
-        for (uint j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
-            fvec3 dr = particles[i].pos-particles[j].pos ;
-            distance = dr.length() ;
-            distance_inv = 1/distance ;
-            distance6_inv = pow(distance_inv,6) ;
-            float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f) ;
+    for (int i=0; i < nrparticles ; i++) { 
+        for (int j = verlet_particles_list[i] + 1; j < verlet_particles_list[i] + verlet_neighbors_list[verlet_particles_list[i]] + 1 ; j++) { 
+            fvec3 dr = particles[i].pos-particles[verlet_neighbors_list[j]].pos;
+            distance = dr.length();
+            distance_inv = 1 / distance;
+            distance6_inv = pow(distance_inv,6);
+            float force = 48 * distance_inv * distance6_inv * (distance6_inv - 0.5f);
             dr.normalize();
-            force_x[i] +=  force * (dr * x_hat) ;
-            force_x[j] -=  force * (dr * x_hat) ;
-            force_y[i] +=  force * (dr * y_hat) ;
-            force_y[j] -=  force * (dr * y_hat) ;
-            force_z[i] +=  force * (dr * z_hat) ;
-            force_z[j] -=  force * (dr * z_hat) ;
-            Ep[i] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff ; 
-            Ep[j] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff ;
-            distanceforcesum += force * distance ; // for pressure
+            force_x[i] +=  force * (dr * x_hat);
+            force_y[i] +=  force * (dr * y_hat);
+            force_z[i] +=  force * (dr * z_hat);
+            Ep[i] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff; 
+            distanceforcesum += force * distance;
         }
     }
 }
