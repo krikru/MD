@@ -21,7 +21,7 @@ int _tmain(int argc, _TCHAR* argv[])
     int nrtimesteps_in = 500;
     float latticeconstant_in = 5;
     mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_coutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, LT_FCC);
-    simulation.md();
+    simulation.run_simulation();
     return 0;
 }
 
