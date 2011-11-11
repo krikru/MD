@@ -63,12 +63,12 @@ void mdsystem::init() {
         particles[i].vel = (particles[i].vel - sumv)*s;
         particles[i].start_vel = particles[i].vel;
     }
+    create_linked_cells();
+    create_verlet_list_using_linked_cell_list();
 }
 
 void mdsystem::run_simulation() {
     init();
-    create_linked_cells();
-    create_verlet_list_using_linked_cell_list();
     while (loop_num < nrtimesteps) {
         force_calculation();
         leapfrog();
