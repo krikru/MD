@@ -96,6 +96,8 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
 void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ctreates the verlet_lists (verlet_vectors) using the linked cell lists
     int cellindex = 0;
     int particle_index = 0;
+	verlet_particles_list.resize(nrparticles);
+	verlet_neighbors_list.resize(nrparticles*nrparticles);
     for (uint i = 0; i < nrparticles; i++) {
         verlet_particles_list[i] = 0;
     }
@@ -104,7 +106,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
             verlet_neighbors_list[0] = 0;
         else
             verlet_neighbors_list[verlet_particles_list[i]] = 0;
-        if (i =! (nrparticles-1))
+        if (i < (nrparticles-1))
             verlet_particles_list[i+1] = verlet_particles_list[i];
         for (float x =(particles[i].pos[0]-cellsize); x <= (particles[i].pos[0]-cellsize); x += cellsize) {
             for (float y =(particles[i].pos[1]-cellsize); y <= (particles[i].pos[1]-cellsize); y += cellsize) {
@@ -130,7 +132,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                         float distance = (particles[i].pos-particles[particle_index].pos).length(); //Asuming 3d_vector has function lenght that calculates the lenght of a vector.
                         if(distance < outer_cutoff) {
                             j += 1;
-                            if (i =! (nrparticles-1))
+                            if (i < (nrparticles-1))
                                 verlet_particles_list[i+1]=verlet_particles_list[i+1]+1;
                             verlet_neighbors_list[i] += 1;
                             verlet_neighbors_list[i+j] = particle_index;
