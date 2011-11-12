@@ -21,13 +21,13 @@ int _tmain(int argc, _TCHAR* argv[])
     float latticeconstant_in = float((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
 
     //Simulation constants
-    float dt_in = .01f * P_PS; // [s]
+    float dt_in = .001f * P_PS; // [s]
     float temperature_in = 100; // [K]
 #endif
 
-    int nrparticles_in = 32;    // The number of particles
-    int nrinst_in = 3;          // Number of timesteps between measurements of properties
-    int nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
+    int nrparticles_in = 1000;    // The number of particles
+    int nrinst_in = 10;          // Number of timesteps between measurements of properties
+    int nrtimesteps_in = 100; // Desired (or minimum) total number of timesteps
 
     float inner_cutoff_in = 2.5f * sigma_in;
     float outer_cutoff_in = 2.0f * inner_cutoff_in;

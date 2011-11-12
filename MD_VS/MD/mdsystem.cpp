@@ -14,7 +14,7 @@ using std::endl;
 mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
     cell_linklist(),
     cell_list    (),
-    particles    (), //TODO: we will resize it later (remove rwo?)
+    particles    (),
     insttemp(nrinst_in), 
     instEk  (nrinst_in), 
     instEp  (nrinst_in), 
@@ -102,6 +102,13 @@ void mdsystem::run_simulation() {
         }
         loop_num++;
     }
+	cout << "Ep = "			<< Ep[loop_num/nrinst] << endl;
+	cout << "Ek = "			<< Ek[loop_num/nrinst] << endl;
+	cout << "pressure = "	<< pressure[loop_num/nrinst] << endl;
+	cout << "MSD = "		<< msd[loop_num/nrinst] << endl;
+	cout << "T = "			<< temp[loop_num/nrinst] << endl;
+	cout << "Cv = "			<< Cv[loop_num/nrinst] << endl;
+	system("pause");
 }
 
 void mdsystem::leapfrog()
@@ -427,7 +434,7 @@ fvec3 mdsystem::modulos_distance(fvec3 pos1, fvec3 pos2) const
         }
     }
 
-    // Check boundaries in x-direction
+    // Check boundaries in y-direction
     if (d[1] >= p_half_box_size) {
         d[1] -= box_size;
         while (d[1] >= p_half_box_size) {
@@ -440,7 +447,7 @@ fvec3 mdsystem::modulos_distance(fvec3 pos1, fvec3 pos2) const
         }
     }
 
-    // Check boundaries in x-direction
+    // Check boundaries in z-direction
     if (d[2] >= p_half_box_size) {
         d[2] -= box_size;
         while (d[2] >= p_half_box_size) {
