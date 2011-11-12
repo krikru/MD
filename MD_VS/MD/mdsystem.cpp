@@ -83,8 +83,17 @@ void mdsystem::run_simulation() {
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
         cout << "loop number = " << loop_num << endl;
+		
+
         if (loop_num == 9) {
             loop_num = loop_num;
+		/*cout << "Ep = "		<< Ep[loop_num/nrinst] << endl;
+		cout << "Ek = "			<< Ek[loop_num/nrinst] << endl;
+		cout << "pressure = "	<< pressure[loop_num/nrinst] << endl;
+		cout << "MSD = "		<< msd[loop_num/nrinst] << endl;
+		cout << "T = "			<< temp[loop_num/nrinst] << endl;
+		cout << "Cv = "			<< Cv[loop_num/nrinst] << endl;
+		*/
         }
 #endif
         force_calculation();
@@ -102,13 +111,6 @@ void mdsystem::run_simulation() {
         }
         loop_num++;
     }
-	cout << "Ep = "			<< Ep[loop_num/nrinst] << endl;
-	cout << "Ek = "			<< Ek[loop_num/nrinst] << endl;
-	cout << "pressure = "	<< pressure[loop_num/nrinst] << endl;
-	cout << "MSD = "		<< msd[loop_num/nrinst] << endl;
-	cout << "T = "			<< temp[loop_num/nrinst] << endl;
-	cout << "Cv = "			<< Cv[loop_num/nrinst] << endl;
-	system("pause");
 }
 
 void mdsystem::leapfrog()
