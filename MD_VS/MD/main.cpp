@@ -18,26 +18,26 @@ int _tmain(int argc, _TCHAR* argv[])
     float sigma_in = 3.98f * P_ANGSTROM;
     float epsilon_in = 320e-16f * P_ERG; //1 erg = 10^-7 J
     float mass_in = 131.293f * P_U;
-    float latticeconstant_in = sigma_in * M_SQRT2;
+    float latticeconstant_in = float((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
 
     //Simulation constants
-    float dt_in = 1 * P_PS; // [s]
+    float dt_in = .01f * P_PS; // [s]
     float temperature_in = 100; // [K]
 #endif
 
-    int nrparticles_in = 32; // The number of particles
-    int nrinst_in = 3;       // Number of timesteps between measurements of properties
-    int nrtimesteps_in = 20; // Desired (or minimum) total number of timesteps
+    int nrparticles_in = 32;    // The number of particles
+    int nrinst_in = 3;          // Number of timesteps between measurements of properties
+    int nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
 
     float inner_cutoff_in = 2.5f * sigma_in;
-    float outer_coutoff_in = 2.0f * inner_cutoff_in;
+    float outer_cutoff_in = 2.0f * inner_cutoff_in;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
     bool msd_on_in = true;
     bool Ep_on_in = true;
     bool Ek_on_in = true;
-    mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_coutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, LT_FCC, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
+    mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, LT_FCC, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
     return 0;
 }

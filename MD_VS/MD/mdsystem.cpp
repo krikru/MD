@@ -2,6 +2,7 @@
 // Standard includes
 #include <iostream>
 using std::cout;
+using std::endl;
 
 // Own includes
 #include "mdsystem.h"
@@ -30,8 +31,8 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
 {
 	lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
-    outer_cutoff = outer_cutoff_in; // Parameter for the Verlet list
-    inner_cutoff = inner_cutoff_in; // Parameter for the Verlet list
+    sqr_outer_cutoff = outer_cutoff_in*outer_cutoff_in; // Parameter for the Verlet list
+    sqr_inner_cutoff = inner_cutoff_in*inner_cutoff_in; // Parameter for the Verlet list
 
     loop_num = 0;
     nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
@@ -47,14 +48,17 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
         nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
     mass = mass_in;
-    sigma = sigma_in;
-    epsilon = epsilon_in;
+    sqr_sigma = sigma_in*sigma_in;
+    four_epsilon = 4*epsilon_in;
     nrinst = nrinst_in;
     init_temp = temperature_in;
     distanceforcesum = 0;
     kB = 1.381e-23f;
     a = latticeconstant_in;
-    nrcells = int(n*a/outer_cutoff);
+    box_size = a*n;
+    p_half_box_size = 0.5f * box_size;
+    n_half_box_size = -p_half_box_size;
+    nrcells = int(n*a/outer_cutoff_in);
     if (!nrcells) {
         nrcells = 1;
     }
@@ -78,12 +82,17 @@ void mdsystem::run_simulation() {
     init();
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
-        std::cout << "loop number = " << loop_num << std::endl;
+        cout << "loop number = " << loop_num << endl;
         if (loop_num == 9) {
             loop_num = loop_num;
         }
 #endif
         force_calculation();
+        //cout << "Box size: " << box_size << endl;
+        //cout << "particles[4] x-pos: " << particles[4].pos[0] << endl;
+        //cout << "particles[4] y-pos: " << particles[4].pos[1] << endl;
+        //cout << "particles[4] z-pos: " << particles[4].pos[2] << endl;
+        //cout << endl;
         leapfrog();
         calculate_properties();
         if (1) {
@@ -98,13 +107,12 @@ void mdsystem::run_simulation() {
 void mdsystem::leapfrog()
 {
     fvec3 zero_vector = fvec3(0, 0, 0);
-    float sumvsq = 0;
-	float box_size = a*n; //TODO
+    float sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
-        cout << "\ti = " << i << endl;
-        if (loop_num == 1) {
+        //cout << "\ti = " << i << endl;
+        if (loop_num == 2) {
             //cout << "i = " << i << endl;
-            if (i == 4) {
+            if (i == 22) {
                 i = i; //TODO
             }
         }
@@ -127,8 +135,7 @@ void mdsystem::leapfrog()
                 particles[i].pos[0] -= box_size;
 		    }
         }
-        else if (particles[i].pos[0] < 0) {
-            particles[i].pos[0] += box_size;
+        else {
 		    while (particles[i].pos[0] < 0) {
 			    particles[i].pos[0] += box_size;
 		    }
@@ -141,8 +148,7 @@ void mdsystem::leapfrog()
                 particles[i].pos[1] -= box_size;
 		    }
         }
-        else if (particles[i].pos[1] < 0) {
-            particles[i].pos[1] += box_size;
+        else {
 		    while (particles[i].pos[1] < 0) {
 			    particles[i].pos[1] += box_size;
 		    }
@@ -155,17 +161,16 @@ void mdsystem::leapfrog()
                 particles[i].pos[2] -= box_size;
 		    }
         }
-        else if (particles[i].pos[2] < 0) {
-            particles[i].pos[2] += box_size;
+        else {
 		    while (particles[i].pos[2] < 0) {
 			    particles[i].pos[2] += box_size;
 		    }
         }
 
-        sumvsq = sumvsq + particles[i].vel.sqr_length();
+        sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
 	}
-    insttemp[loop_num % nrinst] = mass*sumvsq/(3*nrparticles*epsilon);
-    if (Ek_on) instEk[loop_num % nrinst] = mass*sumvsq/(2*epsilon);
+    insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (.75f * nrparticles * four_epsilon);
+    if (Ek_on) instEk[loop_num % nrinst] = mass * sum_sqr_vel / (.5f * four_epsilon);
 }
 
 void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
@@ -224,8 +229,8 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                     particle_index = cell_list[cellindex];
                     int j = 0;
                     while (particle_index != 0) {
-                        float distance = (particles[i].pos-particles[particle_index].pos).length(); //Asuming 3d_vector has function lenght that calculates the lenght of a vector.
-                        if((distance < outer_cutoff)&&(particle_index > i)) {
+                        float sqr_distance = (particles[i].pos-particles[particle_index].pos).sqr_length();
+                        if((sqr_distance < sqr_outer_cutoff) && (particle_index > i)) {
                             j += 1;
                             if (i < (nrparticles-1))
                                 verlet_particles_list[i+1]=verlet_particles_list[i+1]+1;
@@ -241,23 +246,28 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 }
 
 void mdsystem::force_calculation() { //using reduced unit
-	for (uint k = 0; k < nrparticles; k++)
-	{
+    // Reset accelrations for all particles
+	for (uint k = 0; k < nrparticles; k++) {
 		particles[k].acc = fvec3(0, 0, 0);
 	}
-	float distance = inner_cutoff ;
-    float distance_inv = 1/distance ;
-    float distance6_inv = pow(distance_inv,6) ;
-    float E_cutoff = 4 * distance6_inv * (distance6_inv - 1);
-    float mass_inv=1/mass;             
+	float distance;
+    float sqr_distance;
+    float distance_inv;
+    float p = pow(sqr_sigma / sqr_inner_cutoff, 3); // For calculating the cutoff energy
+    float E_cutoff = four_epsilon * p * (p - 1);
+    float mass_inv = 1/mass;             
     instEp[loop_num % nrinst] = 0;
-    for (uint i1 = 0; i1 < nrparticles ; i1++) { 
+    for (uint i1 = 0; i1 < nrparticles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
-            uint i2 = verlet_neighbors_list[j];
-            fvec3 dr = particles[i1].pos - particles[i2].pos;
-            distance = dr.length();
-            if (distance >= inner_cutoff) {
+            uint i2 = verlet_neighbors_list[j]; // Get index of the second (possibly) interacting particle 
+            fvec3 r = modulos_distance(particles[i2].pos, particles[i1].pos); // Calculate the closest distance
+            sqr_distance = r.sqr_length();
+            if (sqr_distance >= sqr_inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one
+            }
+            distance = sqrt(sqr_distance);
+            if (loop_num == 2 && (i1 == 22 || i2 == 22)) {
+                i1 = i1; //TODO
             }
 #if 0 //Emil's code
             distance_inv = sigma / distance;
@@ -265,15 +275,19 @@ void mdsystem::force_calculation() { //using reduced unit
 			float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv; // Emil's formula is incorrect!!! ;P
 #endif //Kristofer's code
             distance_inv = 1 / distance;
-            float p = pow(sigma * distance_inv, 6);
-			float acceleration = 48 * epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
+            p = pow(sqr_sigma * distance_inv * distance_inv, 3);
+			float acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
+            if (acceleration > 1e16f) {
+                acceleration = acceleration; //TODO
+            }
 
-            dr *= distance_inv;
-            particles[i1].acc +=  acceleration * dr;
-			particles[i2].acc -=  acceleration * dr;
+            // Update accelerations of interacting particles
+            fvec3 r_hat = r * distance_inv;
+            particles[i1].acc +=  acceleration * r_hat;
+			particles[i2].acc -=  acceleration * r_hat;
 
-            if (Ep_on) instEp[loop_num % nrinst] += 4 * distance6_inv * (distance6_inv - 1) - E_cutoff;
-			 
+            // Update properties
+            if (Ep_on) instEp[loop_num % nrinst] += four_epsilon * p * (p - 1) - E_cutoff;
             if (pressure_on) distanceforcesum += mass * acceleration * distance;
         }
     }
@@ -388,10 +402,56 @@ void mdsystem::init_particles() {
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
     fvec3 average_vel = sum_vel/float(nrparticles);
     float vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
-    float scale_factor = sqrt(1.5 * P_KB * init_temp / (0.5 * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
+    float scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].start_vel = (particles[i].start_vel - sum_vel)*scale_factor;
         particles[i].vel = particles[i].start_vel;
         particles[i].pos = particles[i].start_pos;
     }
+}
+
+fvec3 mdsystem::modulos_distance(fvec3 pos1, fvec3 pos2) const
+{
+    fvec3 d = pos2 - pos1;
+
+    // Check boundaries in x-direction
+    if (d[0] >= p_half_box_size) {
+        d[0] -= box_size;
+        while (d[0] >= p_half_box_size) {
+            d[0] -= box_size;
+        }
+    }
+    else {
+        while (d[0] < n_half_box_size) {
+            d[0] += box_size;
+        }
+    }
+
+    // Check boundaries in x-direction
+    if (d[1] >= p_half_box_size) {
+        d[1] -= box_size;
+        while (d[1] >= p_half_box_size) {
+            d[1] -= box_size;
+        }
+    }
+    else {
+        while (d[1] < n_half_box_size) {
+            d[1] += box_size;
+        }
+    }
+
+    // Check boundaries in x-direction
+    if (d[2] >= p_half_box_size) {
+        d[2] -= box_size;
+        while (d[2] >= p_half_box_size) {
+            d[2] -= box_size;
+        }
+    }
+    else {
+        while (d[2] < n_half_box_size) {
+            d[2] += box_size;
+        }
+    }
+
+    return d;
 }
