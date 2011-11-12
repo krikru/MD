@@ -229,7 +229,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                     particle_index = cell_list[cellindex];
                     int j = 0;
                     while (particle_index != 0) {
-                        float sqr_distance = (particles[i].pos-particles[particle_index].pos).sqr_length();
+                        float sqr_distance = modulos_distance(particles[particle_index].pos, particles[i].pos).sqr_length();
                         if((sqr_distance < sqr_outer_cutoff) && (particle_index > i)) {
                             j += 1;
                             if (i < (nrparticles-1))
