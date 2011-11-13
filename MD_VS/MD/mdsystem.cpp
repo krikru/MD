@@ -29,7 +29,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
     verlet_particles_list(), 
     verlet_neighbors_list()
 {
-	lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
+    lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
     sqr_outer_cutoff = outer_cutoff_in*outer_cutoff_in; // Parameter for the Verlet list
     sqr_inner_cutoff = inner_cutoff_in*inner_cutoff_in; // Parameter for the Verlet list
@@ -83,17 +83,17 @@ void mdsystem::run_simulation() {
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
         cout << "loop number = " << loop_num << endl;
-		
+        
 
         if (loop_num == 9) {
             loop_num = loop_num;
-		/*cout << "Ep = "		<< Ep[loop_num/nrinst] << endl;
-		cout << "Ek = "			<< Ek[loop_num/nrinst] << endl;
-		cout << "pressure = "	<< pressure[loop_num/nrinst] << endl;
-		cout << "MSD = "		<< msd[loop_num/nrinst] << endl;
-		cout << "T = "			<< temp[loop_num/nrinst] << endl;
-		cout << "Cv = "			<< Cv[loop_num/nrinst] << endl;
-		*/
+        /*cout << "Ep = "        << Ep[loop_num/nrinst] << endl;
+        cout << "Ek = "            << Ek[loop_num/nrinst] << endl;
+        cout << "pressure = "    << pressure[loop_num/nrinst] << endl;
+        cout << "MSD = "        << msd[loop_num/nrinst] << endl;
+        cout << "T = "            << temp[loop_num/nrinst] << endl;
+        cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
+        */
         }
 #endif
         force_calculation();
@@ -128,56 +128,56 @@ void mdsystem::leapfrog()
 
         //TODO: Check if vel and pos are stored for the same time or not, in that case, compensate for that
 
-		// Update velocities
+        // Update velocities
         particles[i].vel += dt * particles[i].acc;
 
-		// Update positions
+        // Update positions
         particles[i].pos += dt * particles[i].vel;
         if (msd_on) particles[i].no_bound_pos += dt * particles[i].vel;
 
         if (diff_c_on) diffusion_coefficient += dt*particles[i].vel*particles[i].start_vel/(3*nrparticles);
 
-		// Check boundaries in x-dir
+        // Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
             particles[i].pos[0] -= box_size;
-		    while (particles[i].pos[0] >= box_size) {
+            while (particles[i].pos[0] >= box_size) {
                 particles[i].pos[0] -= box_size;
-		    }
+            }
         }
         else {
-		    while (particles[i].pos[0] < 0) {
-			    particles[i].pos[0] += box_size;
-		    }
+            while (particles[i].pos[0] < 0) {
+                particles[i].pos[0] += box_size;
+            }
         }
 
-		// Check boundaries in y-dir
+        // Check boundaries in y-dir
         if (particles[i].pos[1] >= box_size) {
             particles[i].pos[1] -= box_size;
-		    while (particles[i].pos[1] >= box_size) {
+            while (particles[i].pos[1] >= box_size) {
                 particles[i].pos[1] -= box_size;
-		    }
+            }
         }
         else {
-		    while (particles[i].pos[1] < 0) {
-			    particles[i].pos[1] += box_size;
-		    }
+            while (particles[i].pos[1] < 0) {
+                particles[i].pos[1] += box_size;
+            }
         }
 
-		// Check boundaries in z-dir
+        // Check boundaries in z-dir
         if (particles[i].pos[2] >= box_size) {
             particles[i].pos[2] -= box_size;
-		    while (particles[i].pos[2] >= box_size) {
+            while (particles[i].pos[2] >= box_size) {
                 particles[i].pos[2] -= box_size;
-		    }
+            }
         }
         else {
-		    while (particles[i].pos[2] < 0) {
-			    particles[i].pos[2] += box_size;
-		    }
+            while (particles[i].pos[2] < 0) {
+                particles[i].pos[2] += box_size;
+            }
         }
 
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
-	}
+    }
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (.75f * nrparticles * four_epsilon);
     if (Ek_on) instEk[loop_num % nrinst] = mass * sum_sqr_vel / (.5f * four_epsilon);
 }
@@ -202,12 +202,12 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
 void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ctreates the verlet_lists (verlet_vectors) using the linked cell lists
     int cellindex = 0;
     uint particle_index = 0;
-	verlet_particles_list.resize(nrparticles);
-	verlet_neighbors_list.resize(nrparticles*nrparticles);
+    verlet_particles_list.resize(nrparticles);
+    verlet_neighbors_list.resize(nrparticles*nrparticles);
     for (uint i = 0; i < nrparticles; i++) {
         verlet_particles_list[i] = 0;
     }
-	for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
+    for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
         verlet_neighbors_list[i] = 0;
     }
     for (uint i = 0; i < nrparticles; i++) {
@@ -256,10 +256,10 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 
 void mdsystem::force_calculation() { //using reduced unit
     // Reset accelrations for all particles
-	for (uint k = 0; k < nrparticles; k++) {
-		particles[k].acc = fvec3(0, 0, 0);
-	}
-	float distance;
+    for (uint k = 0; k < nrparticles; k++) {
+        particles[k].acc = fvec3(0, 0, 0);
+    }
+    float distance;
     float sqr_distance;
     float distance_inv;
     float p = pow(sqr_sigma / sqr_inner_cutoff, 3); // For calculating the cutoff energy
@@ -281,11 +281,11 @@ void mdsystem::force_calculation() { //using reduced unit
 #if 0 //Emil's code
             distance_inv = sigma / distance;
             distance6_inv = pow(distance_inv, 6);
-			float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv; // Emil's formula is incorrect!!! ;P
+            float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv; // Emil's formula is incorrect!!! ;P
 #endif //Kristofer's code
             distance_inv = 1 / distance;
             p = pow(sqr_sigma * distance_inv * distance_inv, 3);
-			float acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
+            float acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
             if (acceleration > 1e16f) {
                 acceleration = acceleration; //TODO
             }
@@ -293,7 +293,7 @@ void mdsystem::force_calculation() { //using reduced unit
             // Update accelerations of interacting particles
             fvec3 r_hat = r * distance_inv;
             particles[i1].acc +=  acceleration * r_hat;
-			particles[i2].acc -=  acceleration * r_hat;
+            particles[i2].acc -=  acceleration * r_hat;
 
             // Update properties
             if (Ep_on) instEp[loop_num % nrinst] += four_epsilon * p * (p - 1) - E_cutoff;
@@ -371,31 +371,31 @@ void mdsystem::init_particles() {
     particles.resize(nrparticles);
 
     //Place out particles according to the lattice pattern
-	if (lattice_type == LT_FCC) {
-		for (uint i = 0; i < n; i++) {
-			for (uint j = 0; j < n; j++) {
-				for (uint k = 0; k < n; k++) {
-					int help_index = 4*(i*n*n + j*n + k);
+    if (lattice_type == LT_FCC) {
+        for (uint i = 0; i < n; i++) {
+            for (uint j = 0; j < n; j++) {
+                for (uint k = 0; k < n; k++) {
+                    int help_index = 4*(i*n*n + j*n + k);
 
-					(particles[help_index + 0]).start_pos[0] = i*a;
-					(particles[help_index + 0]).start_pos[1] = j*a;
-					(particles[help_index + 0]).start_pos[2] = k*a;
+                    (particles[help_index + 0]).start_pos[0] = i*a;
+                    (particles[help_index + 0]).start_pos[1] = j*a;
+                    (particles[help_index + 0]).start_pos[2] = k*a;
 
-					(particles[help_index + 1]).start_pos[0] = i*a;
-					(particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
-					(particles[help_index + 1]).start_pos[2] = (k + 0.5f)*a;
+                    (particles[help_index + 1]).start_pos[0] = i*a;
+                    (particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
+                    (particles[help_index + 1]).start_pos[2] = (k + 0.5f)*a;
 
-					(particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
-					(particles[help_index + 2]).start_pos[1] = j*a;
-					(particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
+                    (particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
+                    (particles[help_index + 2]).start_pos[1] = j*a;
+                    (particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
 
-					(particles[help_index + 3]).start_pos[0] = (i + 0.5f)*a;
-					(particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
-					(particles[help_index + 3]).start_pos[2] = k*a;
-				}
-			}
-		}
-	}
+                    (particles[help_index + 3]).start_pos[0] = (i + 0.5f)*a;
+                    (particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
+                    (particles[help_index + 3]).start_pos[2] = k*a;
+                }
+            }
+        }
+    }
     
     //Randomixe the velocities
     fvec3 sum_vel = fvec3(0, 0, 0);

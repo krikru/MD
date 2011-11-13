@@ -1,4 +1,4 @@
-// Test2.cpp : Defines the entry point for the console application.
+// main.cpp: Defines the entry point for the console application.
 //
 
 // Standard includes

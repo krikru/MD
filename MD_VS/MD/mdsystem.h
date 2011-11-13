@@ -13,9 +13,9 @@ using namespace std;
 
 enum enum_lattice_types
 {
-	LT_NO_LATTICE,
-	LT_FCC,
-	LT_NUM_LATTICE_TYPES
+    LT_NO_LATTICE,
+    LT_FCC,
+    eLT_NUM_LATTICE_TYPES
 };
 
 class mdsystem
