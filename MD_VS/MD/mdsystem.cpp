@@ -133,9 +133,6 @@ void mdsystem::leapfrog()
 
         // Update positions
         particles[i].pos += dt * particles[i].vel;
-        if (msd_on) particles[i].no_bound_pos += dt * particles[i].vel;
-
-        if (diff_c_on) diffusion_coefficient += dt*particles[i].vel*particles[i].start_vel/(3*nrparticles);
 
         // Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
@@ -356,10 +353,17 @@ void mdsystem::calculate_pressure() {
 void mdsystem::calculate_mean_square_displacement() {
     float sum = 0;
     for (uint i = 0; i < nrparticles;i++) {
-        sum += (particles[i].no_bound_pos - particles[i].start_pos)*(particles[i].no_bound_pos - particles[i].start_pos);
+        sum += (particles[i].pos - particles[i].start_pos).sqr_length();
     }
     sum = sum/nrparticles;
     msd[loop_num/nrinst] = sum;
+}
+
+void mdsystem::calculate_diffusion_coefficient() {
+    for (int i = 0; i < nrparticles; i++) {
+        diffusion_coefficient += (particles[i].pos - particles[i].start_pos)*particles[i].start_vel;
+    }
+    diffusion_coefficient /= (3*nrparticles);
 }
 
 ////////////////////////////////////////////////////////////////

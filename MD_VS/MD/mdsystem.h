@@ -15,7 +15,7 @@ enum enum_lattice_types
 {
     LT_NO_LATTICE,
     LT_FCC,
-    eLT_NUM_LATTICE_TYPES
+    NUM_LATTICE_TYPES
 };
 
 class mdsystem
@@ -38,6 +38,7 @@ class mdsystem
     void calculate_specific_heat();
     void calculate_pressure();
     void calculate_mean_square_displacement();
+    void calculate_diffusion_coefficient();
 
 private:
     //Private variables
