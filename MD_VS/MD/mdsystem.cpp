@@ -84,6 +84,8 @@ void mdsystem::run_simulation() {
 		update_largest_sqr_displacement(); // NEW
 #if 1 //TODO
         cout << "loop number = " << loop_num << endl;
+		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
+		//cout << "sqr_outer_cutoff - sqr_inner_cutoff = " <<  sqr_outer_cutoff - sqr_inner_cutoff << endl;
         
 
         if (loop_num == 9) {
@@ -105,8 +107,8 @@ void mdsystem::run_simulation() {
         //cout << endl;
         leapfrog();
         calculate_properties();
-        if (1) {
-        //if (largest_sqr_displacement > (sqr_outer_cutoff - sqr_inner_cutoff)) {
+        //if (1) {
+        if (largest_sqr_displacement > (sqr_outer_cutoff - sqr_inner_cutoff)) {
             create_linked_cells();
             create_verlet_list_using_linked_cell_list();
         }

@@ -27,10 +27,10 @@ int _tmain(int argc, _TCHAR* argv[])
 
     int nrparticles_in = 1000;    // The number of particles
     int nrinst_in = 10;          // Number of timesteps between measurements of properties
-    int nrtimesteps_in = 100; // Desired (or minimum) total number of timesteps
+    int nrtimesteps_in = 500; // Desired (or minimum) total number of timesteps
 
     float inner_cutoff_in = 2.5f * sigma_in;
-    float outer_cutoff_in = 2.0f * inner_cutoff_in;
+    float outer_cutoff_in = 1.2f * inner_cutoff_in; //Decreased the skin thickness -> fewer neighbors -> faster, but too thin skin not good.
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
