@@ -84,10 +84,12 @@ private:
     bool msd_on;
     bool Ep_on;
     bool Ek_on;
+	float largest_sqr_displacement; // == 2 * maximal displacement for any single atom.
 
     // Private functions
-    void init_particles();
+	void init_particles();
     fvec3 modulos_distance(fvec3 pos1, fvec3 pos2) const;
+	void update_largest_sqr_displacement();
 };
 
 #endif  /* MDSYSTEM_H */

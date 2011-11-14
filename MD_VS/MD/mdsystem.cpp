@@ -81,6 +81,7 @@ void mdsystem::init() {
 void mdsystem::run_simulation() {
     init();
     while (loop_num <= nrtimesteps) {
+		update_largest_sqr_displacement(); // NEW
 #if 1 //TODO
         cout << "loop number = " << loop_num << endl;
         
@@ -105,7 +106,7 @@ void mdsystem::run_simulation() {
         leapfrog();
         calculate_properties();
         if (1) {
-        //if (neighbors should be updated) {
+        //if (largest_sqr_displacement > (sqr_outer_cutoff - sqr_inner_cutoff)) {
             create_linked_cells();
             create_verlet_list_using_linked_cell_list();
         }
@@ -200,11 +201,14 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     int cellindex = 0;
     uint particle_index = 0;
     verlet_particles_list.resize(nrparticles);
-    verlet_neighbors_list.resize(nrparticles*nrparticles);
+    verlet_neighbors_list.resize(nrparticles*nrparticles);//This might be unnecessarily large
+
 	//Updating pos_when_creating_verlet_list for all particles
 	for (uint i = 0; i < nrparticles; i++) {
 		particles[i].pos_when_creating_verlet_list = particles[i].pos; 
 	}
+	//Reset largest_sqr_displacement
+	largest_sqr_displacement = 0;
 	//Reset verlet_list
     for (uint i = 0; i < nrparticles; i++) {
         verlet_particles_list[i] = 0;
@@ -469,4 +473,13 @@ fvec3 mdsystem::modulos_distance(fvec3 pos1, fvec3 pos2) const
     }
 
     return d;
+}
+
+void mdsystem::update_largest_sqr_displacement()
+{
+	for (uint i = 0; i < nrparticles; i++) {
+		float sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_creating_verlet_list).sqr_length();
+		if ((2 * sqr_displacement) > largest_sqr_displacement)
+			largest_sqr_displacement = 2 * sqr_displacement;
+	}
 }
