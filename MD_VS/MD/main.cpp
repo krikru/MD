@@ -30,7 +30,7 @@ int _tmain(int argc, _TCHAR* argv[])
     int nrtimesteps_in = 500; // Desired (or minimum) total number of timesteps
 
     float inner_cutoff_in = 2.5f * sigma_in;
-    float outer_cutoff_in = 1.1f * inner_cutoff_in; //Decrease the skin thickness -> fewer neighbors -> faster, but too thin skin not good.
+    float outer_cutoff_in = 1.1f * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
