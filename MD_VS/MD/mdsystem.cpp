@@ -108,7 +108,7 @@ void mdsystem::run_simulation() {
         leapfrog();
         calculate_properties();
         //if (1) {
-        if (largest_sqr_displacement > (sqr_outer_cutoff - sqr_inner_cutoff)) {
+        if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*pow(sqr_outer_cutoff*sqr_inner_cutoff, 0.5f))) {
             create_linked_cells();
             create_verlet_list_using_linked_cell_list();
         }
@@ -340,6 +340,7 @@ void mdsystem::calculate_properties() {
         calculate_temperature();
         if (Ep_on) calculate_Ep();
         if (Ek_on) calculate_Ek();
+        if (diff_c_on) calculate_diffusion_coefficient();
     }
 }
 
@@ -482,7 +483,8 @@ void mdsystem::update_largest_sqr_displacement()
 {
 	for (uint i = 0; i < nrparticles; i++) {
 		float sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_creating_verlet_list).sqr_length();
-		if ((2 * sqr_displacement) > largest_sqr_displacement)
-			largest_sqr_displacement = 2 * sqr_displacement;
+		if (sqr_displacement > largest_sqr_displacement) {
+			largest_sqr_displacement = sqr_displacement;
+                }
 	}
 }
