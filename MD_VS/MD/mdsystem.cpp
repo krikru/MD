@@ -272,7 +272,7 @@ void mdsystem::force_calculation() { //using reduced unit
                 continue; // Skip this interaction and continue with the next one
             }
             distance = sqrt(sqr_distance);
-            if (loop_num == 2 && (i1 == 22 || i2 == 22)) {
+            if (loop_num == 2 && (i1 == 22 || i2 == 22)) {// What is this??
                 i1 = i1; //TODO
             }
 			//Calculating acceleration
