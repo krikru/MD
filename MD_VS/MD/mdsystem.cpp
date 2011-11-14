@@ -83,8 +83,8 @@ void mdsystem::run_simulation() {
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
         cout << "loop number = " << loop_num << endl;
-		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
-		//cout << "sqr_outer_cutoff - sqr_inner_cutoff = " <<  sqr_outer_cutoff - sqr_inner_cutoff << endl;
+        cout << "largest displacement = " <<  largest_sqr_displacement << endl;
+        //cout << "sqr_outer_cutoff - sqr_inner_cutoff = " <<  sqr_outer_cutoff - sqr_inner_cutoff << endl;
         
 
         if (loop_num == 9) {
@@ -205,18 +205,18 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     verlet_particles_list.resize(nrparticles);
     verlet_neighbors_list.resize(nrparticles*nrparticles);//This might be unnecessarily large
 
-	//Updating pos_when_creating_verlet_list for all particles
-	for (uint i = 0; i < nrparticles; i++) {
-		particles[i].pos_when_creating_verlet_list = particles[i].pos; 
-	}
-	//Reset verlet_list
+    //Updating pos_when_creating_verlet_list for all particles
+    for (uint i = 0; i < nrparticles; i++) {
+        particles[i].pos_when_creating_verlet_list = particles[i].pos; 
+    }
+    //Reset verlet_list
     for (uint i = 0; i < nrparticles; i++) {
         verlet_particles_list[i] = 0;
     }
     for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
         verlet_neighbors_list[i] = 0;
     }
-	//Creating new verlet_list
+    //Creating new verlet_list
     for (uint i = 0; i < nrparticles; i++) {
         if (i==0)
             verlet_neighbors_list[0] = 0;
@@ -285,7 +285,7 @@ void mdsystem::force_calculation() { //Using si-units
             if (loop_num == 2 && (i1 == 22 || i2 == 22)) {// What is this??
                 i1 = i1; //TODO
             }
-			//Calculating acceleration
+            //Calculating acceleration
             distance_inv = 1 / distance;
             p = pow(sqr_sigma * distance_inv * distance_inv, 3);
             float acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
