@@ -275,11 +275,7 @@ void mdsystem::force_calculation() { //using reduced unit
             if (loop_num == 2 && (i1 == 22 || i2 == 22)) {
                 i1 = i1; //TODO
             }
-#if 0 //Emil's code
-            distance_inv = sigma / distance;
-            distance6_inv = pow(distance_inv, 6);
-            float acceleration = 48 * epsilon * distance_inv * distance6_inv * (distance6_inv - 0.5f) * mass_inv; // Emil's formula is incorrect!!! ;P
-#endif //Kristofer's code
+			//Calculating acceleration
             distance_inv = 1 / distance;
             p = pow(sqr_sigma * distance_inv * distance_inv, 3);
             float acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
