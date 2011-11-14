@@ -477,6 +477,7 @@ fvec3 mdsystem::modulos_distance(fvec3 pos1, fvec3 pos2) const
     return d;
 }
 
+//Updating largest square displacement.
 void mdsystem::update_largest_sqr_displacement()
 {
 	for (uint i = 0; i < nrparticles; i++) {
