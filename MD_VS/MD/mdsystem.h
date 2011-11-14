@@ -29,7 +29,7 @@ class mdsystem
     void leapfrog();
     void create_linked_cells();//see .cpp-file
     void create_verlet_list_using_linked_cell_list();//see .cpp-file
-    void force_calculation();//not done
+    void force_calculation();
     void run_simulation();
     void calculate_temperature();
     void calculate_Ep();

@@ -186,7 +186,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
     for (uint i = 0; i < cell_list.size() ; i++) {
         cell_list[i] = 0;
     }
-    for (uint i = 0; i < nrparticles; i++) {  //stops here
+    for (uint i = 0; i < nrparticles; i++) {
         int help_x = int(particles[i].pos[0] / cellsize);
         int help_y = int(particles[i].pos[1] / cellsize);
         int help_z = int(particles[i].pos[2] / cellsize);
@@ -360,7 +360,7 @@ void mdsystem::calculate_mean_square_displacement() {
 }
 
 void mdsystem::calculate_diffusion_coefficient() {
-    for (int i = 0; i < nrparticles; i++) {
+    for (uint i = 0; i < nrparticles; i++) {
         diffusion_coefficient += (particles[i].pos - particles[i].start_pos)*particles[i].start_vel;
     }
     diffusion_coefficient /= (3*nrparticles);
