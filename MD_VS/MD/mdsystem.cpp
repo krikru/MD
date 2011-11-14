@@ -261,7 +261,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     }
 }
 
-void mdsystem::force_calculation() { //using reduced unit
+void mdsystem::force_calculation() { //Using si-units
     // Reset accelrations for all particles
     for (uint k = 0; k < nrparticles; k++) {
         particles[k].acc = fvec3(0, 0, 0);
