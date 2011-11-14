@@ -201,12 +201,18 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint particle_index = 0;
     verlet_particles_list.resize(nrparticles);
     verlet_neighbors_list.resize(nrparticles*nrparticles);
+	//Updating pos_when_creating_verlet_list for all particles
+	for (uint i = 0; i < nrparticles; i++) {
+		particles[i].pos_when_creating_verlet_list = particles[i].pos; 
+	}
+	//Reset verlet_list
     for (uint i = 0; i < nrparticles; i++) {
         verlet_particles_list[i] = 0;
     }
     for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
         verlet_neighbors_list[i] = 0;
     }
+	//Creating new verlet_list
     for (uint i = 0; i < nrparticles; i++) {
         if (i==0)
             verlet_neighbors_list[0] = 0;
