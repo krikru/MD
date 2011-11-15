@@ -83,24 +83,24 @@ void mdsystem::run_simulation() {
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
         cout << "loop number = " << loop_num << endl;
-        cout << "largest displacement = " <<  largest_sqr_displacement << endl;
-        //cout << "sqr_outer_cutoff - sqr_inner_cutoff = " <<  sqr_outer_cutoff - sqr_inner_cutoff << endl;
-        
-
+        //cout << "largest displacement = " <<  largest_sqr_displacement << endl;
+       // cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
+       // cout << "T = "            << temp[loop_num/nrinst] << endl;
+       // cout << "nrinst = "            << nrinst << endl;        
         if (loop_num == 9) {
             loop_num = loop_num;
-        /*cout << "Ep = "        << Ep[loop_num/nrinst] << endl;
-        cout << "Ek = "            << Ek[loop_num/nrinst] << endl;
+        /*
+        
         cout << "pressure = "    << pressure[loop_num/nrinst] << endl;
         cout << "MSD = "        << msd[loop_num/nrinst] << endl;
-        cout << "T = "            << temp[loop_num/nrinst] << endl;
+       
         cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
         */
         }
 #endif
         force_calculation();
         //cout << "Box size: " << box_size << endl;
-        //cout << "particles[4] x-pos: " << particles[4].pos[0] << endl;
+        //
         //cout << "particles[4] y-pos: " << particles[4].pos[1] << endl;
         //cout << "particles[4] z-pos: " << particles[4].pos[2] << endl;
         //cout << endl;
@@ -113,6 +113,12 @@ void mdsystem::run_simulation() {
             create_verlet_list_using_linked_cell_list();
         }
         loop_num++;
+    }
+    for (uint i = 0; i<temp.size();i++)
+    {
+        cout<<"Temp = "<<temp[i]<<endl;
+        cout<<"Ek = "<<Ek[i]<<endl;
+        
     }
 }
 
@@ -136,7 +142,6 @@ void mdsystem::leapfrog()
 
         // Update positions
         particles[i].pos += dt * particles[i].vel;
-
         // Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
             particles[i].pos[0] -= box_size;
@@ -187,7 +192,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
     cell_list.resize(nrcells*nrcells*nrcells);
     cell_linklist.resize(nrparticles);
     for (uint i = 0; i < cell_list.size() ; i++) {
-        cell_list[i] = 0;
+        cell_list[i] = nrparticles;
     }
     for (uint i = 0; i < nrparticles; i++) {
         int help_x = int(particles[i].pos[0] / cellsize);
@@ -244,7 +249,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                         + (int(z/cellsize)) * nrcells * nrcells;
                     particle_index = cell_list[cellindex];
                     int j = 0;
-                    while (particle_index != 0) {
+                    while (particle_index != nrparticles) {
                         float sqr_distance = modulos_distance(particles[particle_index].pos, particles[i].pos).sqr_length();
                         if((sqr_distance < sqr_outer_cutoff) && (particle_index > i)) {
                             j += 1;
@@ -311,7 +316,7 @@ void mdsystem::calculate_temperature() {
     for (uint i = 0; i < nrinst; i++) {
         sum += insttemp[i];
     }
-    temp[loop_num/nrinst] = sum/nrinst; 
+    temp[loop_num/nrinst] = sum/nrinst;
 }
 
 void mdsystem::calculate_Ep() {
@@ -326,6 +331,7 @@ void mdsystem::calculate_Ek() {
     float sum = 0;
     for (uint i = 0; i < nrinst; i++) {
         sum += instEk[i];
+        cout<<instEk[i]<<endl;
     }
     Ek[loop_num/nrinst] = sum/nrinst;
 }

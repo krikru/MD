@@ -21,13 +21,13 @@ int _tmain(int argc, _TCHAR* argv[])
     float latticeconstant_in = float((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
 
     //Simulation constants
-    float dt_in = .001f * P_PS; // [s]
+    float dt_in = .01f * P_PS; // [s]
     float temperature_in = 100; // [K]
 #endif
 
     int nrparticles_in = 1000;    // The number of particles
     int nrinst_in = 10;          // Number of timesteps between measurements of properties
-    int nrtimesteps_in = 500; // Desired (or minimum) total number of timesteps
+    int nrtimesteps_in = 50; // Desired (or minimum) total number of timesteps
 
     float inner_cutoff_in = 2.5f * sigma_in;
     float outer_cutoff_in = 1.1f * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
@@ -39,6 +39,7 @@ int _tmain(int argc, _TCHAR* argv[])
     bool Ek_on_in = true;
     mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, LT_FCC, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
+	while (1){}
     return 0;
 }
 
