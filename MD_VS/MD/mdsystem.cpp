@@ -425,7 +425,7 @@ void mdsystem::init_particles() {
     for (uint i = 0; i < nrparticles; i++) {
         for (uint j = 0; j < 3; j++) {
             particles[i].start_vel[j] = 0;
-            for (uint terms = 0; terms < 10; terms++) { //This will effectivelly create a distribution very similar to normal distribution.
+            for (uint terms = 0; terms < 5; terms++) { //This will effectivelly create a distribution very similar to normal distribution. (If you want to see what the distribution looks like, go to www.wolframalpha.com/input/?i=fourier((sinc(x))^n) and replace n by the number of terms)
                 particles[i].start_vel[j] += float(rand());
             }
         }
