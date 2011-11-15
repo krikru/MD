@@ -193,7 +193,12 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
         int help_x = int(particles[i].pos[0] / cellsize);
         int help_y = int(particles[i].pos[1] / cellsize);
         int help_z = int(particles[i].pos[2] / cellsize);
-        cellindex = help_x + help_y * nrcells + help_z * nrcells * nrcells;
+        if (help_x == nrcells || help_y == nrcells || help_z == nrcells) { // This could potentially happen due to truncation errors or unluckily chosen start positions
+            help_x -= help_x == nrcells;
+            help_y -= help_y == nrcells;
+            help_z -= help_z == nrcells;
+        }
+        cellindex = help_x + nrcells * (help_y + nrcells * help_z);
         cell_linklist[i] = cell_list[cellindex];
         cell_list[cellindex] = i;
     }

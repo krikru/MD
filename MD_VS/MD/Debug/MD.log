@@ -1,0 +1,20 @@
+﻿Build started 2011-11-12 14:19:53.
+     1>Project "H:\My Documents\MD Project\MD\MD_VS\MD\MD.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\MD.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+       ManifestResourceCompile:
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+       Manifest:
+         All outputs are up-to-date.
+       FinalizeBuildStatus:
+         Deleting file "Debug\MD.unsuccessfulbuild".
+         Touching "Debug\MD.lastbuildstate".
+     1>Done Building Project "H:\My Documents\MD Project\MD\MD_VS\MD\MD.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.39
