@@ -435,7 +435,7 @@ void mdsystem::init_particles() {
     float vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
     float scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
     for (uint i = 0; i < nrparticles; i++) {
-        particles[i].start_vel = (particles[i].start_vel - sum_vel)*scale_factor;
+        particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
         particles[i].vel = particles[i].start_vel;
         particles[i].pos = particles[i].start_pos;
     }
