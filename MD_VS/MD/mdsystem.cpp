@@ -82,7 +82,7 @@ void mdsystem::run_simulation() {
     init();
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
-        cout << "loop number = " << loop_num << endl;
+        //cout << "loop number = " << loop_num << endl;
         //cout << "largest displacement = " <<  largest_sqr_displacement << endl;
        // cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
        // cout << "T = "            << temp[loop_num/nrinst] << endl;
@@ -109,11 +109,13 @@ void mdsystem::run_simulation() {
         //if (1) {
         calculate_largest_sqr_displacement(); // NEW
         if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*pow(sqr_outer_cutoff*sqr_inner_cutoff, 0.5f))) {
+            cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
             create_linked_cells();
             create_verlet_list_using_linked_cell_list();
         }
         loop_num++;
     }
+    cout<<"Complete"<<endl;
     for (uint i = 0; i<temp.size();i++)
     {
         cout<<"Temp = "<<temp[i]<<endl;
