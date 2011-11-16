@@ -11,7 +11,7 @@ using std::endl;
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
+mdsystem::mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, uint nrinst_in, float temperature_in, uint nrtimesteps_in, float latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
     cell_linklist(),
     cell_list    (),
     particles    (),
@@ -74,6 +74,7 @@ mdsystem::mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float i
 
 void mdsystem::init() {
     init_particles();
+
     create_linked_cells();
     create_verlet_list_using_linked_cell_list();
 }
@@ -231,14 +232,11 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         verlet_neighbors_list[i] = 0;
     }
     //Creating new verlet_list
-    for (uint i = 0; i < nrparticles; i++) {
+    verlet_particles_list[0] = 0;
+    for (uint i = 0; i < nrparticles; i++) { // Loop through all particles
         int j = 0;
-        if (i==0)
-            verlet_neighbors_list[0] = 0;
-        else
-            verlet_neighbors_list[verlet_particles_list[i]] = 0;
-        if (i < (nrparticles-1))
-            verlet_particles_list[i+1] = verlet_particles_list[i]+1;
+        verlet_neighbors_list[verlet_particles_list[i]] = 0; // Reset number of neighbours
+        int next_particle_list = verlet_particles_list[i] + 1;
         int cellindex_x = int(particles[i].pos[0]/cellsize);
         int cellindex_y = int(particles[i].pos[1]/cellsize);
         int cellindex_z = int(particles[i].pos[2]/cellsize);//Might need the same truncation-error-fix as above
@@ -249,33 +247,41 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                     int x = index_x;
                     int y = index_y;
                     int z = index_z;
-                    if (x < 0)
-                        x = x + nrcells;
-                    if (x > int(nrcells)-1)
-                        x = x - nrcells;
-                    if (y < 0)
-                        y = y + nrcells;
-                    if (y > int(nrcells)-1)
-                        y = y - nrcells;
-                    if (z < 0)
-                        z = z + nrcells;
-                    if (z > int(nrcells)-1)
-                        z = z - nrcells;
+                    if (x == -1) {
+                        x = int(nrcells) - 1;
+                    }
+                    else if (x == int(nrcells)) {
+                        x = 0;
+                    }
+                    if (y == -1) {
+                        y = int(nrcells) - 1;
+                    }
+                    else if (y == int(nrcells)) {
+                        y = 0;
+                    }
+                    if (z == -1) {
+                        z = int(nrcells) - 1;
+                    }
+                    else if (z == int(nrcells)) {
+                        z = 0;
+                    }
                     cellindex = x + nrcells * (y + nrcells * z);
                     particle_index = cell_list[cellindex];
                     while (particle_index < nrparticles) {
                         float sqr_distance = modulos_distance(particles[particle_index].pos, particles[i].pos).sqr_length();
                         if((sqr_distance < sqr_outer_cutoff) && (particle_index > i)) {
                             j += 1;
-                            if (i < (nrparticles-1))
-                                verlet_particles_list[i+1]=verlet_particles_list[i+1]+1;
+                            next_particle_list++;
                             verlet_neighbors_list[verlet_particles_list[i]] += 1;
                             verlet_neighbors_list[verlet_particles_list[i]+j] = particle_index;
                         }
                         particle_index = cell_linklist[particle_index];
                     }
-                }
-            }
+                } // Z
+            } // Y
+        } // X
+        if (i+1 < nrparticles) { // Set position of next particle list
+            verlet_particles_list[i+1] = next_particle_list;
         }
     }
 }

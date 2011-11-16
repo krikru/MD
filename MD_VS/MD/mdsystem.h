@@ -22,7 +22,7 @@ class mdsystem
 {
  public:
     // Constructor 
-    mdsystem(int nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, int nrinst_in, float temperature_in, int nrtimesteps_in, float latticeconstant_in, enum_lattice_types lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, uint nrinst_in, float temperature_in, uint nrtimesteps_in, float latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
 
     // Public functions
     void init();
@@ -56,7 +56,7 @@ private:
     vector<float> Ep;       // Potential energy
     vector<float> instEk;   // Instat kinetic energy
     vector<float> instEp;   // Instat potential energy
-    enum_lattice_types lattice_type;
+    uint lattice_type; // (enum_lattice_types)
     float dt; //length of each timestep
     float sqr_inner_cutoff; // Square of the inner cut-off radius in the Verlet list
     float sqr_outer_cutoff; // Square of the outer cut-off radius in the Verlet list
