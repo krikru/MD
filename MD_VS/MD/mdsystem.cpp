@@ -101,7 +101,7 @@ void mdsystem::run_simulation() {
 #endif
         force_calculation();
         //cout << "Box size: " << box_size << endl;
-        cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
+        //cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
         //cout << "particles[4] y-acc: " << particles[4].acc[1] << endl;
         //cout << "particles[4] z-pos: " << particles[4].pos[2] << endl;
         //cout << endl;
@@ -117,12 +117,13 @@ void mdsystem::run_simulation() {
         loop_num++;
     }
     cout<<"Complete"<<endl;
-    for (uint i = 0; i<temp.size();i++)
+    for (uint i = 1; i<temp.size();i++)
     {
         cout<<"Temp = "<<temp[i]<<endl;
         cout<<"Ek + Ep = "<<Ek[i]+Ep[i]<<endl;
         cout<<"Ek = "<<Ek[i]<<endl;
         cout<<"Ep = "<<Ep[i]<<endl;
+        cout << "Cv = "<< Cv[i] << endl;
         
     }
 }
@@ -356,11 +357,12 @@ void mdsystem::calculate_Ek() {
 }
 
 void mdsystem::calculate_properties() {
-    if ((loop_num % nrinst) == 0) {
+    if (((loop_num % nrinst) == 0) && (loop_num != 0)) {
+        calculate_temperature();
         if (Cv_on) calculate_specific_heat();            
         if (pressure_on) calculate_pressure();
         if (msd_on) calculate_mean_square_displacement();
-        calculate_temperature();
+        
         if (Ep_on) calculate_Ep();
         if (Ek_on) calculate_Ek();
         if (diff_c_on) calculate_diffusion_coefficient();
