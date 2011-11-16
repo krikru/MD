@@ -220,7 +220,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint particle_index = 0;
     verlet_particles_list.resize(nrparticles);
-    verlet_neighbors_list.resize(nrparticles*100);//This might be unnecessarily large
+    verlet_neighbors_list.resize(nrparticles*100);//This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
 
     //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
