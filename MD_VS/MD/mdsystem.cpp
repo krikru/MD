@@ -224,7 +224,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         verlet_particles_list[i] = 0;
     }
     for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
-        verlet_neighbors_list[i] = 999;
+        verlet_neighbors_list[i] = 0;
     }
     //Creating new verlet_list
     for (uint i = 0; i < nrparticles; i++) {
