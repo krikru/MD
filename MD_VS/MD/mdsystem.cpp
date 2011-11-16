@@ -205,7 +205,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
         int help_x = int(particles[i].pos[0] / cellsize);
         int help_y = int(particles[i].pos[1] / cellsize);
         int help_z = int(particles[i].pos[2] / cellsize);
-        if (help_x == nrcells || help_y == nrcells || help_z == nrcells) { // This could potentially happen due to truncation errors or unluckily chosen start positions
+        if (help_x == nrcells || help_y == nrcells || help_z == nrcells) { // This actually occationally happens
             help_x -= help_x == nrcells;
             help_y -= help_y == nrcells;
             help_z -= help_z == nrcells;
@@ -222,9 +222,10 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     verlet_particles_list.resize(nrparticles);
     verlet_neighbors_list.resize(nrparticles*100);//This might be unnecessarily large
 
-    //Updating pos_when_creating_verlet_list for all particles
+    //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
-        particles[i].pos_when_creating_verlet_list = particles[i].pos; 
+        particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_verlet_list_created, particles[i].pos);
+        particles[i].pos_when_verlet_list_created = particles[i].pos;
     }
     //Reset verlet_list
     for (uint i = 0; i < nrparticles; i++) {
@@ -241,8 +242,12 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         int next_particle_list = verlet_particles_list[i] + 1;
         int cellindex_x = int(particles[i].pos[0]/cellsize);
         int cellindex_y = int(particles[i].pos[1]/cellsize);
-        int cellindex_z = int(particles[i].pos[2]/cellsize);//Might need the same truncation-error-fix as above
-        if (cellindex_x == nrcells || cellindex_y == nrcells || cellindex_z == nrcells){cout<<"HAHA"<<endl;}// but this line hasn't been executed as far as I have seen. 
+        int cellindex_z = int(particles[i].pos[2]/cellsize);
+        if (cellindex_x == nrcells || cellindex_y == nrcells || cellindex_z == nrcells) { // This actually occationally happens
+            cellindex_x -= cellindex_x == nrcells;
+            cellindex_y -= cellindex_y == nrcells;
+            cellindex_z -= cellindex_z == nrcells;
+        }
         for (int index_x = cellindex_x-1; index_x <= cellindex_x+1; index_x++) {
             for (int index_y = cellindex_y-1; index_y <= cellindex_y+1; index_y++) {
                 for (int index_z = cellindex_z-1; index_z <= cellindex_z+1; index_z++) {
@@ -453,6 +458,7 @@ void mdsystem::init_particles() {
         particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
         particles[i].vel = particles[i].start_vel;
         particles[i].pos = particles[i].start_pos;
+        particles[i].non_modulated_relative_pos = fvec3();
     }
 }
 
@@ -507,7 +513,7 @@ void mdsystem::calculate_largest_sqr_displacement()
 {
     largest_sqr_displacement = 0;
     for (uint i = 0; i < nrparticles; i++) {
-        float sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_creating_verlet_list).sqr_length();
+        float sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
         if (sqr_displacement > largest_sqr_displacement) {
             largest_sqr_displacement = sqr_displacement;
         }
