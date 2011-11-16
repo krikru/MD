@@ -83,7 +83,7 @@ void mdsystem::run_simulation() {
     init();
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
-        //cout << "loop number = " << loop_num << endl;
+        cout << "loop number = " << loop_num << endl;
         //cout << "largest displacement = " <<  largest_sqr_displacement << endl;
        // cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
        // cout << "T = "            << temp[loop_num/nrinst] << endl;
@@ -113,6 +113,7 @@ void mdsystem::run_simulation() {
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
             create_linked_cells();
             create_verlet_list_using_linked_cell_list();
+            cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
         }
         loop_num++;
     }
@@ -219,7 +220,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     int cellindex = 0;
     uint particle_index = 0;
     verlet_particles_list.resize(nrparticles);
-    verlet_neighbors_list.resize(nrparticles*nrparticles);//This might be unnecessarily large
+    verlet_neighbors_list.resize(nrparticles*100);//This might be unnecessarily large
 
     //Updating pos_when_creating_verlet_list for all particles
     for (uint i = 0; i < nrparticles; i++) {
@@ -308,16 +309,11 @@ void mdsystem::force_calculation() { //Using si-units
                 continue; // Skip this interaction and continue with the next one
             }
             distance = sqrt(sqr_distance);
-            if (loop_num == 2 && (i1 == 22 || i2 == 22)) {// What is this??
-                i1 = i1; //TODO
-            }
+
             //Calculating acceleration
             distance_inv = 1 / distance;
             p = pow(sqr_sigma * distance_inv * distance_inv, 3);
             float acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
-            if (acceleration > 1e16f) {
-                acceleration = acceleration; //TODO
-            }
 
             // Update accelerations of interacting particles
             fvec3 r_hat = r * distance_inv;
