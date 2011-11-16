@@ -29,6 +29,7 @@ class mdsystem
 
 private:
     //Private variables
+    bool         cells_used;            //Flag to tell is the cell list is used or not
     vector<uint> cell_linklist;         //Contains the particle index of the next particle (with decreasing order of the particles) that is in the same cell as the particle the list entry corresponds to. If these is no more particle in the cell, the entry will be 0.
     vector<uint> cell_list;             //Contains the largest particle index each cell contains. The list is coded as if each cell would contain particle zero (although it is probably not located there!)
     vector<particle> particles;         //The elements in the vector particles are particle objects
@@ -76,8 +77,9 @@ private:
     void init();
     void init_particles();
     void leapfrog();
-    void create_linked_cells();//see .cpp-file
-    void create_verlet_list_using_linked_cell_list();//see .cpp-file
+    void create_verlet_list();
+    void create_linked_cells();
+    void create_verlet_list_using_linked_cell_list();
     void force_calculation();
     void calculate_temperature();
     void calculate_Ep();

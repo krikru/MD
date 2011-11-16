@@ -58,8 +58,11 @@ mdsystem::mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float 
     p_half_box_size = 0.5f * box_size;
     n_half_box_size = -p_half_box_size;
     nrcells = int(n*a/outer_cutoff_in);
-    if (!nrcells) {
-        nrcells = 1;
+    if (nrcells > 3) {
+        cells_used = true;
+    }
+    else {
+        cells_used = false;
     }
     cellsize = n*a/nrcells;
     diffusion_coefficient = 0;
@@ -74,8 +77,7 @@ mdsystem::mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float 
 void mdsystem::init() {
     init_particles();
 
-    create_linked_cells();
-    create_verlet_list_using_linked_cell_list();
+    create_verlet_list();
 }
 
 void mdsystem::run_simulation() {
@@ -89,20 +91,23 @@ void mdsystem::run_simulation() {
         
         }
 #endif
+        //cout << "Force_calc1 " <<endl;
         force_calculation();
+        //cout << "Force_calc2 " <<endl;
         //cout << "Box size: " << box_size << endl;
         //cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
         //cout << "particles[4] y-acc: " << particles[4].acc[1] << endl;
         //cout << "particles[4] z-pos: " << particles[4].pos[2] << endl;
         //cout << endl;
+        //cout << "Leap_frog1 " <<endl;
         leapfrog();
+        //cout << "Leap_frog2 " <<endl;
         calculate_properties();
         //if (1) {
-        calculate_largest_sqr_displacement(); // NEW
+        calculate_largest_sqr_displacement();
         if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*pow(sqr_outer_cutoff*sqr_inner_cutoff, 0.5f))) {
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
-            create_linked_cells();
-            create_verlet_list_using_linked_cell_list();
+            create_verlet_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
         }
 		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
@@ -192,6 +197,14 @@ void mdsystem::leapfrog()
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
 }
 
+void mdsystem::create_verlet_list()
+{
+    if (cells_used) {
+        create_linked_cells();
+    }
+    create_verlet_list_using_linked_cell_list();
+}
+
 void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
     int cellindex = 0;
     cell_list.resize(nrcells*nrcells*nrcells);
@@ -216,7 +229,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
 
 void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ctreates the verlet_lists (verlet_vectors) using the linked cell lists
     uint cellindex = 0;
-    uint particle_index = 0;
+    uint neighbour_particle_index = 0;
     verlet_particles_list.resize(nrparticles);
     verlet_neighbors_list.resize(nrparticles*10000);//This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
 
@@ -225,68 +238,75 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_verlet_list_created, particles[i].pos);
         particles[i].pos_when_verlet_list_created = particles[i].pos;
     }
-    //Reset verlet_list
-    for (uint i = 0; i < nrparticles; i++) {
-        verlet_particles_list[i] = 0;
-    }
-    for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
-        verlet_neighbors_list[i] = 0;
-    }
     //Creating new verlet_list
     verlet_particles_list[0] = 0;
-    for (uint i = 0; i < nrparticles; i++) { // Loop through all particles
-        int j = 0;
+    for (uint i = 0; i < nrparticles;) { // Loop through all particles
+        // Init this neighbour list and point to the next list
         verlet_neighbors_list[verlet_particles_list[i]] = 0; // Reset number of neighbours
-        int next_particle_list = verlet_particles_list[i] + 1;
-        int cellindex_x = int(particles[i].pos[0]/cellsize);
-        int cellindex_y = int(particles[i].pos[1]/cellsize);
-        int cellindex_z = int(particles[i].pos[2]/cellsize);
-        if (cellindex_x == nrcells || cellindex_y == nrcells || cellindex_z == nrcells) { // This actually occationally happens
-            cellindex_x -= cellindex_x == nrcells;
-            cellindex_y -= cellindex_y == nrcells;
-            cellindex_z -= cellindex_z == nrcells;
-        }
-        for (int index_x = cellindex_x-1; index_x <= cellindex_x+1; index_x++) {
-            for (int index_y = cellindex_y-1; index_y <= cellindex_y+1; index_y++) {
-                for (int index_z = cellindex_z-1; index_z <= cellindex_z+1; index_z++) {
-                    int x = index_x;
-                    int y = index_y;
-                    int z = index_z;
-                    if (x == -1) {
-                        x = int(nrcells) - 1;
-                    }
-                    else if (x == int(nrcells)) {
-                        x = 0;
-                    }
-                    if (y == -1) {
-                        y = int(nrcells) - 1;
-                    }
-                    else if (y == int(nrcells)) {
-                        y = 0;
-                    }
-                    if (z == -1) {
-                        z = int(nrcells) - 1;
-                    }
-                    else if (z == int(nrcells)) {
-                        z = 0;
-                    }
-                    cellindex = uint(x + nrcells * (y + nrcells * z));
-                    particle_index = cell_list[cellindex]; // Get the largest particle index of the particles in this cell
-                    while (particle_index > i) {
-                        float sqr_distance = modulos_distance(particles[particle_index].pos, particles[i].pos).sqr_length();
-                        if(sqr_distance < sqr_outer_cutoff) {
-                            j += 1;
-                            next_particle_list++;
-                            verlet_neighbors_list[verlet_particles_list[i]] += 1;
-                            verlet_neighbors_list[verlet_particles_list[i]+j] = particle_index;
+        int next_particle_list = verlet_particles_list[i] + 1; // Link to the next particle list
+
+        if (cells_used) { //Loop through all neighbour cells
+            // Calculate cell indexes
+            int cellindex_x = int(particles[i].pos[0]/cellsize);
+            int cellindex_y = int(particles[i].pos[1]/cellsize);
+            int cellindex_z = int(particles[i].pos[2]/cellsize);
+            if (cellindex_x == nrcells || cellindex_y == nrcells || cellindex_z == nrcells) { // This actually occationally happens
+                cellindex_x -= cellindex_x == nrcells;
+                cellindex_y -= cellindex_y == nrcells;
+                cellindex_z -= cellindex_z == nrcells;
+            }
+            for (int index_x = cellindex_x-1; index_x <= cellindex_x+1; index_x++) {
+                for (int index_y = cellindex_y-1; index_y <= cellindex_y+1; index_y++) {
+                    for (int index_z = cellindex_z-1; index_z <= cellindex_z+1; index_z++) {
+                        int x = index_x;
+                        int y = index_y;
+                        int z = index_z;
+                        if (x == -1) {
+                            x = int(nrcells) - 1;
                         }
-                        particle_index = cell_linklist[particle_index]; // Get the next particle in the cell
-                    }
-                } // Z
-            } // Y
-        } // X
-        if (i+1 < nrparticles) { // Set position of next particle list
-            verlet_particles_list[i+1] = next_particle_list;
+                        else if (x == int(nrcells)) {
+                            x = 0;
+                        }
+                        if (y == -1) {
+                            y = int(nrcells) - 1;
+                        }
+                        else if (y == int(nrcells)) {
+                            y = 0;
+                        }
+                        if (z == -1) {
+                            z = int(nrcells) - 1;
+                        }
+                        else if (z == int(nrcells)) {
+                            z = 0;
+                        }
+                        cellindex = uint(x + nrcells * (y + nrcells * z));
+                        neighbour_particle_index = cell_list[cellindex]; // Get the largest particle index of the particles in this cell
+                        while (neighbour_particle_index > i) { // Loop though all particles in the cell with greater index
+                            float sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
+                            if(sqr_distance < sqr_outer_cutoff) {
+                                verlet_neighbors_list[verlet_particles_list[i]] += 1;
+                                verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                                next_particle_list++;
+                            }
+                            neighbour_particle_index = cell_linklist[neighbour_particle_index]; // Get the next particle in the cell
+                        }
+                    } // Z
+                } // Y
+            } // X
+        } // if (cells_used)
+        else {
+            for (neighbour_particle_index = i+1; neighbour_particle_index < nrparticles; neighbour_particle_index++) { // Loop though all particles with greater index
+                float sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
+                if(sqr_distance < sqr_outer_cutoff) {
+                    verlet_neighbors_list[verlet_particles_list[i]] += 1;
+                    verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                    next_particle_list++;
+                }
+            }
+        }
+        i++; // Continue with the next particle (if there exists any)
+        if (i < nrparticles) { // Point to the next particle list
+            verlet_particles_list[i] = next_particle_list;
         }
     }
 }
