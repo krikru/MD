@@ -25,20 +25,7 @@ class mdsystem
     mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, uint nrinst_in, float temperature_in, uint nrtimesteps_in, float latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
 
     // Public functions
-    void init();
-    void leapfrog();
-    void create_linked_cells();//see .cpp-file
-    void create_verlet_list_using_linked_cell_list();//see .cpp-file
-    void force_calculation();
     void run_simulation();
-    void calculate_temperature();
-    void calculate_Ep();
-    void calculate_Ek();
-    void calculate_properties();
-    void calculate_specific_heat();
-    void calculate_pressure();
-    void calculate_mean_square_displacement();
-    void calculate_diffusion_coefficient();
 
 private:
     //Private variables
@@ -87,7 +74,20 @@ private:
     float largest_sqr_displacement; // == 2 * maximal displacement for any single atom.
 
     // Private functions
+    void init();
     void init_particles();
+    void leapfrog();
+    void create_linked_cells();//see .cpp-file
+    void create_verlet_list_using_linked_cell_list();//see .cpp-file
+    void force_calculation();
+    void calculate_temperature();
+    void calculate_Ep();
+    void calculate_Ek();
+    void calculate_properties();
+    void calculate_specific_heat();
+    void calculate_pressure();
+    void calculate_mean_square_displacement();
+    void calculate_diffusion_coefficient();
     fvec3 modulos_distance(fvec3 pos1, fvec3 pos2) const;
     void calculate_largest_sqr_displacement();
 };
