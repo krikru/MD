@@ -117,7 +117,7 @@ void mdsystem::run_simulation() {
     for (uint i = 0; i<temp.size();i++)
     {
         cout<<"Temp = "<<temp[i]<<endl;
-        cout<<"Ek = "<<Ek[i]<<endl;
+        cout<<"Ek + Ep = "<<Ek[i]+Ep[i]<<endl;
         
     }
 }
@@ -237,7 +237,8 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
             verlet_particles_list[i+1] = verlet_particles_list[i]+1;
         int cellindex_x = int(particles[i].pos[0]/cellsize);
         int cellindex_y = int(particles[i].pos[1]/cellsize);
-        int cellindex_z = int(particles[i].pos[2]/cellsize);
+        int cellindex_z = int(particles[i].pos[2]/cellsize);//Might need the same truncation-error-fix as above
+        if (cellindex_x == nrcells || cellindex_y == nrcells || cellindex_z == nrcells){cout<<"HAHA"<<endl;}// but this line hasn't been executed as far as I have seen. 
         for (int index_x = cellindex_x-1; index_x <= cellindex_x+1; index_x++) {
             for (int index_y = cellindex_y-1; index_y <= cellindex_y+1; index_y++) {
                 for (int index_z = cellindex_z-1; index_z <= cellindex_z+1; index_z++) {
