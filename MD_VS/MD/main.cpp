@@ -29,7 +29,7 @@ int _tmain(int argc, _TCHAR* argv[])
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 10000;    // The number of particles
+    uint nrparticles_in = 1000;    // The number of particles
     uint nrinst_in = 10;          // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 500; // Desired (or minimum) total number of timesteps
     float inner_cutoff_in = 2.0f * sigma_in;
