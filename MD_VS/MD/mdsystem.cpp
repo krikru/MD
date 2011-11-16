@@ -221,9 +221,10 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     verlet_particles_list.resize(nrparticles);
     verlet_neighbors_list.resize(nrparticles*nrparticles);//This might be unnecessarily large
 
-    //Updating pos_when_creating_verlet_list for all particles
+    //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
-        particles[i].pos_when_creating_verlet_list = particles[i].pos; 
+        particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_verlet_list_created, particles[i].pos);
+        particles[i].pos_when_verlet_list_created = particles[i].pos;
     }
     //Reset verlet_list
     for (uint i = 0; i < nrparticles; i++) {
@@ -457,6 +458,7 @@ void mdsystem::init_particles() {
         particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
         particles[i].vel = particles[i].start_vel;
         particles[i].pos = particles[i].start_pos;
+        particles[i].non_modulated_relative_pos = fvec3();
     }
 }
 
@@ -511,7 +513,7 @@ void mdsystem::calculate_largest_sqr_displacement()
 {
     largest_sqr_displacement = 0;
     for (uint i = 0; i < nrparticles; i++) {
-        float sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_creating_verlet_list).sqr_length();
+        float sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
         if (sqr_displacement > largest_sqr_displacement) {
             largest_sqr_displacement = sqr_displacement;
         }
