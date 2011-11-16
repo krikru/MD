@@ -99,16 +99,20 @@ void mdsystem::run_simulation() {
         */
         }
 #endif
+        //cout << "Force_calc1 " <<endl;
         force_calculation();
+        //cout << "Force_calc2 " <<endl;
         //cout << "Box size: " << box_size << endl;
         //cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
         //cout << "particles[4] y-acc: " << particles[4].acc[1] << endl;
         //cout << "particles[4] z-pos: " << particles[4].pos[2] << endl;
         //cout << endl;
+        //cout << "Leap_frog1 " <<endl;
         leapfrog();
+        //cout << "Leap_frog2 " <<endl;
         calculate_properties();
         //if (1) {
-        calculate_largest_sqr_displacement(); // NEW
+        calculate_largest_sqr_displacement();
         if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*pow(sqr_outer_cutoff*sqr_inner_cutoff, 0.5f))) {
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
             create_linked_cells();
