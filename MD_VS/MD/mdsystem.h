@@ -29,8 +29,8 @@ class mdsystem
 
 private:
     //Private variables
-    vector<uint> cell_linklist;         //Contains the particle index of the next particle (with decreasing order of the particles) that is in the same cell as the particle the list entry corresponds to. If these is no more cell, the entry will contain num_particles.
-    vector<uint> cell_list;             //Contains the largest particle index each cell contains
+    vector<uint> cell_linklist;         //Contains the particle index of the next particle (with decreasing order of the particles) that is in the same cell as the particle the list entry corresponds to. If these is no more particle in the cell, the entry will be 0.
+    vector<uint> cell_list;             //Contains the largest particle index each cell contains. The list is coded as if each cell would contain particle zero (although it is probably not located there!)
     vector<particle> particles;         //The elements in the vector particles are particle objects
     vector<uint> verlet_particles_list; //List of integernumber, each index points to an element in the verlet_neighbors_list which is the first neighbor to corresponding particle.
     vector<uint> verlet_neighbors_list; //List with index numbers to neighbors.

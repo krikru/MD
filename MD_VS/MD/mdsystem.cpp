@@ -198,7 +198,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
     cell_list.resize(nrcells*nrcells*nrcells);
     cell_linklist.resize(nrparticles);
     for (uint i = 0; i < cell_list.size() ; i++) {
-        cell_list[i] = nrparticles;
+        cell_list[i] = 0; // Beware! Particle zero is a member of all cells!
     }
     for (uint i = 0; i < nrparticles; i++) {
         int help_x = int(particles[i].pos[0] / cellsize);
@@ -216,7 +216,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
 }
 
 void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ctreates the verlet_lists (verlet_vectors) using the linked cell lists
-    int cellindex = 0;
+    uint cellindex = 0;
     uint particle_index = 0;
     verlet_particles_list.resize(nrparticles);
     verlet_neighbors_list.resize(nrparticles*nrparticles);//This might be unnecessarily large
@@ -271,17 +271,17 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                     else if (z == int(nrcells)) {
                         z = 0;
                     }
-                    cellindex = x + nrcells * (y + nrcells * z);
-                    particle_index = cell_list[cellindex];
-                    while (particle_index < nrparticles) {
+                    cellindex = uint(x + nrcells * (y + nrcells * z));
+                    particle_index = cell_list[cellindex]; // Get the largest particle index of the particles in this cell
+                    while (particle_index > i) {
                         float sqr_distance = modulos_distance(particles[particle_index].pos, particles[i].pos).sqr_length();
-                        if((sqr_distance < sqr_outer_cutoff) && (particle_index > i)) {
+                        if(sqr_distance < sqr_outer_cutoff) {
                             j += 1;
                             next_particle_list++;
                             verlet_neighbors_list[verlet_particles_list[i]] += 1;
                             verlet_neighbors_list[verlet_particles_list[i]+j] = particle_index;
                         }
-                        particle_index = cell_linklist[particle_index];
+                        particle_index = cell_linklist[particle_index]; // Get the next particle in the cell
                     }
                 } // Z
             } // Y
