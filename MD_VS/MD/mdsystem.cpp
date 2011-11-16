@@ -94,14 +94,14 @@ void mdsystem::run_simulation() {
         cout << "pressure = "    << pressure[loop_num/nrinst] << endl;
         cout << "MSD = "        << msd[loop_num/nrinst] << endl;
        
-        cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
+        
         */
         }
 #endif
         force_calculation();
         //cout << "Box size: " << box_size << endl;
-        //
-        //cout << "particles[4] y-pos: " << particles[4].pos[1] << endl;
+        cout << "Cv = "            << Cv[loop_num/nrinst] << endl;
+        //cout << "particles[4] y-acc: " << particles[4].acc[1] << endl;
         //cout << "particles[4] z-pos: " << particles[4].pos[2] << endl;
         //cout << endl;
         leapfrog();
@@ -120,6 +120,8 @@ void mdsystem::run_simulation() {
     {
         cout<<"Temp = "<<temp[i]<<endl;
         cout<<"Ek + Ep = "<<Ek[i]+Ep[i]<<endl;
+        cout<<"Ek = "<<Ek[i]<<endl;
+        cout<<"Ep = "<<Ep[i]<<endl;
         
     }
 }
@@ -186,7 +188,7 @@ void mdsystem::leapfrog()
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (.75f * nrparticles * four_epsilon);
-    if (Ek_on) instEk[loop_num % nrinst] = mass * sum_sqr_vel / (.5f * four_epsilon);
+    if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
 }
 
 void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
