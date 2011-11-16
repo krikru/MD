@@ -204,7 +204,7 @@ void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk
         int help_x = int(particles[i].pos[0] / cellsize);
         int help_y = int(particles[i].pos[1] / cellsize);
         int help_z = int(particles[i].pos[2] / cellsize);
-        if (help_x == nrcells || help_y == nrcells || help_z == nrcells) { // This could potentially happen due to truncation errors or unluckily chosen start positions
+        if (help_x == nrcells || help_y == nrcells || help_z == nrcells) { // This actually occationally happens
             help_x -= help_x == nrcells;
             help_y -= help_y == nrcells;
             help_z -= help_z == nrcells;
@@ -241,8 +241,12 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         int next_particle_list = verlet_particles_list[i] + 1;
         int cellindex_x = int(particles[i].pos[0]/cellsize);
         int cellindex_y = int(particles[i].pos[1]/cellsize);
-        int cellindex_z = int(particles[i].pos[2]/cellsize);//Might need the same truncation-error-fix as above
-        if (cellindex_x == nrcells || cellindex_y == nrcells || cellindex_z == nrcells){cout<<"HAHA"<<endl;}// but this line hasn't been executed as far as I have seen. 
+        int cellindex_z = int(particles[i].pos[2]/cellsize);
+        if (cellindex_x == nrcells || cellindex_y == nrcells || cellindex_z == nrcells) { // This actually occationally happens
+            cellindex_x -= cellindex_x == nrcells;
+            cellindex_y -= cellindex_y == nrcells;
+            cellindex_z -= cellindex_z == nrcells;
+        }
         for (int index_x = cellindex_x-1; index_x <= cellindex_x+1; index_x++) {
             for (int index_y = cellindex_y-1; index_y <= cellindex_y+1; index_y++) {
                 for (int index_z = cellindex_z-1; index_z <= cellindex_z+1; index_z++) {
