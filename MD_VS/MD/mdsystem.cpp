@@ -190,7 +190,7 @@ void mdsystem::leapfrog()
 
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
-    insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (.75f * nrparticles * four_epsilon);
+    insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
 }
 
