@@ -224,37 +224,41 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         verlet_particles_list[i] = 0;
     }
     for (uint i = 0; i < verlet_neighbors_list.size(); i++) {
-        verlet_neighbors_list[i] = 0;
+        verlet_neighbors_list[i] = 999;
     }
     //Creating new verlet_list
     for (uint i = 0; i < nrparticles; i++) {
+        int j = 0;
         if (i==0)
             verlet_neighbors_list[0] = 0;
         else
             verlet_neighbors_list[verlet_particles_list[i]] = 0;
         if (i < (nrparticles-1))
             verlet_particles_list[i+1] = verlet_particles_list[i]+1;
-        for (float x =(particles[i].pos[0]-cellsize); x <= (particles[i].pos[0]-cellsize); x += cellsize) {
-            for (float y =(particles[i].pos[1]-cellsize); y <= (particles[i].pos[1]-cellsize); y += cellsize) {
-                for (float z =(particles[i].pos[2]-cellsize); z <= (particles[i].pos[2]-cellsize); z += cellsize) {
+        int cellindex_x = int(particles[i].pos[0]/cellsize);
+        int cellindex_y = int(particles[i].pos[1]/cellsize);
+        int cellindex_z = int(particles[i].pos[2]/cellsize);
+        for (int index_x = cellindex_x-1; index_x <= cellindex_x+1; index_x++) {
+            for (int index_y = cellindex_y-1; index_y <= cellindex_y+1; index_y++) {
+                for (int index_z = cellindex_z-1; index_z <= cellindex_z+1; index_z++) {
+                    int x = index_x;
+                    int y = index_y;
+                    int z = index_z;
                     if (x < 0)
-                        x = x + nrcells*cellsize;
-                    if (x > nrcells*cellsize)
-                        x = x - nrcells*cellsize;
+                        x = x + nrcells;
+                    if (x > int(nrcells)-1)
+                        x = x - nrcells;
                     if (y < 0)
-                        y = y + nrcells*cellsize;
-                    if (y > nrcells*cellsize)
-                        y = y - nrcells*cellsize;
+                        y = y + nrcells;
+                    if (y > int(nrcells)-1)
+                        y = y - nrcells;
                     if (z < 0)
-                        z = z + nrcells*cellsize;
-                    if (z > nrcells*cellsize)
-                        z = z - nrcells*cellsize;
-                    cellindex = int(x/cellsize)
-                        + (int(y/cellsize)) * nrcells
-                        + (int(z/cellsize)) * nrcells * nrcells;
+                        z = z + nrcells;
+                    if (z > int(nrcells)-1)
+                        z = z - nrcells;
+                    cellindex = x + nrcells * (y + nrcells * z);
                     particle_index = cell_list[cellindex];
-                    int j = 0;
-                    while (particle_index != nrparticles) {
+                    while (particle_index < nrparticles) {
                         float sqr_distance = modulos_distance(particles[particle_index].pos, particles[i].pos).sqr_length();
                         if((sqr_distance < sqr_outer_cutoff) && (particle_index > i)) {
                             j += 1;
@@ -336,7 +340,6 @@ void mdsystem::calculate_Ek() {
     float sum = 0;
     for (uint i = 0; i < nrinst; i++) {
         sum += instEk[i];
-        cout<<instEk[i]<<endl;
     }
     Ek[loop_num/nrinst] = sum/nrinst;
 }
