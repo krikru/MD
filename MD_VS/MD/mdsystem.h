@@ -58,7 +58,6 @@ private:
     float init_temp;
     uint nrtimesteps;
     float distanceforcesum;
-    float kB;
     float a;        // The lattice constant
     uint n;         // Length of one side of the box in conventional unit cells
     float box_size; // Length of one side of the box in length units

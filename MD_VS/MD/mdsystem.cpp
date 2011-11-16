@@ -44,7 +44,7 @@ mdsystem::mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float 
     pressure.resize(nrtimesteps/nrinst_in + 1);
     msd     .resize(nrtimesteps/nrinst_in + 1);
     if (lattice_type == LT_FCC) {
-        n = int(std::pow(float(nrparticles_in / 4 ), float( 1.0 / 3.0 )));
+        n = int(pow(float(nrparticles_in / 4 ), float( 1.0 / 3.0 )));
         nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
     mass = mass_in;
@@ -53,7 +53,6 @@ mdsystem::mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float 
     nrinst = nrinst_in;
     init_temp = temperature_in;
     distanceforcesum = 0;
-    kB = 1.381e-23f;
     a = latticeconstant_in;
     box_size = a*n;
     p_half_box_size = 0.5f * box_size;
@@ -84,19 +83,10 @@ void mdsystem::run_simulation() {
     while (loop_num <= nrtimesteps) {
 #if 1 //TODO
         cout << "loop number = " << loop_num << endl;
-        //cout << "largest displacement = " <<  largest_sqr_displacement << endl;
-       // cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
-       // cout << "T = "            << temp[loop_num/nrinst] << endl;
-       // cout << "nrinst = "            << nrinst << endl;        
+        
         if (loop_num == 9) {
             loop_num = loop_num;
-        /*
         
-        cout << "pressure = "    << pressure[loop_num/nrinst] << endl;
-        cout << "MSD = "        << msd[loop_num/nrinst] << endl;
-       
-        
-        */
         }
 #endif
         force_calculation();
@@ -115,6 +105,14 @@ void mdsystem::run_simulation() {
             create_verlet_list_using_linked_cell_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
         }
+		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
+        cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
+        cout << "T = "            << temp[loop_num/nrinst] << endl;
+        cout << "nrinst = "            << nrinst << endl;        
+		/*
+                cout << "pressure = "    << pressure[loop_num/nrinst] << endl;
+        cout << "MSD = "        << msd[loop_num/nrinst] << endl;   
+        */
         loop_num++;
     }
     cout<<"Complete"<<endl;
@@ -220,7 +218,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint particle_index = 0;
     verlet_particles_list.resize(nrparticles);
-    verlet_neighbors_list.resize(nrparticles*100);//This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
+    verlet_neighbors_list.resize(nrparticles*10000);//This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
 
     //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
@@ -376,12 +374,12 @@ void mdsystem::calculate_specific_heat() {
         T2 += insttemp[i]*insttemp[i];
     }
     T2 = T2/nrinst;
-    Cv[loop_num/nrinst] = 9*kB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]));
+    Cv[loop_num/nrinst] = 9*P_KB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]));
 }
 
 void mdsystem::calculate_pressure() {
     float V = n*a*n*a*n*a;
-    pressure[loop_num/nrinst] = nrparticles*kB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
+    pressure[loop_num/nrinst] = nrparticles*P_KB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
     distanceforcesum = 0;
 }
 
