@@ -12,7 +12,7 @@ using std::endl;
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-mdsystem::mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, uint nrinst_in, float temperature_in, uint nrtimesteps_in, float latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
+mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
     cell_linklist(),
     cell_list    (),
     particles    (),
@@ -45,7 +45,7 @@ mdsystem::mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float 
     pressure.resize(nrtimesteps/nrinst_in + 1);
     msd     .resize(nrtimesteps/nrinst_in + 1);
     if (lattice_type == LT_FCC) {
-        n = int(pow(float(nrparticles_in / 4 ), float( 1.0 / 3.0 )));
+        n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
         nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
     mass = mass_in;
@@ -135,8 +135,8 @@ void mdsystem::run_simulation() {
 
 void mdsystem::leapfrog()
 {
-    fvec3 zero_vector = fvec3(0, 0, 0);
-    float sum_sqr_vel = 0;
+    vec3 zero_vector = vec3(0, 0, 0);
+    ftype sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
         //cout << "\ti = " << i << endl;
         if (loop_num == 2) {
@@ -232,7 +232,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(nrparticles);
-    verlet_neighbors_list.resize(nrparticles*10000);//This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
+    verlet_neighbors_list.resize(nrparticles * 100); //This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
 
     //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
@@ -283,7 +283,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                         cellindex = uint(x + nrcells * (y + nrcells * z));
                         neighbour_particle_index = cell_list[cellindex]; // Get the largest particle index of the particles in this cell
                         while (neighbour_particle_index > i) { // Loop though all particles in the cell with greater index
-                            float sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
+                            ftype sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
                             if(sqr_distance < sqr_outer_cutoff) {
                                 verlet_neighbors_list[verlet_particles_list[i]] += 1;
                                 verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
@@ -297,7 +297,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         } // if (cells_used)
         else {
             for (neighbour_particle_index = i+1; neighbour_particle_index < nrparticles; neighbour_particle_index++) { // Loop though all particles with greater index
-                float sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
+                ftype sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
                 if(sqr_distance < sqr_outer_cutoff) {
                     verlet_neighbors_list[verlet_particles_list[i]] += 1;
                     verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
@@ -315,19 +315,19 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
 void mdsystem::force_calculation() { //Using si-units
     // Reset accelrations for all particles
     for (uint k = 0; k < nrparticles; k++) {
-        particles[k].acc = fvec3(0, 0, 0);
+        particles[k].acc = vec3(0, 0, 0);
     }
-    float distance;
-    float sqr_distance;
-    float distance_inv;
-    float p = pow(sqr_sigma / sqr_inner_cutoff, 3); // For calculating the cutoff energy
-    float E_cutoff = four_epsilon * p * (p - 1);
-    float mass_inv = 1/mass;             
+    ftype distance;
+    ftype sqr_distance;
+    ftype distance_inv;
+    ftype p = pow(sqr_sigma / sqr_inner_cutoff, 3); // For calculating the cutoff energy
+    ftype E_cutoff = four_epsilon * p * (p - 1);
+    ftype mass_inv = 1/mass;             
     instEp[loop_num % nrinst] = 0;
     for (uint i1 = 0; i1 < nrparticles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
             uint i2 = verlet_neighbors_list[j]; // Get index of the second (possibly) interacting particle 
-            fvec3 r = modulos_distance(particles[i2].pos, particles[i1].pos); // Calculate the closest distance
+            vec3 r = modulos_distance(particles[i2].pos, particles[i1].pos); // Calculate the closest distance
             sqr_distance = r.sqr_length();
             if (sqr_distance >= sqr_inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one
@@ -337,10 +337,10 @@ void mdsystem::force_calculation() { //Using si-units
             //Calculating acceleration
             distance_inv = 1 / distance;
             p = pow(sqr_sigma * distance_inv * distance_inv, 3);
-            float acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
+            ftype acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
 
             // Update accelerations of interacting particles
-            fvec3 r_hat = r * distance_inv;
+            vec3 r_hat = r * distance_inv;
             particles[i1].acc +=  acceleration * r_hat;
             particles[i2].acc -=  acceleration * r_hat;
 
@@ -353,7 +353,7 @@ void mdsystem::force_calculation() { //Using si-units
 
     
 void mdsystem::calculate_temperature() {
-    float sum = 0;
+    ftype sum = 0;
     for (uint i = 0; i < nrinst; i++) {
         sum += insttemp[i];
     }
@@ -361,7 +361,7 @@ void mdsystem::calculate_temperature() {
 }
 
 void mdsystem::calculate_Ep() {
-    float sum = 0;
+    ftype sum = 0;
     for (uint i = 0; i < nrinst; i++) {
         sum += instEp[i];
     }
@@ -369,7 +369,7 @@ void mdsystem::calculate_Ep() {
 }
 
 void mdsystem::calculate_Ek() {
-    float sum = 0;
+    ftype sum = 0;
     for (uint i = 0; i < nrinst; i++) {
         sum += instEk[i];
     }
@@ -390,7 +390,7 @@ void mdsystem::calculate_properties() {
 }
 
 void mdsystem::calculate_specific_heat() {
-    float T2 = 0;
+    ftype T2 = 0;
     for (uint i = 0; i < nrinst; i++){
         T2 += insttemp[i]*insttemp[i];
     }
@@ -399,13 +399,13 @@ void mdsystem::calculate_specific_heat() {
 }
 
 void mdsystem::calculate_pressure() {
-    float V = n*a*n*a*n*a;
+    ftype V = n*a*n*a*n*a;
     pressure[loop_num/nrinst] = nrparticles*P_KB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
     distanceforcesum = 0;
 }
 
 void mdsystem::calculate_mean_square_displacement() {
-    float sum = 0;
+    ftype sum = 0;
     for (uint i = 0; i < nrparticles;i++) {
         sum += (particles[i].pos - particles[i].start_pos).sqr_length();
     }
@@ -456,13 +456,13 @@ void mdsystem::init_particles() {
     }
     
     //Randomixe the velocities
-    fvec3 sum_vel = fvec3(0, 0, 0);
-    float sum_sqr_vel = 0;
+    vec3 sum_vel = vec3(0, 0, 0);
+    ftype sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
         for (uint j = 0; j < 3; j++) {
             particles[i].start_vel[j] = 0;
             for (uint terms = 0; terms < 5; terms++) { //This will effectivelly create a distribution very similar to normal distribution. (If you want to see what the distribution looks like, go to www.wolframalpha.com/input/?i=fourier((sinc(x))^n) and replace n by the number of terms)
-                particles[i].start_vel[j] += float(rand());
+                particles[i].start_vel[j] += ftype(rand());
             }
         }
         sum_vel    += particles[i].start_vel;
@@ -470,20 +470,20 @@ void mdsystem::init_particles() {
     }
 
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
-    fvec3 average_vel = sum_vel/float(nrparticles);
-    float vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
-    float scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
+    vec3 average_vel = sum_vel/ftype(nrparticles);
+    ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
+    ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
         particles[i].vel = particles[i].start_vel;
         particles[i].pos = particles[i].start_pos;
-        particles[i].non_modulated_relative_pos = fvec3();
+        particles[i].non_modulated_relative_pos = vec3();
     }
 }
 
-fvec3 mdsystem::modulos_distance(fvec3 pos1, fvec3 pos2) const
+vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
 {
-    fvec3 d = pos2 - pos1;
+    vec3 d = pos2 - pos1;
 
     // Check boundaries in x-direction
     if (d[0] >= p_half_box_size) {
@@ -532,7 +532,7 @@ void mdsystem::calculate_largest_sqr_displacement()
 {
     largest_sqr_displacement = 0;
     for (uint i = 0; i < nrparticles; i++) {
-        float sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
+        ftype sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
         if (sqr_displacement > largest_sqr_displacement) {
             largest_sqr_displacement = sqr_displacement;
         }
