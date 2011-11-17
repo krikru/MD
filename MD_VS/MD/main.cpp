@@ -2,6 +2,7 @@
 //
 
 // Standard includes
+#include <iostream>
 #include <tchar.h>
 
 // Own includes
@@ -11,7 +12,8 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
     // Randomize the simulation with a random seed based on the current time
-    //srand((unsigned int)time(NULL));
+   // uint random_seed = (unsigned int)time(NULL);
+    //srand(random_seed);
 
     // Init element specific constants
 #if 1
@@ -29,7 +31,7 @@ int _tmain(int argc, _TCHAR* argv[])
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 1000; // The number of particles
+    uint nrparticles_in = 100; // The number of particles
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 5000; // Desired (or minimum) total number of timesteps
     float inner_cutoff_in = 2.0f * sigma_in;
@@ -46,6 +48,7 @@ int _tmain(int argc, _TCHAR* argv[])
     // Init system and run simulation
     mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
+    //std::cout << "Random seed " << random_seed << std::endl;
 	system("PAUSE");
     return 0;
 }

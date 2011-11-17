@@ -1,6 +1,7 @@
 
 // Standard includes
 #include <iostream>
+#include <iomanip>
 using std::cout;
 using std::endl;
 
@@ -110,10 +111,10 @@ void mdsystem::run_simulation() {
             create_verlet_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
         }
-		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
-        cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
-        cout << "T = "            << temp[loop_num/nrinst] << endl;
-        cout << "nrinst = "            << nrinst << endl;        
+		//cout << "largest displacement = " <<  largest_sqr_displacement << endl;
+        //cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
+        //cout << "T = "            << temp[loop_num/nrinst] << endl;
+        //cout << "nrinst = "            << nrinst << endl;        
 		/*
                 cout << "pressure = "    << pressure[loop_num/nrinst] << endl;
         cout << "MSD = "        << msd[loop_num/nrinst] << endl;   
@@ -123,11 +124,11 @@ void mdsystem::run_simulation() {
     cout<<"Complete"<<endl;
     for (uint i = 1; i<temp.size();i++)
     {
-        cout<<"Temp = "<<temp[i]<<endl;
-        cout<<"Ek + Ep = "<<Ek[i]+Ep[i]<<endl;
-        cout<<"Ek = "<<Ek[i]<<endl;
-        cout<<"Ep = "<<Ep[i]<<endl;
-        cout << "Cv = "<< Cv[i] << endl;
+        cout<<"Temp = "<<setprecision (9)<<temp[i]<<endl;
+        cout<<"Ek + Ep = "<<setprecision (9)<<Ek[i]+Ep[i]<<endl;
+        cout<<"Ek = "<<setprecision (9)<<Ek[i]<<endl;
+        cout<<"Ep = "<<setprecision (9)<<Ep[i]<<endl;
+        cout << "Cv = "<<setprecision (9)<< Cv[i] << endl;
         
     }
 }
