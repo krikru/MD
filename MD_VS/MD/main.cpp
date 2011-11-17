@@ -24,7 +24,7 @@ int _tmain(int argc, _TCHAR* argv[])
     ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
 
     // Simulation constants
-    ftype dt_in = .001f * P_PS; // [s]
+    ftype dt_in = .1f * P_PS; // [s]
     ftype temperature_in = 100; // [K]
 #endif
 
