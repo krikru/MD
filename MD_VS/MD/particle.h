@@ -7,13 +7,13 @@ using namespace std;
 
 class particle {//Maybe we should have an additional prev_position which we use when we calculate how far the particles has moved when deciding if we should update the verlet lists
 public:
-    fvec3 pos;  // and if we update the verlet list we should also update the prev_position...
-    fvec3 non_modulated_relative_pos;
-    fvec3 pos_when_verlet_list_created;
-    fvec3 vel;
-    fvec3 acc;
-    fvec3 start_pos;
-    fvec3 start_vel;
+    vec3 pos;  // and if we update the verlet list we should also update the prev_position...
+    vec3 non_modulated_relative_pos;
+    vec3 pos_when_verlet_list_created;
+    vec3 vel;
+    vec3 acc;
+    vec3 start_pos;
+    vec3 start_vel;
 };
 
 #endif  /* PARTICLE_H */

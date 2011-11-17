@@ -22,7 +22,7 @@ class mdsystem
 {
  public:
     // Constructor 
-    mdsystem(uint nrparticles_in, float sigma_in, float epsilon_in, float inner_cutoff_in, float outer_cutoff_in, float mass_in, float dt_in, uint nrinst_in, float temperature_in, uint nrtimesteps_in, float latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
 
     // Public functions
     void run_simulation();
@@ -35,43 +35,43 @@ private:
     vector<particle> particles;         //The elements in the vector particles are particle objects
     vector<uint> verlet_particles_list; //List of integernumber, each index points to an element in the verlet_neighbors_list which is the first neighbor to corresponding particle.
     vector<uint> verlet_neighbors_list; //List with index numbers to neighbors.
-    vector<float> temp;     // Temperature
-    vector<float> insttemp; // Instant temperature
-    vector<float> Cv;       // Heat capacity
-    vector<float> pressure; // Pressure
-    vector<float> msd;      // Mean square distance
-    vector<float> Ek;       // Kinetic energy
-    vector<float> Ep;       // Potential energy
-    vector<float> instEk;   // Instat kinetic energy
-    vector<float> instEp;   // Instat potential energy
+    vector<ftype> temp;     // Temperature
+    vector<ftype> insttemp; // Instant temperature
+    vector<ftype> Cv;       // Heat capacity
+    vector<ftype> pressure; // Pressure
+    vector<ftype> msd;      // Mean square distance
+    vector<ftype> Ek;       // Kinetic energy
+    vector<ftype> Ep;       // Potential energy
+    vector<ftype> instEk;   // Instat kinetic energy
+    vector<ftype> instEp;   // Instat potential energy
     uint lattice_type; // (enum_lattice_types)
-    float dt; //length of each timestep
-    float sqr_inner_cutoff; // Square of the inner cut-off radius in the Verlet list
-    float sqr_outer_cutoff; // Square of the outer cut-off radius in the Verlet list
+    ftype dt; //length of each timestep
+    ftype sqr_inner_cutoff; // Square of the inner cut-off radius in the Verlet list
+    ftype sqr_outer_cutoff; // Square of the outer cut-off radius in the Verlet list
     uint loop_num; //gives the current iteration
     uint nrparticles;
-    float mass;
-    float sqr_sigma; // Square of sigma in the Lennard Jones potential
-    float four_epsilon; // Four times epsilon in the Lennard Jones potential
+    ftype mass;
+    ftype sqr_sigma; // Square of sigma in the Lennard Jones potential
+    ftype four_epsilon; // Four times epsilon in the Lennard Jones potential
     uint nrinst; //nr of instantaneously measured values before taking the average...
     uint nrcells; //given in one dimension TODO: Change name?
-    float cellsize;//Could be the same as outer_cutoff but perhaps we should think about that...
-    float init_temp;
+    ftype cellsize;//Could be the same as outer_cutoff but perhaps we should think about that...
+    ftype init_temp;
     uint nrtimesteps;
-    float distanceforcesum;
-    float a;        // The lattice constant
+    ftype distanceforcesum;
+    ftype a;        // The lattice constant
     uint n;         // Length of one side of the box in conventional unit cells
-    float box_size; // Length of one side of the box in length units
-    float p_half_box_size; // Half box side
-    float n_half_box_size; // Negated half box side
-    float diffusion_coefficient;
+    ftype box_size; // Length of one side of the box in length units
+    ftype p_half_box_size; // Half box side
+    ftype n_half_box_size; // Negated half box side
+    ftype diffusion_coefficient;
     bool diff_c_on;
     bool Cv_on;
     bool pressure_on;
     bool msd_on;
     bool Ep_on;
     bool Ek_on;
-    float largest_sqr_displacement; // == 2 * maximal displacement for any single atom.
+    ftype largest_sqr_displacement; // == 2 * maximal displacement for any single atom.
 
     // Private functions
     void init();
@@ -89,7 +89,7 @@ private:
     void calculate_pressure();
     void calculate_mean_square_displacement();
     void calculate_diffusion_coefficient();
-    fvec3 modulos_distance(fvec3 pos1, fvec3 pos2) const;
+    vec3 modulos_distance(vec3 pos1, vec3 pos2) const;
     void calculate_largest_sqr_displacement();
 };
 
