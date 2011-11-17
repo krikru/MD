@@ -231,7 +231,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(nrparticles);
-    verlet_neighbors_list.resize(nrparticles);//This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
+    verlet_neighbors_list.resize(nrparticles * 100); //This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
 
     //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
@@ -284,7 +284,6 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                         while (neighbour_particle_index > i) { // Loop though all particles in the cell with greater index
                             ftype sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
                             if(sqr_distance < sqr_outer_cutoff) {
-                                verlet_neighbors_list.resize(verlet_neighbors_list.size()+1);
                                 verlet_neighbors_list[verlet_particles_list[i]] += 1;
                                 verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
                                 next_particle_list++;
@@ -299,7 +298,6 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
             for (neighbour_particle_index = i+1; neighbour_particle_index < nrparticles; neighbour_particle_index++) { // Loop though all particles with greater index
                 ftype sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
                 if(sqr_distance < sqr_outer_cutoff) {
-                    verlet_neighbors_list.resize(verlet_neighbors_list.size()+1);
                     verlet_neighbors_list[verlet_particles_list[i]] += 1;
                     verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
                     next_particle_list++;
