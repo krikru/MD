@@ -15,8 +15,10 @@ SOURCES += main.cpp\
 
 HEADERS  += mdmainwin.h
 
-FORMS    += mdmainwin.ui
+FORMS    += mdmainwin.ui \
+    input.ui
 
 RESOURCES += \
     mdresources.qrc
+
 
