@@ -39,12 +39,13 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     loop_num = 0;
     nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
 
-    temp    .resize(nrtimesteps/nrinst_in + 1); 
-    Ek      .resize(nrtimesteps/nrinst_in + 1); 
-    Ep      .resize(nrtimesteps/nrinst_in + 1);
-    Cv      .resize(nrtimesteps/nrinst_in + 1);
-    pressure.resize(nrtimesteps/nrinst_in + 1);
-    msd     .resize(nrtimesteps/nrinst_in + 1);
+    temp                    .resize(nrtimesteps/nrinst_in + 1); 
+    Ek                      .resize(nrtimesteps/nrinst_in + 1); 
+    Ep                      .resize(nrtimesteps/nrinst_in + 1);
+    Cv                      .resize(nrtimesteps/nrinst_in + 1);
+    pressure                .resize(nrtimesteps/nrinst_in + 1);
+    msd                     .resize(nrtimesteps/nrinst_in + 1);
+    diffusion_coefficient   .resize(nrtimesteps/nrinst_in + 1);
     if (lattice_type == LT_FCC) {
         n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
         nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
@@ -67,7 +68,6 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
         cells_used = false;
     }
     cellsize = n*a/nrcells;
-    diffusion_coefficient = 0;
     diff_c_on = diff_c_on_in;
     Cv_on = Cv_on_in;
     pressure_on = pressure_on_in;
@@ -107,7 +107,7 @@ void mdsystem::run_simulation() {
         calculate_properties();
         //if (1) {
         calculate_largest_sqr_displacement();
-        if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*pow(sqr_outer_cutoff*sqr_inner_cutoff, 0.5f))) {
+        if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*sqrt(sqr_outer_cutoff*sqr_inner_cutoff))) {
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
             create_verlet_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
@@ -165,6 +165,7 @@ void mdsystem::leapfrog()
 
         // Update positions
         particles[i].pos += dt * particles[i].vel;
+        particles[i].non_modulated_relative_pos += dt * particles[i].vel;
         // Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
             particles[i].pos[0] -= box_size;
@@ -332,7 +333,8 @@ void mdsystem::force_calculation() { //Using si-units
     ftype distance;
     ftype sqr_distance;
     ftype distance_inv;
-    ftype p = pow(sqr_sigma / sqr_inner_cutoff, 3); // For calculating the cutoff energy
+    ftype p = sqr_sigma / sqr_inner_cutoff; // For calculating the cutoff energy
+    p = p*p*p;
     ftype E_cutoff = four_epsilon * p * (p - 1);
     ftype mass_inv = 1/mass;             
     instEp[loop_num % nrinst] = 0;
@@ -348,7 +350,8 @@ void mdsystem::force_calculation() { //Using si-units
 
             //Calculating acceleration
             distance_inv = 1 / distance;
-            p = pow(sqr_sigma * distance_inv * distance_inv, 3);
+            p = sqr_sigma * distance_inv * distance_inv;
+            p = p*p*p;
             ftype acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
 
             // Update accelerations of interacting particles
@@ -419,17 +422,14 @@ void mdsystem::calculate_pressure() {
 void mdsystem::calculate_mean_square_displacement() {
     ftype sum = 0;
     for (uint i = 0; i < nrparticles;i++) {
-        sum += (particles[i].pos - particles[i].start_pos).sqr_length();
+        sum += (particles[i].non_modulated_relative_pos - particles[i].start_pos).sqr_length();
     }
     sum = sum/nrparticles;
     msd[loop_num/nrinst] = sum;
 }
 
 void mdsystem::calculate_diffusion_coefficient() {
-    for (uint i = 0; i < nrparticles; i++) {
-        diffusion_coefficient += (particles[i].pos - particles[i].start_pos)*particles[i].start_vel;
-    }
-    diffusion_coefficient /= (3*nrparticles);
+    diffusion_coefficient[loop_num/nrinst] = msd[loop_num/nrinst]/(6*dt*loop_num);
 }
 
 ////////////////////////////////////////////////////////////////
