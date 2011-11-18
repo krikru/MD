@@ -26,16 +26,16 @@ int _tmain(int argc, _TCHAR* argv[])
     ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
 
     // Simulation constants
-    ftype dt_in = .1f * P_PS; // [s]
+    ftype dt_in = .01f * P_PS; // [s]
     ftype temperature_in = 100; // [K]
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 100; // The number of particles
+    uint nrparticles_in = 1000; // The number of particles
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 5000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = 2.0f * sigma_in;
-    ftype outer_cutoff_in = 1.01f * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
+    ftype outer_cutoff_in = 1.1f * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
 
     // Init flags
     bool diff_c_on_in = true;
