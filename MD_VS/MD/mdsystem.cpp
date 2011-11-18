@@ -125,13 +125,13 @@ void mdsystem::run_simulation() {
     cout<<"Complete"<<endl;
     ofstream outdata; // outdata is like cin
    
-    outdata.open("TotalEnergy.dat"); // opens the file
+    outdata.open("TotalEnergy3.dat"); // opens the file
     if( !outdata ) { // file couldn't be opened
         cerr << "Error: file could not be opened" << endl;
     }
 
     for (uint i = 1; i<temp.size();i++)
-        outdata << Ek[i]+Ep[i] << endl;
+        outdata <<setprecision (9)<< Ek[i]+Ep[i] << endl;
     outdata.close();
 
     for (uint i = 1; i<temp.size();i++)

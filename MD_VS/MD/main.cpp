@@ -52,8 +52,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Init simulation specific constants
     uint nrparticles_in = 1000; // The number of particles
-    uint nrinst_in = 100;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 5000; // Desired (or minimum) total number of timesteps
+    uint nrinst_in = 1;       // Number of timesteps between measurements of properties
+    uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.5 times sigma
     ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
 
