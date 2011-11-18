@@ -22,6 +22,7 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     instEp  (nrinst_in), 
     // Measure values
     temp    (),
+    therm   (),
     Ek      (),
     Ep      (),
     Cv      (),
@@ -40,7 +41,8 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
 
     temp                    .resize(nrtimesteps/nrinst_in + 1); 
-    Ek                      .resize(nrtimesteps/nrinst_in + 1); 
+    therm                   .resize(nrtimesteps/nrinst_in + 1);
+    Ek                      .resize(nrtimesteps/nrinst_in + 1);
     Ep                      .resize(nrtimesteps/nrinst_in + 1);
     Cv                      .resize(nrtimesteps/nrinst_in + 1);
     pressure                .resize(nrtimesteps/nrinst_in + 1);
@@ -76,7 +78,7 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     Ek_on = Ek_on_in;
     desiredtemp = desiredtemp_in;
     thermostat_time = thermostat_time_in;
-    thermostat_on = thermostat_on_in; 
+    thermostat_on = thermostat_on_in;
 }
 
 void mdsystem::init() {
@@ -128,18 +130,30 @@ void mdsystem::run_simulation() {
         loop_num++;
     }
     cout<<"Complete"<<endl;
-    ofstream outdata; // outdata is like cin
+
+    // The out files are like cin
+    ofstream out_etot_data ;
+    ofstream out_temp_data ;
+    ofstream out_therm_data;
    
-    outdata.open("TotalEnergy3.dat"); // opens the file
-    if( !outdata ) { // file couldn't be opened
-        cerr << "Error: file could not be opened" << endl;
+    out_etot_data .open("TotalEnergy.dat"); // opens the file
+    out_temp_data .open("Temperature.dat"); // opens the file
+    out_therm_data.open("Thermostat.dat"); // opens the file
+    if( !out_etot_data || !out_temp_data ) { // file couldn't be opened
+        cerr << "Error: files could not be opened" << endl;
+    }
+    else {
+        for (uint i = 1; i<temp.size(); i++) {
+            out_etot_data  << setprecision(9) << Ek[i]+Ep[i] << endl;
+            out_temp_data  << setprecision(9) << temp[i]     << endl;
+            out_therm_data << setprecision(9) << therm[i]    << endl;
+        }
+        out_etot_data .close();
+        out_temp_data .close();
+        out_therm_data.close();
     }
 
-    for (uint i = 1; i<temp.size();i++)
-        outdata <<setprecision (9)<< Ek[i]+Ep[i] << endl;
-    outdata.close();
-
-    for (uint i = 1; i<temp.size();i++)
+    for (uint i = 1; i < temp.size();i++)
     {
         cout<<"Temp = "<<setprecision (9)<<temp[i]<<endl;
         cout<<"Ek + Ep = "<<setprecision (9)<<Ek[i]+Ep[i]<<endl;
@@ -155,10 +169,10 @@ void mdsystem::leapfrog()
     ftype sum_sqr_vel = 0;
     
 #if THERMOSTAT == LASSES_THERMOSTAT
-	ftype thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostat_time); //Lasse's version
+	thermostat = loop_num > 0 ? (1 - desiredtemp/insttemp[(loop_num-1) % nrinst]) / (2*thermostat_time) : 0; //Lasse's version
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
 	/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-	ftype thermostat = loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
+	thermostat = loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
 #endif
 
     for (uint i = 0; i < nrparticles; i++) {
@@ -380,6 +394,13 @@ void mdsystem::force_calculation() { //Using si-units
             if (pressure_on) distanceforcesum += mass * acceleration * distance;
         }
     }
+#if THERMOSTAT == LASSES_THERMOSTAT
+    if (thermostat_on) {
+        for (uint i = 0; i < nrparticles; i++) {
+            particles[i].acc -= thermostat * particles[i].vel;
+        }
+    }
+#endif
 }
 
     
@@ -389,6 +410,7 @@ void mdsystem::calculate_temperature() {
         sum += insttemp[i];
     }
     temp[loop_num/nrinst] = sum/nrinst;
+    therm[loop_num/nrinst] = thermostat;
 }
 
 void mdsystem::calculate_Ep() {

@@ -28,9 +28,9 @@ int _tmain(int argc, _TCHAR* argv[])
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(100.0); // [K]
-    ftype desiredtemp_in = temperature_in;
-	ftype nrthermostat_time_in = 3;
-	ftype thermostat_time_in = nrthermostat_time_in * dt_in;
+    ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
+    ftype nrthermostat_time_in = 3;
+    ftype thermostat_time_in = nrthermostat_time_in * dt_in;
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 161.4 K) as it is stable at even 500 K
 
@@ -61,7 +61,7 @@ int _tmain(int argc, _TCHAR* argv[])
     ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
     // Init flags
-    bool thermostat_on_in = 1;
+    bool thermostat_on_in = true;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;

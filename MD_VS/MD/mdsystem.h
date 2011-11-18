@@ -36,6 +36,7 @@ private:
     vector<uint> verlet_particles_list; //List of integernumber, each index points to an element in the verlet_neighbors_list which is the first neighbor to corresponding particle.
     vector<uint> verlet_neighbors_list; //List with index numbers to neighbors.
     vector<ftype> temp;     // Temperature
+    vector<ftype> therm;    // Temperature
     vector<ftype> insttemp; // Instant temperature
     vector<ftype> Cv;       // Heat capacity
     vector<ftype> pressure; // Pressure

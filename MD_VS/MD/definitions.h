@@ -18,7 +18,8 @@
 #define  CHING_CHIS_THERMOSTAT   BERENDSEN_THERMOSTAT
 #define  LASSES_THERMOSTAT       NOSE_HOOVER_THERMOSTAT
 
-#define  THERMOSTAT              CHING_CHIS_THERMOSTAT
+//#define  THERMOSTAT              CHING_CHIS_THERMOSTAT
+#define  THERMOSTAT              LASSES_THERMOSTAT
 
 ////////////////////////////////////////////////////////////////
 // TYPEDEFS
