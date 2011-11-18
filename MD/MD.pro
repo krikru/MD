@@ -4,21 +4,25 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui opengl
 
 TARGET = MD
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mdmainwin.cpp
+        mdmainwin.cpp \
+    glwidget.cpp
 
-HEADERS  += mdmainwin.h
+HEADERS  += mdmainwin.h \
+    glwidget.h
 
-FORMS    += mdmainwin.ui \
-    input.ui
+FORMS    += mdmainwin.ui
 
 RESOURCES += \
     mdresources.qrc
+
+
+
 
 
