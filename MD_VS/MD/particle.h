@@ -9,6 +9,7 @@ class particle {//Maybe we should have an additional prev_position which we use 
 public:
     vec3 pos;  // and if we update the verlet list we should also update the prev_position...
     vec3 non_modulated_relative_pos;
+    vec3 pos_when_non_modulated_relative_pos_was_calculated;
     vec3 pos_when_verlet_list_created;
     vec3 vel;
     vec3 acc;
