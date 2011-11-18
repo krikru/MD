@@ -13,7 +13,7 @@ using std::ofstream;
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
+mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostattime_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
     cell_linklist(),
     cell_list    (),
     particles    (),
@@ -74,6 +74,9 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     msd_on = msd_on_in;
     Ep_on = Ep_on_in;
     Ek_on = Ek_on_in;
+    desiredtemp = desiredtemp_in;
+    thermostattime = thermostattime_in;
+    thermostat_on = thermostat_on_in; 
 }
 
 void mdsystem::init() {
@@ -163,7 +166,7 @@ void mdsystem::leapfrog()
 
         // Update velocities
         particles[i].vel += dt * particles[i].acc;
-
+        if (thermostat_on) particles[i].vel = particles[i].vel*thermostat;
         // Update positions
         particles[i].pos += dt * particles[i].vel;
         // Check boundaries in x-dir
@@ -208,6 +211,7 @@ void mdsystem::leapfrog()
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
+    if (thermostat_on) thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostattime);
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
 }
 
