@@ -169,7 +169,6 @@ void mdsystem::leapfrog()
         // Update velocities
         particles[i].vel += dt * particles[i].acc;
 		if (thermostat_on && loop_num % nrinst == 0 && loop_num>1) {
-			//ftype thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostattime); //Lasse's version
 			
 			/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
 			thermostat_time_constant = thermostattime; // This means simplest rescaling (Woodstock, 1971) is recovered. Otherwise we can assign the value.
@@ -221,7 +220,7 @@ void mdsystem::leapfrog()
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
-    
+    if (thermostat_on) thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostattime);
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
 }
 
