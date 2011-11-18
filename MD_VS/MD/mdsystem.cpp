@@ -106,7 +106,7 @@ void mdsystem::run_simulation() {
         calculate_properties();
         //if (1) {
         calculate_largest_sqr_displacement();
-        if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*pow(sqr_outer_cutoff*sqr_inner_cutoff, 0.5f))) {
+        if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*sqrt(sqr_outer_cutoff*sqr_inner_cutoff))) {
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
             create_verlet_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
@@ -321,7 +321,8 @@ void mdsystem::force_calculation() { //Using si-units
     ftype distance;
     ftype sqr_distance;
     ftype distance_inv;
-    ftype p = pow(sqr_sigma / sqr_inner_cutoff, 3); // For calculating the cutoff energy
+    ftype p = sqr_sigma / sqr_inner_cutoff; // For calculating the cutoff energy
+    p = p*p*p;
     ftype E_cutoff = four_epsilon * p * (p - 1);
     ftype mass_inv = 1/mass;             
     instEp[loop_num % nrinst] = 0;
@@ -337,7 +338,8 @@ void mdsystem::force_calculation() { //Using si-units
 
             //Calculating acceleration
             distance_inv = 1 / distance;
-            p = pow(sqr_sigma * distance_inv * distance_inv, 3);
+            p = sqr_sigma * distance_inv * distance_inv;
+            p = p*p*p;
             ftype acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
 
             // Update accelerations of interacting particles

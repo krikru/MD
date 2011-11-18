@@ -20,22 +20,42 @@ int _tmain(int argc, _TCHAR* argv[])
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
-    ftype sigma_in = 3.98f * P_ANGSTROM;
-    ftype epsilon_in = 320e-16f * P_ERG; //1 erg = 10^-7 J
-    ftype mass_in = 131.293f * P_U;
+    ftype sigma_in = ftype(3.98) * P_ANGSTROM;
+    ftype epsilon_in = ftype(320e-16) * P_ERG; //1 erg = 10^-7 J
+    ftype mass_in = ftype(131.293) * P_U;
     ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
 
     // Simulation constants
-    ftype dt_in = .1f * P_PS; // [s]
-    ftype temperature_in = 100; // [K]
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype temperature_in = ftype(100.0); // [K]
+#elif 1
+    //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 161.4 K) as it is stable at even 500 K
+
+    /* Should have the following properties:
+     * -------------------------------------
+     * Cohesive energy (corrected  ): 55.8 Kcal/mol
+     * Cohesive energy (uncurrected): 58.9 Kcal/mol
+     * Cohesive energy (observed   ): 68.0 Kcal/mol
+     */
+
+    // Element constants
+    uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
+    ftype sigma_in = ftype(2.65) * P_ANGSTROM;
+    ftype epsilon_in = ftype(0.34) * P_EV; //1 erg = 10^-7 J
+    ftype mass_in = ftype(107.8682) * P_U;
+    ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
+
+    // Simulation constants
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype temperature_in = ftype(300.0); // [K]
 #endif
 
     // Init simulation specific constants
     uint nrparticles_in = 100; // The number of particles
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 5000; // Desired (or minimum) total number of timesteps
-    ftype inner_cutoff_in = 2.0f * sigma_in;
-    ftype outer_cutoff_in = 1.01f * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
+    ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.5 times sigma
+    ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
 
     // Init flags
     bool diff_c_on_in = true;
