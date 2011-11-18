@@ -113,13 +113,13 @@ void mdsystem::run_simulation() {
             create_verlet_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
         }
-		//cout << "largest displacement = " <<  largest_sqr_displacement << endl;
-        //cout << "total energy = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
-        //cout << "T = "            << temp[loop_num/nrinst] << endl;
-        //cout << "nrinst = "            << nrinst << endl;        
 		/*
-                cout << "pressure = "    << pressure[loop_num/nrinst] << endl;
-        cout << "MSD = "        << msd[loop_num/nrinst] << endl;   
+		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
+        cout << "total energy         = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
+        cout << "T                    = "            << temp[loop_num/nrinst] << endl;
+        cout << "nrinst               = "            << nrinst << endl;        
+        cout << "pressure             = "    << pressure[loop_num/nrinst] << endl;
+        cout << "MSD                  = "        << msd[loop_num/nrinst] << endl;   
         */
         loop_num++;
     }
