@@ -77,6 +77,7 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     desiredtemp = desiredtemp_in;
     thermostattime = thermostattime_in;
     thermostat_on = thermostat_on_in; 
+    thermostat = 0;
 }
 
 void mdsystem::init() {
@@ -166,7 +167,6 @@ void mdsystem::leapfrog()
 
         // Update velocities
         particles[i].vel += dt * particles[i].acc;
-        if (thermostat_on) particles[i].vel = particles[i].vel*thermostat;
         // Update positions
         particles[i].pos += dt * particles[i].vel;
         // Check boundaries in x-dir
@@ -369,6 +369,12 @@ void mdsystem::force_calculation() { //Using si-units
             if (pressure_on) distanceforcesum += mass * acceleration * distance;
         }
     }
+    if (thermostat_on) {
+        for (uint i = 0; i < nrparticles; i++) {
+        particles[i].acc -= thermostat*(particles[i].vel); 
+        }
+    }
+
 }
 
     
