@@ -38,12 +38,13 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     loop_num = 0;
     nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
 
-    temp    .resize(nrtimesteps/nrinst_in + 1); 
-    Ek      .resize(nrtimesteps/nrinst_in + 1); 
-    Ep      .resize(nrtimesteps/nrinst_in + 1);
-    Cv      .resize(nrtimesteps/nrinst_in + 1);
-    pressure.resize(nrtimesteps/nrinst_in + 1);
-    msd     .resize(nrtimesteps/nrinst_in + 1);
+    temp                    .resize(nrtimesteps/nrinst_in + 1); 
+    Ek                      .resize(nrtimesteps/nrinst_in + 1); 
+    Ep                      .resize(nrtimesteps/nrinst_in + 1);
+    Cv                      .resize(nrtimesteps/nrinst_in + 1);
+    pressure                .resize(nrtimesteps/nrinst_in + 1);
+    msd                     .resize(nrtimesteps/nrinst_in + 1);
+    diffusion_coefficient   .resize(nrtimesteps/nrinst_in + 1);
     if (lattice_type == LT_FCC) {
         n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
         nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
@@ -66,7 +67,6 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
         cells_used = false;
     }
     cellsize = n*a/nrcells;
-    diffusion_coefficient = 0;
     diff_c_on = diff_c_on_in;
     Cv_on = Cv_on_in;
     pressure_on = pressure_on_in;
@@ -415,10 +415,7 @@ void mdsystem::calculate_mean_square_displacement() {
 }
 
 void mdsystem::calculate_diffusion_coefficient() {
-    for (uint i = 0; i < nrparticles; i++) {
-        diffusion_coefficient += (particles[i].non_modulated_relative_pos - particles[i].start_pos)*particles[i].start_vel;
-    }
-    diffusion_coefficient /= (3*nrparticles);
+    diffusion_coefficient[loop_num/nrinst] = msd[loop_num/nrinst]/(6*dt*loop_num);
 }
 
 ////////////////////////////////////////////////////////////////

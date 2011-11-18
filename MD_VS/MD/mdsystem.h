@@ -44,6 +44,7 @@ private:
     vector<ftype> Ep;       // Potential energy
     vector<ftype> instEk;   // Instat kinetic energy
     vector<ftype> instEp;   // Instat potential energy
+    vector<ftype> diffusion_coefficient;
     uint lattice_type; // (enum_lattice_types)
     ftype dt; //length of each timestep
     ftype sqr_inner_cutoff; // Square of the inner cut-off radius in the Verlet list
@@ -64,7 +65,6 @@ private:
     ftype box_size; // Length of one side of the box in length units
     ftype p_half_box_size; // Half box side
     ftype n_half_box_size; // Negated half box side
-    ftype diffusion_coefficient;
     bool diff_c_on;
     bool Cv_on;
     bool pressure_on;
