@@ -55,7 +55,7 @@ int _tmain(int argc, _TCHAR* argv[])
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 5000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.5 times sigma
-    ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either.
+    ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
     // Init flags
     bool diff_c_on_in = true;

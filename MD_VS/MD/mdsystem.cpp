@@ -77,7 +77,6 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
 
 void mdsystem::init() {
     init_particles();
-
     create_verlet_list();
 }
 
@@ -103,7 +102,9 @@ void mdsystem::run_simulation() {
         //cout << "Leap_frog1 " <<endl;
         leapfrog();
         //cout << "Leap_frog2 " <<endl;
-        calculate_properties();
+        if (loop_num % nrinst == 0 && loop_num != 0) {
+            calculate_properties();
+        }
         //if (1) {
         calculate_largest_sqr_displacement();
         if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*sqrt(sqr_outer_cutoff*sqr_inner_cutoff))) {
@@ -153,7 +154,6 @@ void mdsystem::leapfrog()
 
         // Update positions
         particles[i].pos += dt * particles[i].vel;
-        particles[i].non_modulated_relative_pos += dt * particles[i].vel;
         // Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
             particles[i].pos[0] -= box_size;
@@ -201,6 +201,12 @@ void mdsystem::leapfrog()
 
 void mdsystem::create_verlet_list()
 {
+    //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
+    for (uint i = 0; i < nrparticles; i++) {
+        update_single_non_modulated_particle_position(i);
+        particles[i].pos_when_verlet_list_created = particles[i].pos;
+    }
+
     if (cells_used) {
         create_linked_cells();
     }
@@ -235,11 +241,6 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     verlet_particles_list.resize(nrparticles);
     verlet_neighbors_list.resize(nrparticles * 100); //This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
 
-    //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
-    for (uint i = 0; i < nrparticles; i++) {
-        particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_verlet_list_created, particles[i].pos);
-        particles[i].pos_when_verlet_list_created = particles[i].pos;
-    }
     //Creating new verlet_list
     verlet_particles_list[0] = 0;
     for (uint i = 0; i < nrparticles;) { // Loop through all particles
@@ -380,16 +381,15 @@ void mdsystem::calculate_Ek() {
 }
 
 void mdsystem::calculate_properties() {
-    if (((loop_num % nrinst) == 0) && (loop_num != 0)) {
-        calculate_temperature();
-        if (Cv_on) calculate_specific_heat();            
-        if (pressure_on) calculate_pressure();
-        if (msd_on) calculate_mean_square_displacement();
+    update_non_modulated_particle_positions();
+    calculate_temperature();
+    if (Cv_on) calculate_specific_heat();            
+    if (pressure_on) calculate_pressure();
+    if (msd_on) calculate_mean_square_displacement();
         
-        if (Ep_on) calculate_Ep();
-        if (Ek_on) calculate_Ek();
-        if (diff_c_on) calculate_diffusion_coefficient();
-    }
+    if (Ep_on) calculate_Ep();
+    if (Ek_on) calculate_Ek();
+    if (diff_c_on) calculate_diffusion_coefficient();
 }
 
 void mdsystem::calculate_specific_heat() {
@@ -477,7 +477,8 @@ void mdsystem::init_particles() {
         particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
         particles[i].vel = particles[i].start_vel;
         particles[i].pos = particles[i].start_pos;
-        particles[i].non_modulated_relative_pos = vec3();
+        particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
+        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].start_pos;
     }
 }
 
@@ -537,4 +538,17 @@ void mdsystem::calculate_largest_sqr_displacement()
             largest_sqr_displacement = sqr_displacement;
         }
     }
+}
+
+void mdsystem::update_non_modulated_particle_positions()
+{
+    for (uint i = 0; i < nrparticles; i++) {
+        update_single_non_modulated_particle_position(i);
+    }
+}
+
+inline void mdsystem::update_single_non_modulated_particle_position(uint i)
+{
+    particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_non_modulated_relative_pos_was_calculated, particles[i].pos);
+    particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
 }

@@ -91,6 +91,8 @@ private:
     void calculate_diffusion_coefficient();
     vec3 modulos_distance(vec3 pos1, vec3 pos2) const;
     void calculate_largest_sqr_displacement();
+    void update_non_modulated_particle_positions();
+    inline void update_single_non_modulated_particle_position(uint i);
 };
 
 #endif  /* MDSYSTEM_H */
