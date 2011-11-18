@@ -13,7 +13,7 @@ using std::ofstream;
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostattime_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
+mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
     cell_linklist(),
     cell_list    (),
     particles    (),
@@ -75,7 +75,7 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     Ep_on = Ep_on_in;
     Ek_on = Ek_on_in;
     desiredtemp = desiredtemp_in;
-    thermostattime = thermostattime_in;
+    thermostat_time = thermostat_time_in;
     thermostat_on = thermostat_on_in; 
 }
 
@@ -152,8 +152,15 @@ void mdsystem::run_simulation() {
 
 void mdsystem::leapfrog()
 {
-    vec3 zero_vector = vec3(0, 0, 0);
     ftype sum_sqr_vel = 0;
+    
+#if THERMOSTAT == LASSES_THERMOSTAT
+	ftype thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostat_time); //Lasse's version
+#elif THERMOSTAT == CHING_CHIS_THERMOSTAT
+	/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
+	ftype thermostat = loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
+#endif
+
     for (uint i = 0; i < nrparticles; i++) {
         //cout << "\ti = " << i << endl;
         if (loop_num == 2) {
@@ -166,15 +173,10 @@ void mdsystem::leapfrog()
         //TODO: Check if vel and pos are stored for the same time or not, in that case, compensate for that
 
         // Update velocities
+#if THERMOSTAT == CHING_CHIS_THERMOSTAT
+        particles[i].vel = particles[i].vel * thermostat;
+#endif
         particles[i].vel += dt * particles[i].acc;
-		if (thermostat_on && loop_num % nrinst == 0 && loop_num>1) {
-			//ftype thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostattime); //Lasse's version
-			
-			/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-			thermostat_time_constant = thermostattime; // This means simplest rescaling (Woodstock, 1971) is recovered. Otherwise we can assign the value.
-			ftype thermostat = sqrt(1 +  thermostattime / thermostat_time_constant * ((desiredtemp) / insttemp[loop_num % nrinst] - 1)); 
-			particles[i].vel = particles[i].vel*thermostat;
-		}
 		
 	    // Update positions
         particles[i].pos += dt * particles[i].vel;
