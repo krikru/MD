@@ -68,6 +68,7 @@ private:
     ftype thermostat;
     ftype desiredtemp;
     ftype thermostattime;
+	ftype thermostat_time_constant;
     bool thermostat_on;
     bool diff_c_on;
     bool Cv_on;

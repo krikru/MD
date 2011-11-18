@@ -29,7 +29,8 @@ int _tmain(int argc, _TCHAR* argv[])
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(100.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9);
-    ftype thermostattime_in = ftype(5)*dt_in;
+	ftype nrthermostattime_in = 3;
+	ftype thermostattime_in=  nrthermostattime_in * dt_in;
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 161.4 K) as it is stable at even 500 K
 
@@ -53,10 +54,10 @@ int _tmain(int argc, _TCHAR* argv[])
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 1000; // The number of particles
-    uint nrinst_in = 1;       // Number of timesteps between measurements of properties
+    uint nrparticles_in = 100; // The number of particles
+    uint nrinst_in = 100;       // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
-    ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.5 times sigma
+    ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
     // Init flags

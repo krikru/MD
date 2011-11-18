@@ -117,6 +117,7 @@ void mdsystem::run_simulation() {
             create_verlet_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
         }
+		cout << "T                    = "            << temp[loop_num/nrinst] << endl;
 		/*
 		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
         cout << "total energy         = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
@@ -167,7 +168,16 @@ void mdsystem::leapfrog()
 
         // Update velocities
         particles[i].vel += dt * particles[i].acc;
-        // Update positions
+		if (thermostat_on && loop_num % nrinst == 0 && loop_num>1) {
+			//ftype thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostattime); //Lasse's version
+			
+			/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
+			thermostat_time_constant = thermostattime; // This means simplest rescaling (Woodstock, 1971) is recovered. Otherwise we can assign the value.
+			ftype thermostat = sqrt(1 +  thermostattime / thermostat_time_constant * ((desiredtemp) / insttemp[loop_num % nrinst] - 1)); 
+			particles[i].vel = particles[i].vel*thermostat;
+		}
+		
+	    // Update positions
         particles[i].pos += dt * particles[i].vel;
         // Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
@@ -211,7 +221,7 @@ void mdsystem::leapfrog()
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
-    if (thermostat_on) thermostat = (1 - desiredtemp/insttemp[loop_num % nrinst])/(2*thermostattime);
+    
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
 }
 
