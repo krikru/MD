@@ -22,7 +22,7 @@ class mdsystem
 {
  public:
     // Constructor 
-    mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostattime_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
 
     // Public functions
     void run_simulation();
@@ -65,6 +65,10 @@ private:
     ftype box_size; // Length of one side of the box in length units
     ftype p_half_box_size; // Half box side
     ftype n_half_box_size; // Negated half box side
+    ftype thermostat;
+    ftype desiredtemp;
+    ftype thermostattime;
+    bool thermostat_on;
     bool diff_c_on;
     bool Cv_on;
     bool pressure_on;
