@@ -599,7 +599,3 @@ vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
 
     return d;
 }
-
-
-
-
