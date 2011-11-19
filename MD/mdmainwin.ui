@@ -6,468 +6,894 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>519</width>
+    <height>508</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Computational Physics Consulting</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="tabWidget_2">
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab_material">
+      <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Material</string>
+        <string>Settings</string>
        </attribute>
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>81</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Lattice type:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_2">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>81</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Sigma:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_3">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>81</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Epsilon:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_4">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>110</y>
-          <width>81</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Mass:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_5">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>140</y>
-          <width>91</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Lattice constant:</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="radioButton">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>20</y>
-          <width>82</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>FCC</string>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>50</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>80</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>110</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_8">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>140</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab_element">
+           <attribute name="title">
+            <string>Element</string>
+           </attribute>
+           <widget class="QLabel" name="label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Lattice type:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_2">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>50</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Sigma:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_3">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>80</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Epsilon:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_4">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>110</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Mass:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_5">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>140</y>
+              <width>91</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Lattice constant:</string>
+            </property>
+           </widget>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>50</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>80</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>110</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_8">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>140</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="comboBox">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>20</y>
+              <width>61</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <item>
+             <property name="text">
+              <string extracomment="Simple cubic">SC</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string extracomment="Face-centered cubic">FCC</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string extracomment="Body-centered cubic">BCC</string>
+             </property>
+            </item>
+           </widget>
+           <widget class="QPushButton" name="pushButton">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>180</y>
+              <width>91</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Save Element...</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_2">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>180</y>
+              <width>91</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Load Element...</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_15">
+            <property name="geometry">
+             <rect>
+              <x>200</x>
+              <y>50</y>
+              <width>61</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Ångström</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="comboBox_2">
+            <property name="geometry">
+             <rect>
+              <x>200</x>
+              <y>80</y>
+              <width>61</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <item>
+             <property name="text">
+              <string extracomment="Electron Volt">eV</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string extracomment="Ergon">erg</string>
+             </property>
+            </item>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="tab_environment">
+           <attribute name="title">
+            <string>Environment</string>
+           </attribute>
+           <widget class="QLabel" name="label_8">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>50</y>
+              <width>111</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Initial temperature:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_14">
+            <property name="geometry">
+             <rect>
+              <x>230</x>
+              <y>50</y>
+              <width>101</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>K</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_9">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>121</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Number of particles:</string>
+            </property>
+           </widget>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+            <property name="geometry">
+             <rect>
+              <x>140</x>
+              <y>50</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.000000000000000</double>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="spinBox_3">
+            <property name="geometry">
+             <rect>
+              <x>140</x>
+              <y>20</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="suffix">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="tab_3">
+           <attribute name="title">
+            <string>Control</string>
+           </attribute>
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>341</width>
+              <height>151</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Constants</string>
+            </property>
+            <widget class="QRadioButton" name="radioButton">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>51</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>NVE</string>
+             </property>
+            </widget>
+            <widget class="QRadioButton" name="radioButton_2">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>90</y>
+               <width>51</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>NPE</string>
+             </property>
+            </widget>
+            <widget class="QRadioButton" name="radioButton_3">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>60</y>
+               <width>51</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>NVT</string>
+             </property>
+            </widget>
+            <widget class="QRadioButton" name="radioButton_4">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>120</y>
+               <width>51</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>NPT</string>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QLabel" name="label_16">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>170</y>
+              <width>131</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Desired pressure:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_17">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>200</y>
+              <width>131</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Desired temperature:</string>
+            </property>
+           </widget>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_9">
+            <property name="geometry">
+             <rect>
+              <x>160</x>
+              <y>200</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_10">
+            <property name="geometry">
+             <rect>
+              <x>160</x>
+              <y>170</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="comboBox_3">
+            <property name="geometry">
+             <rect>
+              <x>250</x>
+              <y>170</y>
+              <width>61</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="currentIndex">
+             <number>2</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>Pa</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bar</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>atm</string>
+             </property>
+            </item>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="tab_simulation">
+           <attribute name="title">
+            <string>Simulation</string>
+           </attribute>
+           <widget class="QFrame" name="frame">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>331</width>
+              <height>231</height>
+             </rect>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QGroupBox" name="groupBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>Leapfrog integration</string>
+               </property>
+               <widget class="QLabel" name="label_13">
+                <property name="geometry">
+                 <rect>
+                  <x>230</x>
+                  <y>30</y>
+                  <width>21</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>fs</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_6">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>30</y>
+                  <width>101</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Time step length:</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_7">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>60</y>
+                  <width>131</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Number of time step:</string>
+                </property>
+               </widget>
+               <widget class="QSpinBox" name="spinBox_2">
+                <property name="geometry">
+                 <rect>
+                  <x>140</x>
+                  <y>60</y>
+                  <width>81</width>
+                  <height>22</height>
+                 </rect>
+                </property>
+               </widget>
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+                <property name="geometry">
+                 <rect>
+                  <x>140</x>
+                  <y>30</y>
+                  <width>81</width>
+                  <height>22</height>
+                 </rect>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+               </widget>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>Verlet list</string>
+               </property>
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+                <property name="geometry">
+                 <rect>
+                  <x>90</x>
+                  <y>60</y>
+                  <width>81</width>
+                  <height>22</height>
+                 </rect>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_10">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>30</y>
+                  <width>71</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Inner cutoff:</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_12">
+                <property name="geometry">
+                 <rect>
+                  <x>10</x>
+                  <y>60</y>
+                  <width>71</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>Oute cutoff:</string>
+                </property>
+               </widget>
+               <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                <property name="geometry">
+                 <rect>
+                  <x>90</x>
+                  <y>30</y>
+                  <width>81</width>
+                  <height>22</height>
+                 </rect>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_18">
+                <property name="geometry">
+                 <rect>
+                  <x>180</x>
+                  <y>30</y>
+                  <width>71</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>times Sigma</string>
+                </property>
+               </widget>
+               <widget class="QLabel" name="label_19">
+                <property name="geometry">
+                 <rect>
+                  <x>180</x>
+                  <y>60</y>
+                  <width>111</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+                <property name="text">
+                 <string>times outer cut-off</string>
+                </property>
+               </widget>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="tab_output">
+           <attribute name="title">
+            <string>Output</string>
+           </attribute>
+           <widget class="QLabel" name="label_11">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>131</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Mersurement interval:</string>
+            </property>
+           </widget>
+           <widget class="QSpinBox" name="spinBox">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>20</y>
+              <width>81</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000000</number>
+            </property>
+            <property name="value">
+             <number>1</number>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_20">
+            <property name="geometry">
+             <rect>
+              <x>240</x>
+              <y>20</y>
+              <width>61</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>timesteps</string>
+            </property>
+           </widget>
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>281</width>
+              <height>151</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Stored parameters</string>
+            </property>
+            <widget class="QCheckBox" name="checkBox">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>120</y>
+               <width>51</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>MSD</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_3">
+             <property name="geometry">
+              <rect>
+               <x>140</x>
+               <y>30</y>
+               <width>101</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Energy, total</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="cb_diffoceff">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>101</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Diffusion coeff.</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_6">
+             <property name="geometry">
+              <rect>
+               <x>140</x>
+               <y>90</y>
+               <width>121</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Energy, potential</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_5">
+             <property name="geometry">
+              <rect>
+               <x>140</x>
+               <y>60</y>
+               <width>111</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Energy, kinetic</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_7">
+             <property name="geometry">
+              <rect>
+               <x>140</x>
+               <y>120</y>
+               <width>121</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Cohesive energy</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_4">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>60</y>
+               <width>71</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Pressure</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_2">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>90</y>
+               <width>41</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Cv</string>
+             </property>
+            </widget>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QDialogButtonBox" name="settings_buttons">
+            <property name="standardButtons">
+             <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+            </property>
+            <property name="centerButtons">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
-      <widget class="QWidget" name="tab_simulation">
+      <widget class="QWidget" name="tab_2">
        <attribute name="title">
         <string>Simulation</string>
        </attribute>
-       <widget class="QLabel" name="label_6">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>101</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Time step length:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_7">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>131</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Number of time step:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_8">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>111</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Initial temperature:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_9">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>110</y>
-          <width>121</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Number of particles:</string>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
-          <y>20</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_13">
-        <property name="geometry">
-         <rect>
-          <x>210</x>
-          <y>20</y>
-          <width>101</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>fs</string>
-        </property>
-       </widget>
-       <widget class="QSpinBox" name="spinBox_2">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
-          <y>50</y>
-          <width>61</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
-          <y>80</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_14">
-        <property name="geometry">
-         <rect>
-          <x>210</x>
-          <y>80</y>
-          <width>101</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>K</string>
-        </property>
-       </widget>
-       <widget class="QSpinBox" name="spinBox_3">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
-          <y>110</y>
-          <width>61</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="tab_cutoffs">
-       <attribute name="title">
-        <string>Cut-offs</string>
-       </attribute>
-       <widget class="QLabel" name="label_10">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>111</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Inner cutoff:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_12">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>111</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Oute cutoff:</string>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox">
-        <property name="geometry">
-         <rect>
-          <x>90</x>
-          <y>20</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-        <property name="geometry">
-         <rect>
-          <x>90</x>
-          <y>50</y>
-          <width>62</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="tab_tracing">
-       <attribute name="title">
-        <string>Tracing</string>
-       </attribute>
-       <widget class="QLabel" name="label_11">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>131</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Mersurement interval:</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>140</y>
-          <width>71</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>MSD</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_2">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>110</y>
-          <width>71</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Cv</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_3">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>101</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Diffusion coeff.</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_4">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>71</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Pressure</string>
-        </property>
-       </widget>
-       <widget class="QSpinBox" name="spinBox">
-        <property name="geometry">
-         <rect>
-          <x>150</x>
-          <y>20</y>
-          <width>46</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
       </widget>
      </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="status_label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Idle.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="progress_lable">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>0 %</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -476,7 +902,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>519</width>
      <height>21</height>
     </rect>
    </property>
@@ -484,7 +910,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -497,20 +922,13 @@
     <property name="title">
      <string>Settings</string>
     </property>
+    <addaction name="actionSave_Settings"/>
+    <addaction name="actionLoad_Settings"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
@@ -518,7 +936,17 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>About...</string>
+   </property>
+  </action>
+  <action name="actionSave_Settings">
+   <property name="text">
+    <string>Save Settings...</string>
+   </property>
+  </action>
+  <action name="actionLoad_Settings">
+   <property name="text">
+    <string>Load Settings...</string>
    </property>
   </action>
  </widget>
