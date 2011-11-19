@@ -10,7 +10,7 @@ using std::ofstream;
 #include "mdsystem.h"
 
 ////////////////////////////////////////////////////////////////
-// PUBLIC FUNCTIONS
+// CONSTRUCTOR
 ////////////////////////////////////////////////////////////////
 
 mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in):
@@ -81,22 +81,16 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     thermostat_on = thermostat_on_in;
 }
 
-void mdsystem::init() {
-    init_particles();
-    create_verlet_list();
-}
+////////////////////////////////////////////////////////////////
+// PUBLIC FUNCTIONS
+////////////////////////////////////////////////////////////////
 
 void mdsystem::run_simulation() {
     init();
-    while (loop_num <= nrtimesteps) {
-#if 1 //TODO
-        cout << "loop number = " << loop_num << endl;
-        
-        if (loop_num == 9) {
-            loop_num = loop_num;
-        
-        }
-#endif
+
+    for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
+        cout << "loop number = " << loop_num << endl; //TODO: Remove
+
         //cout << "Force_calc1 " <<endl;
         force_calculation();
         //cout << "Force_calc2 " <<endl;
@@ -118,17 +112,15 @@ void mdsystem::run_simulation() {
             create_verlet_list();
             cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
         }
-		cout << "T                    = "            << temp[loop_num/nrinst] << endl;
-		/*
-		cout << "largest displacement = " <<  largest_sqr_displacement << endl;
+        /*
+        cout << "largest displacement = " <<  largest_sqr_displacement << endl;
         cout << "total energy         = " << instEk[loop_num % nrinst]+instEp[loop_num % nrinst] <<endl;
         cout << "T                    = "            << temp[loop_num/nrinst] << endl;
         cout << "nrinst               = "            << nrinst << endl;        
         cout << "pressure             = "    << pressure[loop_num/nrinst] << endl;
         cout << "MSD                  = "        << msd[loop_num/nrinst] << endl;   
         */
-        loop_num++;
-    }
+    } // for (loop_num = 0; loop_num <= nrtimesteps; loop_num++)
     cout<<"Complete"<<endl;
 
     // The out files are like cin
@@ -164,81 +156,71 @@ void mdsystem::run_simulation() {
     }
 }
 
-void mdsystem::leapfrog()
-{
-    ftype sum_sqr_vel = 0;
-    
-    //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
-#if THERMOSTAT == LASSES_THERMOSTAT
-	thermostat = loop_num > 0 ? (1 - desiredtemp/insttemp[(loop_num-1) % nrinst]) / (2*thermostat_time) : 0;
-#elif THERMOSTAT == CHING_CHIS_THERMOSTAT
-	/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-	thermostat = loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
-#endif
+////////////////////////////////////////////////////////////////
+// PRIVATE FUNCTIONS
+////////////////////////////////////////////////////////////////
 
-    for (uint i = 0; i < nrparticles; i++) {
-        //cout << "\ti = " << i << endl;
-        if (loop_num == 2) {
-            //cout << "i = " << i << endl;
-            if (i == 22) {
-                i = i; //TODO
-            }
-        }
+void mdsystem::init() {
+    init_particles();
+    create_verlet_list();
+}
 
-        //TODO: Check if vel and pos are stored for the same time or not, in that case, compensate for that
+void mdsystem::init_particles() {
+    // Allocate space for particles
+    particles.resize(nrparticles);
 
-        // Update velocities
-#if THERMOSTAT == CHING_CHIS_THERMOSTAT
-        particles[i].vel = particles[i].vel * thermostat;
-#endif
-        particles[i].vel += dt * particles[i].acc;
-		
-	    // Update positions
-        particles[i].pos += dt * particles[i].vel;
-        // Check boundaries in x-dir
-        if (particles[i].pos[0] >= box_size) {
-            particles[i].pos[0] -= box_size;
-            while (particles[i].pos[0] >= box_size) {
-                particles[i].pos[0] -= box_size;
-            }
-        }
-        else {
-            while (particles[i].pos[0] < 0) {
-                particles[i].pos[0] += box_size;
-            }
-        }
+    //Place out particles according to the lattice pattern
+    if (lattice_type == LT_FCC) {
+        for (uint i = 0; i < n; i++) {
+            for (uint j = 0; j < n; j++) {
+                for (uint k = 0; k < n; k++) {
+                    int help_index = 4*(i*n*n + j*n + k);
 
-        // Check boundaries in y-dir
-        if (particles[i].pos[1] >= box_size) {
-            particles[i].pos[1] -= box_size;
-            while (particles[i].pos[1] >= box_size) {
-                particles[i].pos[1] -= box_size;
-            }
-        }
-        else {
-            while (particles[i].pos[1] < 0) {
-                particles[i].pos[1] += box_size;
-            }
-        }
+                    (particles[help_index + 0]).start_pos[0] = i*a;
+                    (particles[help_index + 0]).start_pos[1] = j*a;
+                    (particles[help_index + 0]).start_pos[2] = k*a;
 
-        // Check boundaries in z-dir
-        if (particles[i].pos[2] >= box_size) {
-            particles[i].pos[2] -= box_size;
-            while (particles[i].pos[2] >= box_size) {
-                particles[i].pos[2] -= box_size;
-            }
-        }
-        else {
-            while (particles[i].pos[2] < 0) {
-                particles[i].pos[2] += box_size;
-            }
-        }
+                    (particles[help_index + 1]).start_pos[0] = i*a;
+                    (particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
+                    (particles[help_index + 1]).start_pos[2] = (k + 0.5f)*a;
 
-        sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
+                    (particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
+                    (particles[help_index + 2]).start_pos[1] = j*a;
+                    (particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
+
+                    (particles[help_index + 3]).start_pos[0] = (i + 0.5f)*a;
+                    (particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
+                    (particles[help_index + 3]).start_pos[2] = k*a;
+                }
+            }
+        }
     }
-    insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
     
-    if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
+    //Randomixe the velocities
+    vec3 sum_vel = vec3(0, 0, 0);
+    ftype sum_sqr_vel = 0;
+    for (uint i = 0; i < nrparticles; i++) {
+        for (uint j = 0; j < 3; j++) {
+            particles[i].start_vel[j] = 0;
+            for (uint terms = 0; terms < 5; terms++) { //This will effectivelly create a distribution very similar to normal distribution. (If you want to see what the distribution looks like, go to www.wolframalpha.com/input/?i=fourier((sinc(x))^n) and replace n by the number of terms)
+                particles[i].start_vel[j] += ftype(rand());
+            }
+        }
+        sum_vel    += particles[i].start_vel;
+        sum_sqr_vel += particles[i].start_vel.sqr_length();
+    }
+
+    // Compensate for incorrect start temperature and total velocities and finalize the initialization values
+    vec3 average_vel = sum_vel/ftype(nrparticles);
+    ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
+    ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
+    for (uint i = 0; i < nrparticles; i++) {
+        particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
+        particles[i].vel = particles[i].start_vel;
+        particles[i].pos = particles[i].start_pos;
+        particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
+        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].start_pos;
+    }
 }
 
 void mdsystem::create_verlet_list()
@@ -356,13 +338,115 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     }
 }
 
+//Updating largest square displacement.
+void mdsystem::calculate_largest_sqr_displacement()
+{
+    largest_sqr_displacement = 0;
+    for (uint i = 0; i < nrparticles; i++) {
+        ftype sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
+        if (sqr_displacement > largest_sqr_displacement) {
+            largest_sqr_displacement = sqr_displacement;
+        }
+    }
+}
+
+void mdsystem::update_non_modulated_particle_positions()
+{
+    for (uint i = 0; i < nrparticles; i++) {
+        update_single_non_modulated_particle_position(i);
+    }
+}
+
+inline void mdsystem::update_single_non_modulated_particle_position(uint i)
+{
+    particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_non_modulated_relative_pos_was_calculated, particles[i].pos);
+    particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
+}
+
+void mdsystem::leapfrog()
+{
+    ftype sum_sqr_vel = 0;
+    
+    //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
+#if THERMOSTAT == LASSES_THERMOSTAT
+	thermostat = loop_num > 0 ? (1 - desiredtemp/insttemp[(loop_num-1) % nrinst]) / (2*thermostat_time) : 0;
+#elif THERMOSTAT == CHING_CHIS_THERMOSTAT
+	/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
+	thermostat = loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
+#endif
+
+    for (uint i = 0; i < nrparticles; i++) {
+        //cout << "\ti = " << i << endl;
+        if (loop_num == 2) {
+            //cout << "i = " << i << endl;
+            if (i == 22) {
+                i = i; //TODO
+            }
+        }
+
+        //TODO: Check if vel and pos are stored for the same time or not, in that case, compensate for that
+
+        // Update velocities
+#if THERMOSTAT == CHING_CHIS_THERMOSTAT
+        particles[i].vel = particles[i].vel * thermostat;
+#endif
+        particles[i].vel += dt * particles[i].acc;
+		
+	    // Update positions
+        particles[i].pos += dt * particles[i].vel;
+        // Check boundaries in x-dir
+        if (particles[i].pos[0] >= box_size) {
+            particles[i].pos[0] -= box_size;
+            while (particles[i].pos[0] >= box_size) {
+                particles[i].pos[0] -= box_size;
+            }
+        }
+        else {
+            while (particles[i].pos[0] < 0) {
+                particles[i].pos[0] += box_size;
+            }
+        }
+
+        // Check boundaries in y-dir
+        if (particles[i].pos[1] >= box_size) {
+            particles[i].pos[1] -= box_size;
+            while (particles[i].pos[1] >= box_size) {
+                particles[i].pos[1] -= box_size;
+            }
+        }
+        else {
+            while (particles[i].pos[1] < 0) {
+                particles[i].pos[1] += box_size;
+            }
+        }
+
+        // Check boundaries in z-dir
+        if (particles[i].pos[2] >= box_size) {
+            particles[i].pos[2] -= box_size;
+            while (particles[i].pos[2] >= box_size) {
+                particles[i].pos[2] -= box_size;
+            }
+        }
+        else {
+            while (particles[i].pos[2] < 0) {
+                particles[i].pos[2] += box_size;
+            }
+        }
+
+        sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
+    }
+    insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
+    
+    if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
+}
+
 void mdsystem::force_calculation() { //Using si-units
     // Reset accelrations for all particles
     for (uint k = 0; k < nrparticles; k++) {
         particles[k].acc = vec3(0, 0, 0);
     }
-    ftype distance;
     ftype sqr_distance;
+    ftype sqr_distance_inv;
     ftype distance_inv;
     ftype p = sqr_sigma / sqr_inner_cutoff; // For calculating the cutoff energy
     p = p*p*p;
@@ -377,11 +461,11 @@ void mdsystem::force_calculation() { //Using si-units
             if (sqr_distance >= sqr_inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one
             }
-            distance = sqrt(sqr_distance);
+            sqr_distance_inv = 1/sqr_distance;
 
             //Calculating acceleration
-            distance_inv = 1 / distance;
-            p = sqr_sigma * distance_inv * distance_inv;
+            distance_inv = sqrt(sqr_distance_inv);
+            p = sqr_sigma * sqr_distance_inv;
             p = p*p*p;
             ftype acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
 
@@ -391,8 +475,9 @@ void mdsystem::force_calculation() { //Using si-units
             particles[i2].acc -=  acceleration * r_hat;
 
             // Update properties
+            //TODO: Remove these two from force calculation and place them somewhere else
             if (Ep_on) instEp[loop_num % nrinst] += four_epsilon * p * (p - 1) - E_cutoff;
-            if (pressure_on) distanceforcesum += mass * acceleration * distance;
+            if (pressure_on) distanceforcesum += mass * acceleration / distance_inv;
         }
     }
 #if THERMOSTAT == LASSES_THERMOSTAT
@@ -404,7 +489,18 @@ void mdsystem::force_calculation() { //Using si-units
 #endif
 }
 
-    
+void mdsystem::calculate_properties() {
+    update_non_modulated_particle_positions();
+    calculate_temperature();
+    if (Cv_on) calculate_specific_heat();            
+    if (pressure_on) calculate_pressure();
+    if (msd_on) calculate_mean_square_displacement();
+        
+    if (Ep_on) calculate_Ep();
+    if (Ek_on) calculate_Ek();
+    if (diff_c_on) calculate_diffusion_coefficient();
+}
+
 void mdsystem::calculate_temperature() {
     ftype sum = 0;
     for (uint i = 0; i < nrinst; i++) {
@@ -428,18 +524,6 @@ void mdsystem::calculate_Ek() {
         sum += instEk[i];
     }
     Ek[loop_num/nrinst] = sum/nrinst;
-}
-
-void mdsystem::calculate_properties() {
-    update_non_modulated_particle_positions();
-    calculate_temperature();
-    if (Cv_on) calculate_specific_heat();            
-    if (pressure_on) calculate_pressure();
-    if (msd_on) calculate_mean_square_displacement();
-        
-    if (Ep_on) calculate_Ep();
-    if (Ek_on) calculate_Ek();
-    if (diff_c_on) calculate_diffusion_coefficient();
 }
 
 void mdsystem::calculate_specific_heat() {
@@ -468,68 +552,6 @@ void mdsystem::calculate_mean_square_displacement() {
 
 void mdsystem::calculate_diffusion_coefficient() {
     diffusion_coefficient[loop_num/nrinst] = msd[loop_num/nrinst]/(6*dt*loop_num);
-}
-
-////////////////////////////////////////////////////////////////
-// PRIVATE FUNCTIONS
-////////////////////////////////////////////////////////////////
-
-void mdsystem::init_particles() {
-    // Allocate space for particles
-    particles.resize(nrparticles);
-
-    //Place out particles according to the lattice pattern
-    if (lattice_type == LT_FCC) {
-        for (uint i = 0; i < n; i++) {
-            for (uint j = 0; j < n; j++) {
-                for (uint k = 0; k < n; k++) {
-                    int help_index = 4*(i*n*n + j*n + k);
-
-                    (particles[help_index + 0]).start_pos[0] = i*a;
-                    (particles[help_index + 0]).start_pos[1] = j*a;
-                    (particles[help_index + 0]).start_pos[2] = k*a;
-
-                    (particles[help_index + 1]).start_pos[0] = i*a;
-                    (particles[help_index + 1]).start_pos[1] = (j + 0.5f)*a;
-                    (particles[help_index + 1]).start_pos[2] = (k + 0.5f)*a;
-
-                    (particles[help_index + 2]).start_pos[0] = (i + 0.5f)*a;
-                    (particles[help_index + 2]).start_pos[1] = j*a;
-                    (particles[help_index + 2]).start_pos[2] = (k + 0.5f)*a;
-
-                    (particles[help_index + 3]).start_pos[0] = (i + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[1] = (j + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[2] = k*a;
-                }
-            }
-        }
-    }
-    
-    //Randomixe the velocities
-    vec3 sum_vel = vec3(0, 0, 0);
-    ftype sum_sqr_vel = 0;
-    for (uint i = 0; i < nrparticles; i++) {
-        for (uint j = 0; j < 3; j++) {
-            particles[i].start_vel[j] = 0;
-            for (uint terms = 0; terms < 5; terms++) { //This will effectivelly create a distribution very similar to normal distribution. (If you want to see what the distribution looks like, go to www.wolframalpha.com/input/?i=fourier((sinc(x))^n) and replace n by the number of terms)
-                particles[i].start_vel[j] += ftype(rand());
-            }
-        }
-        sum_vel    += particles[i].start_vel;
-        sum_sqr_vel += particles[i].start_vel.sqr_length();
-    }
-
-    // Compensate for incorrect start temperature and total velocities and finalize the initialization values
-    vec3 average_vel = sum_vel/ftype(nrparticles);
-    ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
-    ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
-    for (uint i = 0; i < nrparticles; i++) {
-        particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
-        particles[i].vel = particles[i].start_vel;
-        particles[i].pos = particles[i].start_pos;
-        particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
-        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].start_pos;
-    }
 }
 
 vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
@@ -578,27 +600,6 @@ vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
     return d;
 }
 
-//Updating largest square displacement.
-void mdsystem::calculate_largest_sqr_displacement()
-{
-    largest_sqr_displacement = 0;
-    for (uint i = 0; i < nrparticles; i++) {
-        ftype sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
-        if (sqr_displacement > largest_sqr_displacement) {
-            largest_sqr_displacement = sqr_displacement;
-        }
-    }
-}
 
-void mdsystem::update_non_modulated_particle_positions()
-{
-    for (uint i = 0; i < nrparticles; i++) {
-        update_single_non_modulated_particle_position(i);
-    }
-}
 
-inline void mdsystem::update_single_non_modulated_particle_position(uint i)
-{
-    particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_non_modulated_relative_pos_was_calculated, particles[i].pos);
-    particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
-}
+
