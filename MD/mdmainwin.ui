@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -99,47 +99,7 @@
              <string>Lattice constant:</string>
             </property>
            </widget>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>50</y>
-              <width>81</width>
-              <height>22</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>80</y>
-              <width>81</width>
-              <height>22</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>110</y>
-              <width>81</width>
-              <height>22</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_8">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>140</y>
-              <width>81</width>
-              <height>22</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QComboBox" name="comboBox">
+           <widget class="QComboBox" name="lattice_type_cb">
             <property name="geometry">
              <rect>
               <x>110</x>
@@ -167,7 +127,7 @@
              </property>
             </item>
            </widget>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="save_element_pb">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -186,7 +146,7 @@
              <string>Save Element...</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="load_element_pb">
             <property name="geometry">
              <rect>
               <x>110</x>
@@ -212,7 +172,7 @@
              <string>Å</string>
             </property>
            </widget>
-           <widget class="QComboBox" name="comboBox_2">
+           <widget class="QComboBox" name="epsilon_unit_cb">
             <property name="geometry">
              <rect>
               <x>200</x>
@@ -256,6 +216,46 @@
             </property>
             <property name="text">
              <string>u</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="sigma_le">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>50</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="epsilon_le">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>80</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="mass_le">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>110</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lattice_constant_le">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>140</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
             </property>
            </widget>
           </widget>
@@ -302,42 +302,24 @@
              <string>Number of particles:</string>
             </property>
            </widget>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+           <widget class="QLineEdit" name="init_temperature_le">
             <property name="geometry">
              <rect>
               <x>120</x>
               <y>50</y>
               <width>81</width>
-              <height>22</height>
+              <height>21</height>
              </rect>
             </property>
-            <property name="minimum">
-             <double>0.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>1000000.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.000000000000000</double>
-            </property>
            </widget>
-           <widget class="QSpinBox" name="spinBox_3">
+           <widget class="QLineEdit" name="num_particles_le">
             <property name="geometry">
              <rect>
               <x>120</x>
               <y>20</y>
               <width>81</width>
-              <height>22</height>
+              <height>21</height>
              </rect>
-            </property>
-            <property name="suffix">
-             <string/>
-            </property>
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="value">
-             <number>0</number>
             </property>
            </widget>
           </widget>
@@ -350,65 +332,63 @@
              <rect>
               <x>10</x>
               <y>10</y>
-              <width>281</width>
-              <height>151</height>
+              <width>201</width>
+              <height>121</height>
              </rect>
             </property>
             <property name="title">
              <string>Constants</string>
             </property>
-            <widget class="QRadioButton" name="radioButton">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>30</y>
-               <width>51</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>NVE</string>
-             </property>
-            </widget>
-            <widget class="QRadioButton" name="radioButton_2">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>90</y>
-               <width>51</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>NPE</string>
-             </property>
-            </widget>
-            <widget class="QRadioButton" name="radioButton_3">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>60</y>
-               <width>51</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>NVT</string>
-             </property>
-            </widget>
-            <widget class="QRadioButton" name="radioButton_4">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>120</y>
-               <width>51</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>NPT</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <widget class="QRadioButton" name="npe_rb">
+                 <property name="text">
+                  <string>NPE</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="nve_rb">
+                 <property name="text">
+                  <string>NVE</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="nvt_rb">
+                 <property name="text">
+                  <string>NVT</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="npt_rb">
+                 <property name="text">
+                  <string>NPT</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="constants_comment_l">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>TextLabel</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
            <widget class="QLabel" name="label_16">
             <property name="geometry">
@@ -436,27 +416,7 @@
              <string>Desired temperature:</string>
             </property>
            </widget>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_9">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>200</y>
-              <width>81</width>
-              <height>22</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_10">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>170</y>
-              <width>81</width>
-              <height>22</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QComboBox" name="comboBox_3">
+           <widget class="QComboBox" name="desired_pressure_unit_cb">
             <property name="geometry">
              <rect>
               <x>210</x>
@@ -497,6 +457,26 @@
              <string>K</string>
             </property>
            </widget>
+           <widget class="QLineEdit" name="desire_temperature_le">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>200</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="desired_pressure_le">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>170</y>
+              <width>81</width>
+              <height>21</height>
+             </rect>
+            </property>
+           </widget>
           </widget>
           <widget class="QWidget" name="tab_simulation">
            <attribute name="title">
@@ -507,7 +487,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>301</width>
+              <width>291</width>
               <height>231</height>
              </rect>
             </property>
@@ -538,7 +518,7 @@
                <widget class="QLabel" name="label_13">
                 <property name="geometry">
                  <rect>
-                  <x>230</x>
+                  <x>210</x>
                   <y>30</y>
                   <width>21</width>
                   <height>21</height>
@@ -574,27 +554,24 @@
                  <string>Number of time step:</string>
                 </property>
                </widget>
-               <widget class="QSpinBox" name="spinBox_2">
+               <widget class="QLineEdit" name="time_step_le">
                 <property name="geometry">
                  <rect>
-                  <x>140</x>
-                  <y>60</y>
+                  <x>120</x>
+                  <y>30</y>
                   <width>81</width>
-                  <height>22</height>
+                  <height>21</height>
                  </rect>
                 </property>
                </widget>
-               <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+               <widget class="QLineEdit" name="num_time_steps_le">
                 <property name="geometry">
                  <rect>
-                  <x>140</x>
-                  <y>30</y>
+                  <x>120</x>
+                  <y>60</y>
                   <width>81</width>
-                  <height>22</height>
+                  <height>21</height>
                  </rect>
-                </property>
-                <property name="decimals">
-                 <number>2</number>
                 </property>
                </widget>
               </widget>
@@ -616,16 +593,6 @@
                <property name="title">
                 <string>Verlet list</string>
                </property>
-               <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-                <property name="geometry">
-                 <rect>
-                  <x>90</x>
-                  <y>60</y>
-                  <width>81</width>
-                  <height>22</height>
-                 </rect>
-                </property>
-               </widget>
                <widget class="QLabel" name="label_10">
                 <property name="geometry">
                  <rect>
@@ -652,20 +619,10 @@
                  <string>Oute cutoff:</string>
                 </property>
                </widget>
-               <widget class="QDoubleSpinBox" name="doubleSpinBox">
-                <property name="geometry">
-                 <rect>
-                  <x>90</x>
-                  <y>30</y>
-                  <width>81</width>
-                  <height>22</height>
-                 </rect>
-                </property>
-               </widget>
                <widget class="QLabel" name="label_18">
                 <property name="geometry">
                  <rect>
-                  <x>180</x>
+                  <x>170</x>
                   <y>30</y>
                   <width>71</width>
                   <height>21</height>
@@ -678,7 +635,7 @@
                <widget class="QLabel" name="label_19">
                 <property name="geometry">
                  <rect>
-                  <x>180</x>
+                  <x>170</x>
                   <y>60</y>
                   <width>111</width>
                   <height>21</height>
@@ -686,6 +643,26 @@
                 </property>
                 <property name="text">
                  <string>times outer cut-off</string>
+                </property>
+               </widget>
+               <widget class="QLineEdit" name="inner_cuttof_le">
+                <property name="geometry">
+                 <rect>
+                  <x>80</x>
+                  <y>30</y>
+                  <width>81</width>
+                  <height>21</height>
+                 </rect>
+                </property>
+               </widget>
+               <widget class="QLineEdit" name="outer_cuttof_le">
+                <property name="geometry">
+                 <rect>
+                  <x>80</x>
+                  <y>60</y>
+                  <width>81</width>
+                  <height>21</height>
+                 </rect>
                 </property>
                </widget>
               </widget>
@@ -716,10 +693,10 @@
              <string>Mersurement interval:</string>
             </property>
            </widget>
-           <widget class="QSpinBox" name="spinBox">
+           <widget class="QSpinBox" name="measurement_interval_sb">
             <property name="geometry">
              <rect>
-              <x>150</x>
+              <x>130</x>
               <y>20</y>
               <width>81</width>
               <height>22</height>
@@ -738,7 +715,7 @@
            <widget class="QLabel" name="label_20">
             <property name="geometry">
              <rect>
-              <x>240</x>
+              <x>220</x>
               <y>20</y>
               <width>61</width>
               <height>21</height>
@@ -753,14 +730,14 @@
              <rect>
               <x>10</x>
               <y>60</y>
-              <width>281</width>
+              <width>271</width>
               <height>151</height>
              </rect>
             </property>
             <property name="title">
              <string>Stored properties</string>
             </property>
-            <widget class="QCheckBox" name="checkBox">
+            <widget class="QCheckBox" name="msd_cb">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -773,7 +750,7 @@
               <string>MSD</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="checkBox_3">
+            <widget class="QCheckBox" name="energy_total_cb">
              <property name="geometry">
               <rect>
                <x>140</x>
@@ -786,7 +763,7 @@
               <string>Energy, total</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="cb_diffoceff">
+            <widget class="QCheckBox" name="diffoceff_cb">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -799,7 +776,7 @@
               <string>Diffusion coeff.</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="checkBox_6">
+            <widget class="QCheckBox" name="energy_potential_cb">
              <property name="geometry">
               <rect>
                <x>140</x>
@@ -812,7 +789,7 @@
               <string>Energy, potential</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="checkBox_5">
+            <widget class="QCheckBox" name="energy_kinetic_cb">
              <property name="geometry">
               <rect>
                <x>140</x>
@@ -825,7 +802,7 @@
               <string>Energy, kinetic</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="checkBox_7">
+            <widget class="QCheckBox" name="cohesive_energy_cb">
              <property name="geometry">
               <rect>
                <x>140</x>
@@ -838,7 +815,7 @@
               <string>Cohesive energy</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="checkBox_4">
+            <widget class="QCheckBox" name="pressure_cb">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -851,7 +828,7 @@
               <string>Pressure</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="checkBox_2">
+            <widget class="QCheckBox" name="cv_cb">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -865,7 +842,7 @@
              </property>
             </widget>
            </widget>
-           <widget class="QCheckBox" name="checkBox_9">
+           <widget class="QCheckBox" name="store_particle_possitions_cb">
             <property name="geometry">
              <rect>
               <x>20</x>
@@ -884,7 +861,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QDialogButtonBox" name="settings_buttons">
+           <widget class="QDialogButtonBox" name="settings_bb">
             <property name="standardButtons">
              <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
             </property>
@@ -901,32 +878,42 @@
        <attribute name="title">
         <string>Simulation</string>
        </attribute>
-       <widget class="QPushButton" name="pushButton_3">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>91</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Start Simulation</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_8">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>91</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Draw particles</string>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QPushButton" name="start_simulation_pb">
+            <property name="text">
+             <string>Start Simulation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="draw_particles_cb">
+            <property name="text">
+             <string>Draw particles</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTextBrowser" name="simuklation_output_tb"/>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="tab_4">
        <attribute name="title">
@@ -938,7 +925,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QLabel" name="status_label">
+       <widget class="QLabel" name="status_l">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -947,19 +934,6 @@
         </property>
         <property name="text">
          <string>Idle.</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="progress_lable">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>0 %</string>
         </property>
        </widget>
       </item>
