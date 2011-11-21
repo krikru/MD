@@ -14,7 +14,6 @@ public:
     vec3 vel;
     vec3 acc;
     vec3 start_pos;
-    vec3 start_vel;
 };
 
 #endif  /* PARTICLE_H */

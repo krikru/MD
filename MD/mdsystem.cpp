@@ -189,13 +189,13 @@ void mdsystem::init_particles() {
     ftype sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
         for (uint j = 0; j < 3; j++) {
-            particles[i].start_vel[j] = 0;
+            particles[i].vel[j] = 0;
             for (uint terms = 0; terms < 5; terms++) { //This will effectivelly create a distribution very similar to normal distribution. (If you want to see what the distribution looks like, go to www.wolframalpha.com/input/?i=fourier((sinc(x))^n) and replace n by the number of terms)
-                particles[i].start_vel[j] += ftype(rand());
+                particles[i].vel[j] += ftype(rand());
             }
         }
-        sum_vel    += particles[i].start_vel;
-        sum_sqr_vel += particles[i].start_vel.sqr_length();
+        sum_vel    += particles[i].vel;
+        sum_sqr_vel += particles[i].vel.sqr_length();
     }
 
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
@@ -203,8 +203,7 @@ void mdsystem::init_particles() {
     ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
     ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
     for (uint i = 0; i < nrparticles; i++) {
-        particles[i].start_vel = (particles[i].start_vel - average_vel)*scale_factor;
-        particles[i].vel = particles[i].start_vel;
+        particles[i].vel = (particles[i].vel - average_vel)*scale_factor;
         particles[i].pos = particles[i].start_pos;
         particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
         particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].start_pos;
