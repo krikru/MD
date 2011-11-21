@@ -51,7 +51,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype temperature_in = ftype(100.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
-    //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 161.4 K) as it is stable at even 500 K
+    //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
 
     /* Should have the following properties:
      * -------------------------------------
