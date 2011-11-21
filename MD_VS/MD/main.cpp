@@ -32,7 +32,7 @@ int _tmain(int argc, _TCHAR* argv[])
     ftype nrthermostat_time_in = 3;
     ftype thermostat_time_in = nrthermostat_time_in * dt_in;
 #elif 1
-    //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 161.4 K) as it is stable at even 500 K
+    //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
 
     /* Should have the following properties:
      * -------------------------------------
