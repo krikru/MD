@@ -16,7 +16,12 @@ public:
     ~mdmainwin();
 
 private slots:
-    void on_actionExit_triggered();
+
+    void on_start_simulation_pb_clicked();
+
+private:
+    // Static member functions
+    static void process_events();
 
 private:
     Ui::mdmainwin *ui;

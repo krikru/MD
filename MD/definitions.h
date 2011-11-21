@@ -31,9 +31,15 @@ typedef  float                   ftype;
 typedef  base_float_vec3<ftype>  vec3 ;
 
 //Mathematical constants
+#if 0
 const ftype M_SQRT2    = ftype(1.41421356237309504880168872420969807856967187537695); // Square root of 2
 const ftype M_PI       = ftype(3.14159265358979323846264338327950288419716939937510); // pi
 const ftype M_E        = ftype(2.71828182845904523536028747135266249775724709369995); // Euler's number
+#elif 0
+#define  M_SQRT2  ftype(1.41421356237309504880168872420969807856967187537695) // Square root of 2
+#define  M_PI     ftype(3.14159265358979323846264338327950288419716939937510) // pi
+#define  M_E      ftype(2.71828182845904523536028747135266249775724709369995) // Euler's number
+#endif
 
 //Physical constants
 const ftype P_ERG      = ftype(1e-7             ); // [J  ] Ergon

@@ -12,15 +12,22 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mdmainwin.cpp \
-    glwidget.cpp
+    glwidget.cpp \
+    mdsystem.cpp
 
 HEADERS  += mdmainwin.h \
-    glwidget.h
+    glwidget.h \
+    mdsystem.h \
+    definitions.h \
+    base_float_vec3.h \
+    particle.h
 
 FORMS    += mdmainwin.ui
 
 RESOURCES += \
     mdresources.qrc
+
+
 
 
 

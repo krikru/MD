@@ -27,12 +27,15 @@ class mdsystem
     /********************
      * Public functions *
      ********************/
-    void run_simulation();
+    void run_simulation(void (*event_handler_in)(void));
 
 private:
     /*********************
      * Private variables *
      *********************/
+    // Comunication with the application
+    void (*event_handler)(void);
+
     // The time
     ftype            dt;          // The length of each timestep
     uint             loop_num;    // How many timesteps that has been taken in the simulation
@@ -41,7 +44,7 @@ private:
     uint             nrparticles;  // The number of particles in the system
     uint             lattice_type; // (enum_lattice_types)
     ftype            mass;         // The mass of one atom
-    vector<particle> particles;    //The elements in the vector particles are particle objects
+    vector<particle> particles;    // The elements in the vector particles are particle objects
     // Initialization
     ftype init_temp; // The temperature the system has when it is initialized
     ftype a;         // The lattice constant
