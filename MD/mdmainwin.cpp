@@ -4,7 +4,10 @@
 
 // Own includes
 #include "definitions.h"
-#include "mdsystem.h"
+
+// Qt includes
+#include <QMessageBox>
+#include <QCloseEvent>
 
 // Widgets
 #include "mdmainwin.h"
@@ -76,7 +79,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     // Init simulation specific constants
     uint nrparticles_in = 1000; // The number of particles
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
+    uint nrtimesteps_in = 500; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
@@ -94,12 +97,30 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool Ek_on_in = true;
 
     // Init system and run simulation
-    mdsystem simulation(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
-    simulation.run_simulation(process_events);
+    simulation.init(process_events, nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
+    simulation.run_simulation();
     //std::cout << "Random seed " << random_seed << std::endl;
 }
 
 void mdmainwin::process_events()
 {
     QApplication::processEvents(QEventLoop::AllEvents);
+}
+
+void mdmainwin::closeEvent(QCloseEvent *event)
+{
+    if (simulation.is_operating()) {
+        // Ask the user whether to abort the operation or not
+        QMessageBox msg_box;
+        msg_box.setText("An operation is currently being executed.");
+        msg_box.setInformativeText("Do you want to abort the operation?");
+        msg_box.setStandardButtons(QMessageBox::Abort | QMessageBox::Cancel);
+        msg_box.setDefaultButton(QMessageBox::Cancel);
+        int result = msg_box.exec();
+        if (result != QMessageBox::Abort) {
+            event->ignore();
+            return;
+        }
+    }
+    simulation.abort_activities();
 }

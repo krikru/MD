@@ -1,5 +1,7 @@
 
 // Standard includes
+#include <stdexcept>
+using std::runtime_error;
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
@@ -14,8 +16,23 @@ using std::ofstream;
 // CONSTRUCTOR
 ////////////////////////////////////////////////////////////////
 
-mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+mdsystem::mdsystem()
 {
+    operating = false;
+}
+
+////////////////////////////////////////////////////////////////
+// PUBLIC FUNCTIONS
+////////////////////////////////////////////////////////////////
+
+void mdsystem::init(void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+{
+    // The system is *always* operating when running non-const functions
+    start_operation();
+
+    // Set the event handler
+    event_handler = event_handler_in;
+
     lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
     sqr_outer_cutoff = outer_cutoff_in*outer_cutoff_in; // Parameter for the Verlet list
@@ -66,21 +83,32 @@ mdsystem::mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype 
     desiredtemp = desiredtemp_in;
     thermostat_time = thermostat_time_in;
     thermostat_on = thermostat_on_in;
+
+    abort_activities_requested = false;
+
+    init_particles();
+    create_verlet_list();
+
+    // Finish the operation
+    finish_operation();
 }
 
-////////////////////////////////////////////////////////////////
-// PUBLIC FUNCTIONS
-////////////////////////////////////////////////////////////////
+void mdsystem::run_simulation()
+{
+    // The out files are like cin
+    ofstream out_etot_data ;
+    ofstream out_temp_data ;
+    ofstream out_therm_data;
+    ofstream out_msd_data  ;
 
-void mdsystem::run_simulation(void (*event_handler_in)(void)) {
-    // Set the event handler
-    event_handler = event_handler_in;
-
-    // Initialize the system
-    init();
+    // The system is *always* operating when running non-const functions
+    start_operation();
 
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
+        if (abort_activities_requested) {
+            goto operation_finished;
+        }
         cout << "loop number = " << loop_num << endl; //TODO: Remove
 
         // Evolve the system in time
@@ -101,42 +129,42 @@ void mdsystem::run_simulation(void (*event_handler_in)(void)) {
         }
 
         // Process events
-        event_handler();
+        process_events();
     }
     cout << "Simulation completed" << endl;
-
-    // The out files are like cin
-    ofstream out_etot_data ;
-    ofstream out_temp_data ;
-    ofstream out_therm_data;
-    ofstream out_msd_data;
 
     // Open the output files
     out_etot_data .open("TotalEnergy.dat");
     out_temp_data .open("Temperature.dat");
     out_therm_data.open("Thermostat.dat" );
-    out_msd_data.open("MSD.dat" );
+    out_msd_data  .open("MSD.dat"        );
     if( !out_etot_data || !out_temp_data ) { // file couldn't be opened
         cerr << "Error: Output files could not be opened" << endl;
     }
     else {
         for (uint i = 1; i < temp.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
             out_etot_data  << setprecision(9) << Ek   [i] + Ep[i] << endl;
             out_temp_data  << setprecision(9) << temp [i]         << endl;
             out_therm_data << setprecision(9) << therm[i]         << endl;
-            out_msd_data<<setprecision(9)<< msd[i]<<endl;
+            out_msd_data   << setprecision(9) << msd  [i]         << endl;
 
             // Process events
-            event_handler();
+            process_events();
         }
         out_etot_data .close();
         out_temp_data .close();
         out_therm_data.close();
-        out_msd_data.close();
+        out_msd_data  .close();
     }
 
     for (uint i = 1; i < temp.size();i++)
     {
+        if (abort_activities_requested) {
+            goto operation_finished;
+        }
         cout << "Temp    = " <<setprecision(9) << temp[i]         << endl;
         cout << "Ek + Ep = " <<setprecision(9) << Ek  [i] + Ep[i] << endl;
         cout << "Ek      = " <<setprecision(9) << Ek  [i]         << endl;
@@ -144,18 +172,27 @@ void mdsystem::run_simulation(void (*event_handler_in)(void)) {
         cout << "Cv      = " <<setprecision(9) << Cv  [i]         << endl;
         
         // Process events
-        event_handler();
+        process_events();
     }
+
+operation_finished:
+    // Finish the operation
+    finish_operation();
+}
+
+void mdsystem::abort_activities()
+{
+    abort_activities_requested = true;
+}
+
+bool mdsystem::is_operating() const
+{
+    return operating;
 }
 
 ////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
 ////////////////////////////////////////////////////////////////
-
-void mdsystem::init() {
-    init_particles();
-    create_verlet_list();
-}
 
 void mdsystem::init_particles() {
     // Allocate space for particles
@@ -361,10 +398,10 @@ void mdsystem::leapfrog()
     
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
 #if THERMOSTAT == LASSES_THERMOSTAT
-	thermostat = loop_num > 0 ? (1 - desiredtemp/insttemp[(loop_num-1) % nrinst]) / (2*thermostat_time) : 0;
+    thermostat = thermostat_on && loop_num > 0 ? (1 - desiredtemp/insttemp[(loop_num-1) % nrinst]) / (2*thermostat_time) : 0;
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
-	/////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-	thermostat = loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
+    /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
+    thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
 #endif
 
     for (uint i = 0; i < nrparticles; i++) {
@@ -380,7 +417,9 @@ void mdsystem::leapfrog()
 
         // Update velocities
 #if THERMOSTAT == CHING_CHIS_THERMOSTAT
-        particles[i].vel = particles[i].vel * thermostat;
+        if (thermostat_on) {
+            particles[i].vel = particles[i].vel * thermostat;
+        }
 #endif
         particles[i].vel += dt * particles[i].acc;
 		
@@ -590,4 +629,28 @@ vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
     }
 
     return d;
+}
+
+void mdsystem::process_events()
+{
+    if (event_handler) {
+        event_handler();
+    }
+}
+
+void mdsystem::start_operation()
+{
+    while (operating) {
+        // Wait for the other operation to finish
+        process_events();
+    }
+    operating = true;
+}
+
+void mdsystem::finish_operation()
+{
+    if (!operating) {
+        throw runtime_error("Tried to finish operation that was never started");
+    }
+    operating = false;
 }

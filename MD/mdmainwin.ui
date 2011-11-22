@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>391</height>
+    <width>387</width>
+    <height>410</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>3</number>
+           <number>0</number>
           </property>
           <property name="usesScrollButtons">
            <bool>true</bool>
@@ -962,8 +962,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>383</width>
-     <height>18</height>
+     <width>387</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

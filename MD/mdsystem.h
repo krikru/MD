@@ -22,19 +22,26 @@ class mdsystem
 {
  public:
     // Constructor 
-    mdsystem(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    mdsystem();
 
     /********************
      * Public functions *
      ********************/
-    void run_simulation(void (*event_handler_in)(void));
+    void init(void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    void run_simulation();
+    void abort_activities();
+    bool is_operating() const;
 
 private:
     /*********************
      * Private variables *
      *********************/
+    // Thread safety
+    bool operating;
+
     // Comunication with the application
     void (*event_handler)(void);
+    bool abort_activities_requested;
 
     // The time
     ftype            dt;          // The length of each timestep
@@ -99,7 +106,6 @@ private:
      * Private functions *
      *********************/
     // Initialization
-    void init();
     void init_particles();
     // Verlet list
     void create_verlet_list();
@@ -121,7 +127,15 @@ private:
     void calculate_mean_square_displacement();
     void calculate_diffusion_coefficient();
 
+    // Arithmetic operations
     vec3 modulos_distance(vec3 pos1, vec3 pos2) const;
+
+    // Communication with the application
+    void process_events();
+
+    // Thread safety
+    void start_operation();
+    void finish_operation();
 };
 
 #endif  /* MDSYSTEM_H */
