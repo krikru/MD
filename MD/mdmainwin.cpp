@@ -74,7 +74,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 100; // The number of particles
+    uint nrparticles_in = 1000; // The number of particles
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
@@ -85,7 +85,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype thermostat_time_in = nrthermostat_time_in * dt_in;
 
     // Init flags
-    bool thermostat_on_in = true;
+    bool thermostat_on_in = !true;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;

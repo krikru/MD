@@ -109,11 +109,13 @@ void mdsystem::run_simulation(void (*event_handler_in)(void)) {
     ofstream out_etot_data ;
     ofstream out_temp_data ;
     ofstream out_therm_data;
+    ofstream out_msd_data;
 
     // Open the output files
     out_etot_data .open("TotalEnergy.dat");
     out_temp_data .open("Temperature.dat");
     out_therm_data.open("Thermostat.dat" );
+    out_msd_data.open("MSD.dat" );
     if( !out_etot_data || !out_temp_data ) { // file couldn't be opened
         cerr << "Error: Output files could not be opened" << endl;
     }
@@ -122,6 +124,7 @@ void mdsystem::run_simulation(void (*event_handler_in)(void)) {
             out_etot_data  << setprecision(9) << Ek   [i] + Ep[i] << endl;
             out_temp_data  << setprecision(9) << temp [i]         << endl;
             out_therm_data << setprecision(9) << therm[i]         << endl;
+            out_msd_data<<setprecision(9)<< msd[i]<<endl;
 
             // Process events
             event_handler();
@@ -129,6 +132,7 @@ void mdsystem::run_simulation(void (*event_handler_in)(void)) {
         out_etot_data .close();
         out_temp_data .close();
         out_therm_data.close();
+        out_msd_data.close();
     }
 
     for (uint i = 1; i < temp.size();i++)
