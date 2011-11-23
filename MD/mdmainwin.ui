@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>mdmainwin</class>
  <widget class="QMainWindow" name="mdmainwin">
@@ -261,22 +261,6 @@
              </rect>
             </property>
            </widget>
-           <zorder>lattice_type_l</zorder>
-           <zorder>sigma_l</zorder>
-           <zorder>epsilon_l</zorder>
-           <zorder>mass_l</zorder>
-           <zorder>lattice_constant_l</zorder>
-           <zorder>lattice_type_cb</zorder>
-           <zorder>save_element_pb</zorder>
-           <zorder>load_element_pb</zorder>
-           <zorder>sigma_unit_l</zorder>
-           <zorder>epsilon_unit_cb</zorder>
-           <zorder>lattice_constant_unit_l</zorder>
-           <zorder>mass_unit_l</zorder>
-           <zorder>sigma_le</zorder>
-           <zorder>epsilon_le</zorder>
-           <zorder>mass_le</zorder>
-           <zorder>lattice_constant_le</zorder>
           </widget>
           <widget class="QWidget" name="tab_environment">
            <attribute name="title">
@@ -979,7 +963,7 @@
      <x>0</x>
      <y>0</y>
      <width>387</width>
-     <height>18</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
