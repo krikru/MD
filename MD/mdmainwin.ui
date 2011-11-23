@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>mdmainwin</class>
  <widget class="QMainWindow" name="mdmainwin">
@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_settings">
        <attribute name="title">
@@ -28,7 +28,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>3</number>
+           <number>1</number>
           </property>
           <property name="usesScrollButtons">
            <bool>true</bool>
@@ -261,22 +261,6 @@
              </rect>
             </property>
            </widget>
-           <zorder>lattice_type_l</zorder>
-           <zorder>sigma_l</zorder>
-           <zorder>epsilon_l</zorder>
-           <zorder>mass_l</zorder>
-           <zorder>lattice_constant_l</zorder>
-           <zorder>lattice_type_cb</zorder>
-           <zorder>save_element_pb</zorder>
-           <zorder>load_element_pb</zorder>
-           <zorder>sigma_unit_l</zorder>
-           <zorder>epsilon_unit_cb</zorder>
-           <zorder>lattice_constant_unit_l</zorder>
-           <zorder>mass_unit_l</zorder>
-           <zorder>sigma_le</zorder>
-           <zorder>epsilon_le</zorder>
-           <zorder>mass_le</zorder>
-           <zorder>lattice_constant_le</zorder>
           </widget>
           <widget class="QWidget" name="tab_environment">
            <attribute name="title">

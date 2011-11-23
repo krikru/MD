@@ -4,6 +4,7 @@
 //Standard includes
 #include <vector>
 #include <time.h>
+#include <sstream>
 using namespace std;
 
 // Own includes
@@ -42,7 +43,7 @@ private:
     // Comunication with the application
     void (*event_handler)(void);
     bool abort_activities_requested;
-
+    stringstream output;
     // The time
     ftype            dt;          // The length of each timestep
     uint             loop_num;    // How many timesteps that has been taken in the simulation

@@ -112,7 +112,7 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        cout << "loop number = " << loop_num << endl; //TODO: Remove
+        output << "loop number = " << loop_num << endl; //TODO: Remove
 
         // Evolve the system in time
         force_calculation();
@@ -163,7 +163,6 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        //ui->simulation_output_tb->set_text("Temp");
         cout << "Temp    = " <<setprecision(9) << temp[i]         << endl;
         cout << "Ek + Ep = " <<setprecision(9) << Ek  [i] + Ep[i] << endl;
         cout << "Ek      = " <<setprecision(9) << Ek  [i]         << endl;
