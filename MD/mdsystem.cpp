@@ -106,9 +106,12 @@ void mdsystem::run_simulation()
 
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
+
+        // Check if the simulation has been requested to abort
         if (abort_activities_requested) {
             goto operation_finished;
         }
+
         cout << "loop number = " << loop_num << endl; //TODO: Remove
 
         // Evolve the system in time
@@ -121,12 +124,7 @@ void mdsystem::run_simulation()
         }
 
         // Update Verlet list if necessary
-        calculate_largest_sqr_displacement();
-        if (4 * largest_sqr_displacement > (sqr_outer_cutoff + sqr_inner_cutoff - 2*sqrt(sqr_outer_cutoff*sqr_inner_cutoff))) {
-            cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
-            create_verlet_list();
-            cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
-        }
+        update_verlet_list_if_necessary();
 
         // Process events
         process_events();
@@ -251,6 +249,24 @@ void mdsystem::init_particles() {
     }
 }
 
+void mdsystem::update_verlet_list_if_necessary()
+{
+    // Check if largest displacement too large for not updating the Verlet list
+    ftype sqr_limit = (sqr_outer_cutoff + sqr_inner_cutoff - 2*sqrt(sqr_outer_cutoff*sqr_inner_cutoff));
+    uint i;
+    for (i = 0; i < nrparticles; i++) {
+        ftype sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
+        if (sqr_displacement > sqr_limit) {
+            break;
+        }
+    }
+    if (i < nrparticles) {
+        // Displacement that is to large was found
+        cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
+        create_verlet_list();
+    }
+}
+
 void mdsystem::create_verlet_list()
 {
     //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
@@ -367,18 +383,6 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     }
 }
 
-//Updating largest square displacement.
-void mdsystem::calculate_largest_sqr_displacement()
-{
-    largest_sqr_displacement = 0;
-    for (uint i = 0; i < nrparticles; i++) {
-        ftype sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
-        if (sqr_displacement > largest_sqr_displacement) {
-            largest_sqr_displacement = sqr_displacement;
-        }
-    }
-}
-
 void mdsystem::update_non_modulated_particle_positions()
 {
     for (uint i = 0; i < nrparticles; i++) {
@@ -464,6 +468,7 @@ void mdsystem::leapfrog()
             }
         }
 
+        // TODO: Remove this from leapfrog and place it somewhere else
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
@@ -486,8 +491,10 @@ void mdsystem::force_calculation() { //Using si-units
     instEp[loop_num % nrinst] = 0;
     for (uint i1 = 0; i1 < nrparticles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
-            uint i2 = verlet_neighbors_list[j]; // Get index of the second (possibly) interacting particle 
-            vec3 r = modulos_distance(particles[i2].pos, particles[i1].pos); // Calculate the closest distance
+            // TODO: automatically detect if a boundary is crossed and compensate for that in this function
+            // Calculate the closest distance to the second (possibly) interacting particle
+            uint i2 = verlet_neighbors_list[j];
+            vec3 r = modulos_distance(particles[i2].pos, particles[i1].pos);
             sqr_distance = r.sqr_length();
             if (sqr_distance >= sqr_inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one

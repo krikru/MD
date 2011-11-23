@@ -920,7 +920,7 @@
       </widget>
       <widget class="QWidget" name="tab_4">
        <attribute name="title">
-        <string>Plotts</string>
+        <string>Plots</string>
        </attribute>
       </widget>
      </widget>

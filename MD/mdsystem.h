@@ -100,7 +100,6 @@ private:
     bool msd_on;
     bool Ep_on;
     bool Ek_on;
-    ftype largest_sqr_displacement; // == 2 * maximal displacement for any single atom. //TODO: Move away this variable
 
     /*********************
      * Private functions *
@@ -108,10 +107,10 @@ private:
     // Initialization
     void init_particles();
     // Verlet list
+    void update_verlet_list_if_necessary();
     void create_verlet_list();
     void create_linked_cells();
     void create_verlet_list_using_linked_cell_list();
-    void calculate_largest_sqr_displacement();
     void update_non_modulated_particle_positions();
     inline void update_single_non_modulated_particle_position(uint i);
     // Simulation
