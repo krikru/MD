@@ -24,8 +24,8 @@ HEADERS  += mdmainwin.h \
 
 FORMS    += mdmainwin.ui
 
-RESOURCES += \
-    mdresources.qrc
+RESOURCES +=
+
 
 
 
