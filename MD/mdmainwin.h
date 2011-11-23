@@ -23,6 +23,7 @@ public:
 private slots:
 
     void on_start_simulation_pb_clicked();
+    void write_to_text_browser(string output);
     void closeEvent(QCloseEvent *event);
 
 private:
