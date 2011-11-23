@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>mdmainwin</class>
  <widget class="QMainWindow" name="mdmainwin">
@@ -20,7 +20,7 @@
       <property name="currentIndex">
        <number>1</number>
       </property>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="tab_settings">
        <attribute name="title">
         <string>Settings</string>
        </attribute>
@@ -28,7 +28,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <property name="usesScrollButtons">
            <bool>true</bool>
@@ -37,7 +37,7 @@
            <attribute name="title">
             <string>Element</string>
            </attribute>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="lattice_type_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -50,7 +50,7 @@
              <string>Lattice type:</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="sigma_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -63,7 +63,7 @@
              <string>Sigma:</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="epsilon_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -76,7 +76,7 @@
              <string>Epsilon:</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="mass_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -89,7 +89,7 @@
              <string>Mass:</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_5">
+           <widget class="QLabel" name="lattice_constant_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -162,7 +162,7 @@
              <string>Load Element...</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_15">
+           <widget class="QLabel" name="sigma_unit_l">
             <property name="geometry">
              <rect>
               <x>200</x>
@@ -195,7 +195,7 @@
              </property>
             </item>
            </widget>
-           <widget class="QLabel" name="label_21">
+           <widget class="QLabel" name="lattice_constant_unit_l">
             <property name="geometry">
              <rect>
               <x>200</x>
@@ -208,7 +208,7 @@
              <string>Å</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_22">
+           <widget class="QLabel" name="mass_unit_l">
             <property name="geometry">
              <rect>
               <x>200</x>
@@ -261,12 +261,28 @@
              </rect>
             </property>
            </widget>
+           <zorder>lattice_type_l</zorder>
+           <zorder>sigma_l</zorder>
+           <zorder>epsilon_l</zorder>
+           <zorder>mass_l</zorder>
+           <zorder>lattice_constant_l</zorder>
+           <zorder>lattice_type_cb</zorder>
+           <zorder>save_element_pb</zorder>
+           <zorder>load_element_pb</zorder>
+           <zorder>sigma_unit_l</zorder>
+           <zorder>epsilon_unit_cb</zorder>
+           <zorder>lattice_constant_unit_l</zorder>
+           <zorder>mass_unit_l</zorder>
+           <zorder>sigma_le</zorder>
+           <zorder>epsilon_le</zorder>
+           <zorder>mass_le</zorder>
+           <zorder>lattice_constant_le</zorder>
           </widget>
           <widget class="QWidget" name="tab_environment">
            <attribute name="title">
             <string>Environment</string>
            </attribute>
-           <widget class="QLabel" name="label_8">
+           <widget class="QLabel" name="init_temperature_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -279,7 +295,7 @@
              <string>Initial temperature:</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_14">
+           <widget class="QLabel" name="init_temperature_unit_l">
             <property name="geometry">
              <rect>
               <x>210</x>
@@ -292,7 +308,7 @@
              <string>K</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="num_particles_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -326,7 +342,7 @@
             </property>
            </widget>
           </widget>
-          <widget class="QWidget" name="tab_3">
+          <widget class="QWidget" name="tab_control">
            <attribute name="title">
             <string>Control</string>
            </attribute>
@@ -396,7 +412,7 @@
              </item>
             </layout>
            </widget>
-           <widget class="QLabel" name="label_16">
+           <widget class="QLabel" name="desired_pressure_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -409,7 +425,7 @@
              <string>Desired pressure:</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_17">
+           <widget class="QLabel" name="desired_temperature_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -450,7 +466,7 @@
              </property>
             </item>
            </widget>
-           <widget class="QLabel" name="label_23">
+           <widget class="QLabel" name="desired_temperature_unit_l">
             <property name="geometry">
              <rect>
               <x>210</x>
@@ -515,7 +531,7 @@
                <property name="title">
                 <string>Leapfrog integration</string>
                </property>
-               <widget class="QLabel" name="label_13">
+               <widget class="QLabel" name="time_step_unit_l">
                 <property name="geometry">
                  <rect>
                   <x>210</x>
@@ -528,7 +544,7 @@
                  <string>fs</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_6">
+               <widget class="QLabel" name="time_step_l">
                 <property name="geometry">
                  <rect>
                   <x>10</x>
@@ -541,7 +557,7 @@
                  <string>Time step length:</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_7">
+               <widget class="QLabel" name="num_time_steps_l">
                 <property name="geometry">
                  <rect>
                   <x>10</x>
@@ -593,7 +609,7 @@
                <property name="title">
                 <string>Verlet list</string>
                </property>
-               <widget class="QLabel" name="label_10">
+               <widget class="QLabel" name="inner_cutoff_l">
                 <property name="geometry">
                  <rect>
                   <x>10</x>
@@ -606,7 +622,7 @@
                  <string>Inner cutoff:</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_12">
+               <widget class="QLabel" name="outer_cutoff_l">
                 <property name="geometry">
                  <rect>
                   <x>10</x>
@@ -616,10 +632,10 @@
                  </rect>
                 </property>
                 <property name="text">
-                 <string>Oute cutoff:</string>
+                 <string>Outer cutoff:</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_18">
+               <widget class="QLabel" name="inner_cutoff_unit_l">
                 <property name="geometry">
                  <rect>
                   <x>170</x>
@@ -632,7 +648,7 @@
                  <string>times Sigma</string>
                 </property>
                </widget>
-               <widget class="QLabel" name="label_19">
+               <widget class="QLabel" name="outer_cutoff_unit_l">
                 <property name="geometry">
                  <rect>
                   <x>170</x>
@@ -642,10 +658,10 @@
                  </rect>
                 </property>
                 <property name="text">
-                 <string>times outer cut-off</string>
+                 <string>times inner cutoff</string>
                 </property>
                </widget>
-               <widget class="QLineEdit" name="inner_cuttof_le">
+               <widget class="QLineEdit" name="inner_cutoff_le">
                 <property name="geometry">
                  <rect>
                   <x>80</x>
@@ -655,7 +671,7 @@
                  </rect>
                 </property>
                </widget>
-               <widget class="QLineEdit" name="outer_cuttof_le">
+               <widget class="QLineEdit" name="outer_cutoff_le">
                 <property name="geometry">
                  <rect>
                   <x>80</x>
@@ -674,7 +690,7 @@
            <attribute name="title">
             <string>Output</string>
            </attribute>
-           <widget class="QLabel" name="label_11">
+           <widget class="QLabel" name="measurement_interval_l">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -690,7 +706,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Mersurement interval:</string>
+             <string>Measurement interval:</string>
             </property>
            </widget>
            <widget class="QSpinBox" name="measurement_interval_sb">
@@ -712,7 +728,7 @@
              <number>1</number>
             </property>
            </widget>
-           <widget class="QLabel" name="label_20">
+           <widget class="QLabel" name="measurement_interval_timesteps_l">
             <property name="geometry">
              <rect>
               <x>220</x>
@@ -874,7 +890,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="tab_simulation_2">
        <attribute name="title">
         <string>Simulation</string>
        </attribute>
@@ -914,11 +930,11 @@
          </layout>
         </item>
         <item>
-         <widget class="QTextBrowser" name="simuklation_output_tb"/>
+         <widget class="QTextBrowser" name="simulation_output_tb"/>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_4">
+      <widget class="QWidget" name="tab_plots">
        <attribute name="title">
         <string>Plots</string>
        </attribute>
@@ -963,7 +979,7 @@
      <x>0</x>
      <y>0</y>
      <width>387</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

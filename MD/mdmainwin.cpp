@@ -99,6 +99,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     // Init system and run simulation
     simulation.init(process_events, nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
+    ui->simulation_output_tb->setText("Complete");
     //std::cout << "Random seed " << random_seed << std::endl;
 }
 
