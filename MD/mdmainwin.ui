@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>mdmainwin</class>
  <widget class="QMainWindow" name="mdmainwin">
@@ -277,7 +277,6 @@
            <zorder>epsilon_le</zorder>
            <zorder>mass_le</zorder>
            <zorder>lattice_constant_le</zorder>
-           <zorder>settings_bb</zorder>
           </widget>
           <widget class="QWidget" name="tab_environment">
            <attribute name="title">
