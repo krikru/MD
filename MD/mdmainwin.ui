@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_settings">
        <attribute name="title">
@@ -931,7 +931,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QTextBrowser" name="simuklation_output_tb"/>
+         <widget class="QTextBrowser" name="simulation_output_tb"/>
         </item>
        </layout>
       </widget>
