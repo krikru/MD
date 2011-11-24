@@ -23,18 +23,19 @@ public:
 private slots:
 
     void on_start_simulation_pb_clicked();
-    void write_to_text_browser(string output);
     void closeEvent(QCloseEvent *event);
+
 
 private:
     // Static functions
     static void process_events();
-
+    static void write_to_text_browser(string output);
     // Private variables
     mdsystem simulation;
 
 private:
     Ui::mdmainwin *ui;
+
 };
 
 #endif // MDMAINWIN_H

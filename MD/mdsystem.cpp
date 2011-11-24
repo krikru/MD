@@ -25,13 +25,14 @@ mdsystem::mdsystem()
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdsystem::init(void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
 
     // Set the event handler
     event_handler = event_handler_in;
+    output_handler = output_handler_in;
 
     lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
@@ -112,7 +113,9 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        output << "loop number = " << loop_num << endl; //TODO: Remove
+        output << "loop number = " << loop_num; //TODO: Remove
+        output_handler(output.str());
+        output.str("");
 
         // Evolve the system in time
         force_calculation();
