@@ -52,6 +52,7 @@ void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(
     therm                .resize(nrtimesteps/nrinst_in + 1);
     Ek                   .resize(nrtimesteps/nrinst_in + 1);
     Ep                   .resize(nrtimesteps/nrinst_in + 1);
+    cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
     Cv                   .resize(nrtimesteps/nrinst_in + 1);
     pressure             .resize(nrtimesteps/nrinst_in + 1);
     msd                  .resize(nrtimesteps/nrinst_in + 1);
@@ -169,11 +170,12 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        cout << "Temp    = " <<setprecision(9) << temp[i]         << endl;
-        cout << "Ek + Ep = " <<setprecision(9) << Ek  [i] + Ep[i] << endl;
-        cout << "Ek      = " <<setprecision(9) << Ek  [i]         << endl;
-        cout << "Ep      = " <<setprecision(9) << Ep  [i]         << endl;
-        cout << "Cv      = " <<setprecision(9) << Cv  [i]         << endl;
+        cout << "Temp            = " <<setprecision(9) << temp[i]               << endl;
+        cout << "Ek + Ep         = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
+        cout << "Ek              = " <<setprecision(9) << Ek  [i]               << endl;
+        cout << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
+        cout << "Cohesive energy = " <<setprecision(9) << cohesive_energy [i]   << endl;
+        cout << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
         
         // Process events
         process_events();
@@ -540,7 +542,10 @@ void mdsystem::calculate_properties() {
     if (pressure_on) calculate_pressure();
     if (msd_on) calculate_mean_square_displacement();
         
-    if (Ep_on) calculate_Ep();
+    if (Ep_on) {
+        calculate_Ep();
+        calculate_cohesive_energy();
+    }
     if (Ek_on) calculate_Ek();
     if (diff_c_on) calculate_diffusion_coefficient();
 }
@@ -560,6 +565,10 @@ void mdsystem::calculate_Ep() {
         sum += instEp[i];
     }
     Ep[loop_num/nrinst] = sum/nrinst; 
+}
+
+void mdsystem::calculate_cohesive_energy() {
+    cohesive_energy[loop_num/nrinst] = -Ep[loop_num/nrinst]/nrparticles;
 }
 
 void mdsystem::calculate_Ek() {
