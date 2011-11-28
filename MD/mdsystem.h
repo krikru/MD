@@ -73,16 +73,17 @@ private:
     ftype        sqr_inner_cutoff;      // Square of the inner cut-off radius in the Verlet list
     ftype        sqr_outer_cutoff;      // Square of the outer cut-off radius in the Verlet list
     // Measurements
-    uint          nrinst;   // Number of timesteps between each measurement
-    vector<ftype> temp;     // Temperature
-    vector<ftype> insttemp; // Instant temperature
-    vector<ftype> Cv;       // Heat capacity
-    vector<ftype> pressure; // Pressure
-    vector<ftype> msd;      // Mean square distance
-    vector<ftype> Ek;       // Kinetic energy
-    vector<ftype> Ep;       // Potential energy
-    vector<ftype> instEk;   // Instat kinetic energy
-    vector<ftype> instEp;   // Instat potential energy
+    uint          nrinst;           // Number of timesteps between each measurement
+    vector<ftype> temp;             // Temperature
+    vector<ftype> insttemp;         // Instant temperature
+    vector<ftype> Cv;               // Heat capacity
+    vector<ftype> pressure;         // Pressure
+    vector<ftype> msd;              // Mean square distance
+    vector<ftype> Ek;               // Kinetic energy
+    vector<ftype> Ep;               // Potential energy
+    vector<ftype> cohesive_energy;  // Potential energy per atom
+    vector<ftype> instEk;           // Instat kinetic energy
+    vector<ftype> instEp;           // Instat potential energy
     vector<ftype> diffusion_coefficient;
     // Constrol
     ftype         thermostat;      // Varying parameter telling how the velocities should change to adjust the temperature
@@ -121,6 +122,7 @@ private:
     // Measurements
     void calculate_temperature();
     void calculate_Ep();
+    void calculate_cohesive_energy();
     void calculate_Ek();
     void calculate_properties();
     void calculate_specific_heat();
