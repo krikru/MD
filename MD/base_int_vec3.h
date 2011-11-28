@@ -5,8 +5,6 @@
  * Include files
  ****************************************************************/
 
-//#define WIN32_LEAN_AND_MEAN
-
 #include <stdexcept>
 //using std::exception;
 using std::domain_error;
