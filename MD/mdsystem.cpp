@@ -107,6 +107,7 @@ void mdsystem::run_simulation()
     ofstream out_temp_data ;
     ofstream out_therm_data;
     ofstream out_msd_data  ;
+    ofstream out_cohe_data  ;
 
     // The system is *always* operating when running non-const functions
     start_operation();
@@ -145,6 +146,7 @@ void mdsystem::run_simulation()
     out_temp_data .open("Temperature.dat");
     out_therm_data.open("Thermostat.dat" );
     out_msd_data  .open("MSD.dat"        );
+    out_cohe_data  .open("cohe.dat"      );
     if( !out_etot_data || !out_temp_data ) { // file couldn't be opened
         cerr << "Error: Output files could not be opened" << endl;
     }
@@ -157,6 +159,7 @@ void mdsystem::run_simulation()
             out_temp_data  << setprecision(9) << temp [i]         << endl;
             out_therm_data << setprecision(9) << therm[i]         << endl;
             out_msd_data   << setprecision(9) << msd  [i]         << endl;
+            out_cohe_data  << setprecision(9) << cohesive_energy  [i]<< endl;
 
             // Process events
             process_events();
@@ -165,6 +168,7 @@ void mdsystem::run_simulation()
         out_temp_data .close();
         out_therm_data.close();
         out_msd_data  .close();
+        out_cohe_data  .close();
     }
 
     for (uint i = 1; i < temp.size();i++)
@@ -176,7 +180,7 @@ void mdsystem::run_simulation()
         cout << "Ek + Ep         = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
         cout << "Ek              = " <<setprecision(9) << Ek  [i]               << endl;
         cout << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
-        cout << "Cohesive energy = " <<setprecision(9) << cohesive_energy [i]   << endl;
+        cout << "Cohesive energy = " <<setprecision(9) << (cohesive_energy [i])/P_EV   << endl;
         cout << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
         cout << "msd             = " <<setprecision(9) << msd [i]               << endl;
 
@@ -252,7 +256,7 @@ void mdsystem::init_particles() {
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
     vec3 average_vel = sum_vel/ftype(nrparticles);
     ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
-    ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
+    ftype scale_factor = sqrt(3.0f * P_KB * init_temp / (vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)*scale_factor;
         particles[i].non_modulated_relative_pos = vec3(0, 0, 0);

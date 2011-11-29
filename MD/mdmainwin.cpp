@@ -56,7 +56,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Xenon"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(100.0); // [K]
+    ftype temperature_in = ftype(1.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
@@ -77,7 +77,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(80000.0); // [K]
+    ftype temperature_in = ftype(800.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #endif
 
@@ -86,7 +86,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     uint nrinst_in = 10;       // Number of timesteps between measurements of properties
     uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
-    ftype outer_cutoff_in = ftype(2.0) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
+    ftype outer_cutoff_in = ftype(1.2) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
     // Control
     ftype nrthermostat_time_in = 3;
