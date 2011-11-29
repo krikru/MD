@@ -9,6 +9,7 @@ using namespace std;
 
 // Own includes
 #include "definitions.h"
+#include "callback.h"
 #include "base_float_vec3.h"
 #include "particle.h"
 
@@ -28,7 +29,9 @@ class mdsystem
     /********************
      * Public functions *
      ********************/
-    void init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    void set_event_callback (callback<void (*)(void*        )> event_callback_in );
+    void set_output_callback(callback<void (*)(void*, string)> output_callback_in);
+    void init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
     void run_simulation();
     void abort_activities();
     bool is_operating() const;
@@ -41,8 +44,8 @@ private:
     bool operating;
 
     // Comunication with the application
-    void (*event_handler)(void);
-    void (*output_handler)(string);
+    callback<void (*)(void*        )> event_callback ;
+    callback<void (*)(void*, string)> output_callback;
     bool abort_activities_requested;
     stringstream output;
     // The time
@@ -137,6 +140,7 @@ private:
 
     // Communication with the application
     void process_events();
+    void print_output();
 
     // Thread safety
     void start_operation();

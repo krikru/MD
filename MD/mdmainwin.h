@@ -30,8 +30,8 @@ private:
     // Private functions
 
     // Static private functions
-    static void write_to_text_browser(string output);
-    static void process_events();
+    static void write_to_text_browser(void* void_ptr_mainwin, string output);
+    static void process_events       (void* void_ptr_mainwin               );
 
     // Private variables
     mdsystem simulation;
