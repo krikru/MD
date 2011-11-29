@@ -15,7 +15,7 @@
 #include <iostream>
 
 ////////////////////////////////////////////////////////////////
-// MEMBER FUNCTIONS
+// PUBLIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
 mdmainwin::mdmainwin(QWidget *parent) :
@@ -29,6 +29,10 @@ mdmainwin::~mdmainwin()
 {
     delete ui;
 }
+
+////////////////////////////////////////////////////////////////
+// PRIVATE SLOTS
+////////////////////////////////////////////////////////////////
 
 void mdmainwin::on_start_simulation_pb_clicked()
 {
@@ -105,18 +109,6 @@ void mdmainwin::on_start_simulation_pb_clicked()
     //std::cout << "Random seed " << random_seed << std::endl;
 }
 
-void mdmainwin::process_events()
-{
-    QApplication::processEvents(QEventLoop::AllEvents);
-}
-
-void mdmainwin::write_to_text_browser(string output)
-{
-    QString qstr = QString::fromStdString(output.c_str());
-    //ui->simulation_output_tb->append(qstr); //HELP, Cannot use ui in static member, and if I make it non static I get another problem:
-                                              //..\mdmainwin.cpp:101: error: no matching function for call to 'mdsystem::init(<unresolved overloaded function type>, void (&)(), uint&,...)'
-}                                             // Anyone who have some idea?
-
 void mdmainwin::closeEvent(QCloseEvent *event)
 {
     if (simulation.is_operating()) {
@@ -133,4 +125,19 @@ void mdmainwin::closeEvent(QCloseEvent *event)
         }
     }
     simulation.abort_activities();
+}
+
+////////////////////////////////////////////////////////////////
+// PRIVATE MEMBER FUNCTIONS
+////////////////////////////////////////////////////////////////
+
+void mdmainwin::write_to_text_browser(string output)
+{
+    QString qstr = QString::fromStdString(output.c_str());
+    //ui->simulation_output_tb->append(qstr); //TODO: ui is a non-static member and can therefore not be accessed here since this is a static member function
+}
+
+void mdmainwin::process_events()
+{
+    QApplication::processEvents(QEventLoop::AllEvents);
 }

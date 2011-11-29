@@ -5,8 +5,6 @@
  * Include files
  ****************************************************************/
 
-//#define WIN32_LEAN_AND_MEAN
-
 #include <cmath>
 #include <stdexcept>
 //using std::exception;

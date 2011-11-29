@@ -27,9 +27,12 @@ private slots:
 
 
 private:
-    // Static functions
-    static void process_events();
+    // Private functions
+
+    // Static private functions
     static void write_to_text_browser(string output);
+    static void process_events();
+
     // Private variables
     mdsystem simulation;
 
