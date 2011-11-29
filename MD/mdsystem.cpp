@@ -114,9 +114,9 @@ void mdsystem::run_simulation()
 
     // The system is *always* operating when running non-const functions
     start_operation();
-    vector<float> posx(nrtimesteps);
-    vector<float> posy(nrtimesteps);
-    vector<float> posz(nrtimesteps);
+    vector<float> posx(nrtimesteps+1);
+    vector<float> posy(nrtimesteps+1);
+    vector<float> posz(nrtimesteps+1);
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
 
