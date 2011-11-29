@@ -47,7 +47,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     srand(random_seed);
 
     // Init element specific constants
-#if 0
+#if 1
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -60,7 +60,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(800.0); // [K]//MSD linear at approx. 800K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 0
+#elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
 
     /* Should have the following properties:
@@ -81,7 +81,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(800.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 2
+#elif 1
     //Copper (Melting point 1356.6 K)
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
