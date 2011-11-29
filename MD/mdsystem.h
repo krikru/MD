@@ -139,6 +139,7 @@ private:
     vec3 modulos_distance(vec3 pos1, vec3 pos2) const;
 
     // Communication with the application
+    void print_output_and_process_events();
     void process_events();
     void print_output();
 

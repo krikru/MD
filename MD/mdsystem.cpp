@@ -112,21 +112,22 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 
 void mdsystem::run_simulation()
 {
+    // The system is *always* operating when running non-const functions
+    start_operation();
+
     // The out files are like cin
     ofstream out_etot_data ;
     ofstream out_temp_data ;
     ofstream out_therm_data;
     ofstream out_msd_data  ;
-    ofstream out_cohe_data  ;
+    ofstream out_cohe_data ;
     ofstream out_posx  ;
     ofstream out_posy  ;
     ofstream out_posz  ;
 
-    // The system is *always* operating when running non-const functions
-    start_operation();
-    vector<float> posx(nrtimesteps+1);
-    vector<float> posy(nrtimesteps+1);
-    vector<float> posz(nrtimesteps+1);
+    vector<float> posx(nrtimesteps + 1);
+    vector<float> posy(nrtimesteps + 1);
+    vector<float> posz(nrtimesteps + 1);
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
 
@@ -152,7 +153,7 @@ void mdsystem::run_simulation()
         update_verlet_list_if_necessary();
 
         // Process events
-        process_events();
+        print_output_and_process_events();
     }
     output << "Simulation completed" << endl;
 
@@ -189,7 +190,7 @@ void mdsystem::run_simulation()
             out_cohe_data  << setprecision(9) << cohesive_energy  [i]<< endl;
 
             // Process events
-            process_events();
+            print_output_and_process_events();
         }
         out_etot_data .close();
         out_temp_data .close();
@@ -216,7 +217,7 @@ void mdsystem::run_simulation()
 
         
         // Process events
-        process_events();
+        print_output_and_process_events();
     }
     cout<<"Complete"<<endl;
 operation_finished:
@@ -698,11 +699,14 @@ vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
     return d;
 }
 
+void mdsystem::print_output_and_process_events()
+{
+    print_output();
+    process_events();
+}
+
 void mdsystem::process_events()
 {
-    // Print output
-    print_output();
-
     // Let the application process its events
     if (event_callback.func) {
         event_callback.func(event_callback.param);
