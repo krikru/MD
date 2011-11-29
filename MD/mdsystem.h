@@ -81,7 +81,7 @@ private:
     vector<ftype> msd;              // Mean square distance
     vector<ftype> Ek;               // Kinetic energy
     vector<ftype> Ep;               // Potential energy
-    vector<ftype> cohesive_energy;  // Potential energy per atom
+    vector<ftype> cohesive_energy;  // Negative potential energy per atom
     vector<ftype> instEk;           // Instat kinetic energy
     vector<ftype> instEp;           // Instat potential energy
     vector<ftype> diffusion_coefficient;
