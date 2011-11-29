@@ -28,14 +28,24 @@ mdsystem::mdsystem()
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdsystem::init(callback<void (*)(void*)> event_callback_in, callback<void (*)(void*, string)> output_callback_in, uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::set_event_callback(callback<void (*)(void*)> event_callback_in)
+{
+    start_operation();
+    event_callback = event_callback_in;
+    finish_operation();
+}
+
+void mdsystem::set_output_callback(callback<void (*)(void*, string)> output_callback_in)
+{
+    start_operation();
+    output_callback = output_callback_in;
+    finish_operation();
+}
+
+void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
-
-    // Set the event handler
-    event_callback = event_callback_in;
-    output_callback = output_callback_in;
 
     lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
