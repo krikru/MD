@@ -290,9 +290,9 @@ void mdsystem::init_particles() {
     ftype scale_factor = sqrt(3.0f * P_KB * init_temp / (vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)*scale_factor;
-        particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
-        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
     }
+
+    reset_non_modulated_relative_particle_positions();
 }
 
 void mdsystem::update_verlet_list_if_necessary()
@@ -317,7 +317,7 @@ void mdsystem::create_verlet_list()
 {
     //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
-        update_single_non_modulated_particle_position(i);
+        update_single_non_modulated_relative_particle_position(i);
         particles[i].pos_when_verlet_list_created = particles[i].pos;
     }
 
@@ -429,14 +429,27 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     }
 }
 
-void mdsystem::update_non_modulated_particle_positions()
+void mdsystem::reset_non_modulated_relative_particle_positions()
 {
     for (uint i = 0; i < nrparticles; i++) {
-        update_single_non_modulated_particle_position(i);
+        reset_single_non_modulated_relative_particle_positions(i);
     }
 }
 
-inline void mdsystem::update_single_non_modulated_particle_position(uint i)
+inline void mdsystem::reset_single_non_modulated_relative_particle_positions(uint i)
+{
+    particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
+    particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
+}
+
+void mdsystem::update_non_modulated_relative_particle_positions()
+{
+    for (uint i = 0; i < nrparticles; i++) {
+        update_single_non_modulated_relative_particle_position(i);
+    }
+}
+
+inline void mdsystem::update_single_non_modulated_relative_particle_position(uint i)
 {
     particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_non_modulated_relative_pos_was_calculated, particles[i].pos);
     particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
@@ -574,7 +587,7 @@ void mdsystem::force_calculation() { //Using si-units
 }
 
 void mdsystem::calculate_properties() {
-    update_non_modulated_particle_positions();
+    update_non_modulated_relative_particle_positions();
     calculate_temperature();
     if (Cv_on) calculate_specific_heat();            
     if (pressure_on) calculate_pressure();
@@ -633,20 +646,29 @@ void mdsystem::calculate_pressure() {
 
 void mdsystem::calculate_mean_square_displacement() {
     ftype sum = 0;
-    if ((equilibrium == false)&&(sqrt(((Ep[loop_num/nrinst]-Ep[loop_num/nrinst-1])/Ep[loop_num/nrinst])*((Ep[loop_num/nrinst]-Ep[loop_num/nrinst-1])/Ep[loop_num/nrinst])) < deltaEp)) {
-        equilibrium = true;
-        for (uint i = 0; i < nrparticles; i++) {
-            particles[i].start_pos = particles[i].non_modulated_relative_pos;
+    if (equilibrium == false && loop_num/nrinst) {
+        // Check if equilibrium has been reached
+        ftype variation = (Ep[loop_num/nrinst] - Ep[loop_num/nrinst - 1]) / Ep[loop_num/nrinst];
+        variation = variation >= 0 ? variation : -variation;
+        if (variation < deltaEp) {
+            // The requirements for equilibrium has been reached
+            equilibrium = true;
+            // Consider the particles to "start" now
+            reset_non_modulated_relative_particle_positions();
         }
     }
     if (equilibrium) {
+        // Calculate mean square displacement
         for (uint i = 0; i < nrparticles;i++) {
-            sum += (particles[i].non_modulated_relative_pos - particles[i].start_pos).sqr_length();
+            sum += particles[i].non_modulated_relative_pos.sqr_length();
         }
         sum = sum/nrparticles;
         msd[loop_num/nrinst] = sum;
     }
-    else {msd[loop_num/nrinst] = 0;}
+    else {
+        // Equilibrium not reached; don't calculate this property.
+        msd[loop_num/nrinst] = 0;
+    }
 }
 
 void mdsystem::calculate_diffusion_coefficient() {
