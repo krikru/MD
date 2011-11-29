@@ -96,7 +96,7 @@ private:
     // Lennard Jones potential
     ftype sqr_sigma;    // Square of sigma in the Lennard Jones potential
     ftype four_epsilon; // Four times epsilon in the Lennard Jones potential
-    //
+    // 
     ftype distanceforcesum;
     ftype deltaEp;      //equilibrium is reached when abs((Ep(current)-Ep(previous))/Ep(current)) is below this value
     bool equilibrium;
@@ -119,8 +119,10 @@ private:
     void create_verlet_list();
     void create_linked_cells();
     void create_verlet_list_using_linked_cell_list();
-    void update_non_modulated_particle_positions();
-    inline void update_single_non_modulated_particle_position(uint i);
+    void reset_non_modulated_relative_particle_positions();
+    inline void reset_single_non_modulated_relative_particle_positions(uint i);
+    void update_non_modulated_relative_particle_positions();
+    inline void update_single_non_modulated_relative_particle_position(uint i);
     // Simulation
     void leapfrog();
     void force_calculation();
@@ -139,6 +141,7 @@ private:
     vec3 modulos_distance(vec3 pos1, vec3 pos2) const;
 
     // Communication with the application
+    void print_output_and_process_events();
     void process_events();
     void print_output();
 
