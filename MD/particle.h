@@ -13,7 +13,6 @@ public:
     vec3 pos_when_verlet_list_created;
     vec3 vel;
     vec3 acc;
-    vec3 start_pos;
 };
 
 #endif  /* PARTICLE_H */
