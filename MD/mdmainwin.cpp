@@ -56,7 +56,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Xenon"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(1.0); // [K]
+    ftype temperature_in = ftype(800.0); // [K]//MSD linear at approx. 800K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
@@ -77,7 +77,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(800.0); // [K]
+    ftype temperature_in = ftype(12400.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #endif
 

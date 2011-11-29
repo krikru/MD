@@ -108,10 +108,15 @@ void mdsystem::run_simulation()
     ofstream out_therm_data;
     ofstream out_msd_data  ;
     ofstream out_cohe_data  ;
+    ofstream out_posx  ;
+    ofstream out_posy  ;
+    ofstream out_posz  ;
 
     // The system is *always* operating when running non-const functions
     start_operation();
-
+    vector<float> posx(nrtimesteps);
+    vector<float> posy(nrtimesteps);
+    vector<float> posz(nrtimesteps);
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
 
@@ -127,6 +132,9 @@ void mdsystem::run_simulation()
         // Evolve the system in time
         force_calculation();
         leapfrog(); // TODO: Compensate for half time steps
+        posx[loop_num]=particles[nrparticles/2].pos[0]/a;
+        posy[loop_num]=particles[nrparticles/2].pos[1]/a;
+        posz[loop_num]=particles[nrparticles/2].pos[2]/a;
 
         // Calculate properties each nrinst loops
         if (loop_num % nrinst == 0 && loop_num != 0) {
@@ -147,10 +155,22 @@ void mdsystem::run_simulation()
     out_therm_data.open("Thermostat.dat" );
     out_msd_data  .open("MSD.dat"        );
     out_cohe_data  .open("cohe.dat"      );
+    out_posx.open("posx.dat");
+    out_posy.open("posy.dat");
+    out_posz.open("posz.dat");
     if( !out_etot_data || !out_temp_data ) { // file couldn't be opened
         cerr << "Error: Output files could not be opened" << endl;
     }
     else {
+        for (uint i = 1; i < posx.size(); i++)
+        {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_posx<<setprecision(9)<<posx[i]<<endl;
+            out_posy<<setprecision(9)<<posy[i]<<endl;
+            out_posz<<setprecision(9)<<posz[i]<<endl;
+        }
         for (uint i = 1; i < temp.size(); i++) {
             if (abort_activities_requested) {
                 break;
@@ -169,6 +189,9 @@ void mdsystem::run_simulation()
         out_therm_data.close();
         out_msd_data  .close();
         out_cohe_data  .close();
+        out_posx.close();
+        out_posy.close();
+        out_posz.close();
     }
 
     for (uint i = 1; i < temp.size();i++)
@@ -188,7 +211,7 @@ void mdsystem::run_simulation()
         // Process events
         process_events();
     }
-
+    cout<<"Complete"<<endl;
 operation_finished:
     // Finish the operation
     finish_operation();
