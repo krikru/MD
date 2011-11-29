@@ -17,6 +17,7 @@ using std::domain_error;
 template<typename T> 
 struct base_int_vec3
 {
+public:
     T e[3];
 
     /* Constructors */

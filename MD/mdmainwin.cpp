@@ -103,7 +103,9 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool Ek_on_in = true;
 
     // Init system and run simulation
-    simulation.init(write_to_text_browser, process_events, nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
+    callback<void (*)(void*        )> event_callback_in (process_events       , this);
+    callback<void (*)(void*, string)> output_callback_in(write_to_text_browser, this);
+    simulation.init(event_callback_in, output_callback_in, nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
 
     std::cout << "Random seed " << random_seed << std::endl;
@@ -131,13 +133,15 @@ void mdmainwin::closeEvent(QCloseEvent *event)
 // PRIVATE MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdmainwin::write_to_text_browser(string output)
+void mdmainwin::write_to_text_browser(void* void_ptr_mainwin, string output)
 {
     QString qstr = QString::fromStdString(output.c_str());
-    //ui->simulation_output_tb->append(qstr); //TODO: ui is a non-static member and can therefore not be accessed here since this is a static member function
+    QTextBrowser* tb = ((mdmainwin*)void_ptr_mainwin)->ui->simulation_output_tb;
+    tb->append(qstr); //TODO: Automatically adds newline to the end of the row. Remove that!
 }
 
-void mdmainwin::process_events()
+void mdmainwin::process_events(void* void_ptr_mainwin)
 {
+    void_ptr_mainwin = void_ptr_mainwin;
     QApplication::processEvents(QEventLoop::AllEvents);
 }

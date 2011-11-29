@@ -8,7 +8,6 @@ using std::runtime_error;
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
-using std::cout;
 using std::endl;
 #include <fstream>
 using std::ofstream;
@@ -28,14 +27,14 @@ mdsystem::mdsystem()
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::init(callback<void (*)(void*)> event_callback_in, callback<void (*)(void*, string)> output_callback_in, uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
 
     // Set the event handler
-    event_handler = event_handler_in;
-    output_handler = output_handler_in;
+    event_callback = event_callback_in;
+    output_callback = output_callback_in;
 
     lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
@@ -119,10 +118,7 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        cout<<"loop number = " << loop_num<<endl;
-        output << "loop number = " << loop_num; //TODO: Remove
-        output_handler(output.str());
-        output.str("");
+        output <<"loop number = " << loop_num << endl;
 
         // Evolve the system in time
         force_calculation();
@@ -139,7 +135,7 @@ void mdsystem::run_simulation()
         // Process events
         process_events();
     }
-    cout << "Simulation completed" << endl;
+    output << "Simulation completed" << endl;
 
     // Open the output files
     out_etot_data .open("TotalEnergy.dat");
@@ -176,13 +172,13 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        cout << "Temp            = " <<setprecision(9) << temp[i]               << endl;
-        cout << "Ek + Ep         = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
-        cout << "Ek              = " <<setprecision(9) << Ek  [i]               << endl;
-        cout << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
-        cout << "Cohesive energy = " <<setprecision(9) << (cohesive_energy [i])/P_EV   << endl;
-        cout << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
-        cout << "msd             = " <<setprecision(9) << msd [i]               << endl;
+        output << "Temp            = " <<setprecision(9) << temp[i]               << endl;
+        output << "Ek + Ep         = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
+        output << "Ek              = " <<setprecision(9) << Ek  [i]               << endl;
+        output << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
+        output << "Cohesive energy = " <<setprecision(9) << (cohesive_energy [i])/P_EV   << endl;
+        output << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
+        output << "msd             = " <<setprecision(9) << msd [i]               << endl;
 
         
         // Process events
@@ -277,7 +273,7 @@ void mdsystem::update_verlet_list_if_necessary()
     }
     if (i < nrparticles) {
         // Displacement that is to large was found
-        cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
+        output << int(100*loop_num/nrtimesteps) << " % done" <<endl;
         create_verlet_list();
     }
 }
@@ -424,9 +420,9 @@ void mdsystem::leapfrog()
 #endif
 
     for (uint i = 0; i < nrparticles; i++) {
-        //cout << "\ti = " << i << endl;
+        //output << "\ti = " << i << endl;
         if (loop_num == 2) {
-            //cout << "i = " << i << endl;
+            //output << "i = " << i << endl;
             if (i == 22) {
                 i = i; //TODO
             }
@@ -670,9 +666,21 @@ vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
 
 void mdsystem::process_events()
 {
-    if (event_handler) {
-        event_handler();
+    // Print output
+    print_output();
+
+    // Let the application process its events
+    if (event_callback.func) {
+        event_callback.func(event_callback.param);
     }
+}
+
+void mdsystem::print_output()
+{
+    if (output_callback.func) {
+        output_callback.func(output_callback.param, output.str());
+    }
+    output.str("");
 }
 
 void mdsystem::start_operation()
@@ -686,6 +694,7 @@ void mdsystem::start_operation()
 
 void mdsystem::finish_operation()
 {
+    print_output();
     if (!operating) {
         throw runtime_error("Tried to finish operation that was never started");
     }
