@@ -6,38 +6,23 @@
 #include <iostream>
 
 // Own includes
-#include "definitions.h"
-
-// Qt includes
-#include <QMessageBox>
-#include <QCloseEvent>
-
-// Widgets
-#include "mdmainwin.h"
-#include "ui_mdmainwin.h"
+#include "mdsystem.h"
 
 ////////////////////////////////////////////////////////////////
-// PUBLIC MEMBER FUNCTIONS
+// FORWARD DECLARATIONS
 ////////////////////////////////////////////////////////////////
 
-mdmainwin::mdmainwin(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::mdmainwin)
+void process_events(void* ptr);
+void write_to_cout(void* ptr, string output);
+
+////////////////////////////////////////////////////////////////
+// THE MAIN FUNCTION
+////////////////////////////////////////////////////////////////
+
+int main(int argc, char* args[])
 {
-    ui->setupUi(this);
-}
-
-mdmainwin::~mdmainwin()
-{
-    delete ui;
-}
-
-////////////////////////////////////////////////////////////////
-// PRIVATE SLOTS
-////////////////////////////////////////////////////////////////
-
-void mdmainwin::on_start_simulation_pb_clicked()
-{
+    argc = argc;
+    args = args;
 #if 1
     // Randomize the simulation with a random seed based on the current time
     uint random_seed = (unsigned int)time(NULL);
@@ -58,7 +43,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Xenon"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(800.0); // [K]//MSD linear at approx. 800K, why??
+    ftype temperature_in = ftype(1.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
@@ -79,7 +64,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(12400.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in = ftype(800.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #endif
 
@@ -105,47 +90,28 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool Ek_on_in = true;
 
     // Init system and run simulation
-    callback<void (*)(void*        )> event_callback_in (process_events       , this);
-    callback<void (*)(void*, string)> output_callback_in(write_to_text_browser, this);
+    callback<void (*)(void*        )> event_callback_in (process_events, 0);
+    callback<void (*)(void*, string)> output_callback_in(write_to_cout , 0);
+    mdsystem simulation;
     simulation.set_event_callback (event_callback_in );
     simulation.set_output_callback(output_callback_in);
     simulation.init(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
 
     std::cout << "Random seed " << random_seed << std::endl;
-}
-
-void mdmainwin::closeEvent(QCloseEvent *event)
-{
-    if (simulation.is_operating()) {
-        // Ask the user whether to abort the operation or not
-        QMessageBox msg_box;
-        msg_box.setText("An operation is currently being executed.");
-        msg_box.setInformativeText("Do you want to abort the operation?");
-        msg_box.setStandardButtons(QMessageBox::Abort | QMessageBox::Cancel);
-        msg_box.setDefaultButton(QMessageBox::Cancel);
-        int result = msg_box.exec();
-        if (result != QMessageBox::Abort) {
-            event->ignore();
-            return;
-        }
-    }
-    simulation.abort_activities();
+    system("PAUSE");
 }
 
 ////////////////////////////////////////////////////////////////
-// PRIVATE MEMBER FUNCTIONS
+// PRIVATE FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdmainwin::write_to_text_browser(void* void_ptr_mainwin, string output)
+void process_events(void* ptr)
 {
-    QString qstr = QString::fromStdString(output.c_str());
-    QTextBrowser* tb = ((mdmainwin*)void_ptr_mainwin)->ui->simulation_output_tb;
-    tb->append(qstr); //TODO: Automatically adds newline to the end of the row. Remove that!
+    ptr;
 }
 
-void mdmainwin::process_events(void* void_ptr_mainwin)
+void write_to_cout(void* ptr, string output)
 {
-    void_ptr_mainwin = void_ptr_mainwin;
-    QApplication::processEvents(QEventLoop::AllEvents);
+    std::cout << output;
 }

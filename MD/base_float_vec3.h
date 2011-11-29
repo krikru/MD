@@ -21,6 +21,7 @@ using std::domain_error;
 template<typename T> 
 struct base_float_vec3
 {
+public:
     T e[3];
 
     /* Constructors */

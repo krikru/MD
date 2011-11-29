@@ -43,5 +43,8 @@ _ReSharper*/
 *.dat
 
 #Add names of folders to be ignored here
-MD-build-desktop-Qt_4_7_4__4_7_4__Debug
+-build-
+desktop-Qt_4_7_4__4_7_4__Debug
 MD-build-desktop-Qt_4_7_4__4_7_4__Release
+MD-build-desktop-Qt_4_7_4_for_Desktop_-_MinGW_4_4__Qt_SDK__Debug
+MD-build-desktop-Qt_4_7_4_for_Desktop_-_MinGW_4_4__Qt_SDK__Release
