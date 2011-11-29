@@ -215,27 +215,27 @@ void mdsystem::init_particles() {
                 for (uint x = 0; x < n; x++) {
                     int help_index = 4*(x + n*(y + n*z));
 
-                    (particles[help_index + 0]).start_pos[0] = x*a;
-                    (particles[help_index + 0]).start_pos[1] = y*a;
-                    (particles[help_index + 0]).start_pos[2] = z*a;
+                    (particles[help_index + 0]).pos[0] = x*a;
+                    (particles[help_index + 0]).pos[1] = y*a;
+                    (particles[help_index + 0]).pos[2] = z*a;
 
-                    (particles[help_index + 1]).start_pos[0] = x*a;
-                    (particles[help_index + 1]).start_pos[1] = (y + 0.5f)*a;
-                    (particles[help_index + 1]).start_pos[2] = (z + 0.5f)*a;
+                    (particles[help_index + 1]).pos[0] = x*a;
+                    (particles[help_index + 1]).pos[1] = (y + 0.5f)*a;
+                    (particles[help_index + 1]).pos[2] = (z + 0.5f)*a;
 
-                    (particles[help_index + 2]).start_pos[0] = (x + 0.5f)*a;
-                    (particles[help_index + 2]).start_pos[1] = y*a;
-                    (particles[help_index + 2]).start_pos[2] = (z + 0.5f)*a;
+                    (particles[help_index + 2]).pos[0] = (x + 0.5f)*a;
+                    (particles[help_index + 2]).pos[1] = y*a;
+                    (particles[help_index + 2]).pos[2] = (z + 0.5f)*a;
 
-                    (particles[help_index + 3]).start_pos[0] = (x + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[1] = (y + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[2] = z*a;
+                    (particles[help_index + 3]).pos[0] = (x + 0.5f)*a;
+                    (particles[help_index + 3]).pos[1] = (y + 0.5f)*a;
+                    (particles[help_index + 3]).pos[2] = z*a;
                 } // X
             } // Y
         } // Z
     }
     
-    //Randomixe the velocities
+    //Randomize the velocities
     vec3 sum_vel = vec3(0, 0, 0);
     ftype sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
@@ -255,9 +255,8 @@ void mdsystem::init_particles() {
     ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)*scale_factor;
-        particles[i].pos = particles[i].start_pos;
         particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
-        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].start_pos;
+        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
     }
 }
 
