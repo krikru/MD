@@ -8,10 +8,10 @@ using std::runtime_error;
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
-using std::cout;
 using std::endl;
 #include <fstream>
 using std::ofstream;
+
 // Own includes
 #include "mdsystem.h"
 
@@ -28,14 +28,24 @@ mdsystem::mdsystem()
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::set_event_callback(callback<void (*)(void*)> event_callback_in)
+{
+    start_operation();
+    event_callback = event_callback_in;
+    finish_operation();
+}
+
+void mdsystem::set_output_callback(callback<void (*)(void*, string)> output_callback_in)
+{
+    start_operation();
+    output_callback = output_callback_in;
+    finish_operation();
+}
+
+void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
-
-    // Set the event handler
-    event_handler = event_handler_in;
-    output_handler = output_handler_in;
 
     lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
@@ -79,6 +89,7 @@ void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(
         cells_used = false;
     }
     cellsize = n*a/nrcells;
+    deltaEp = deltaEp_in;
     diff_c_on = diff_c_on_in;
     Cv_on = Cv_on_in;
     pressure_on = pressure_on_in;
@@ -88,6 +99,7 @@ void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(
     desiredtemp = desiredtemp_in;
     thermostat_time = thermostat_time_in;
     thermostat_on = thermostat_on_in;
+    equilibrium = false;
 
     abort_activities_requested = false;
 
@@ -100,15 +112,22 @@ void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(
 
 void mdsystem::run_simulation()
 {
+    // The system is *always* operating when running non-const functions
+    start_operation();
+
     // The out files are like cin
     ofstream out_etot_data ;
     ofstream out_temp_data ;
     ofstream out_therm_data;
     ofstream out_msd_data  ;
+    ofstream out_cohe_data ;
+    ofstream out_posx  ;
+    ofstream out_posy  ;
+    ofstream out_posz  ;
 
-    // The system is *always* operating when running non-const functions
-    start_operation();
-
+    vector<float> posx(nrtimesteps + 1);
+    vector<float> posy(nrtimesteps + 1);
+    vector<float> posz(nrtimesteps + 1);
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
 
@@ -116,14 +135,14 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-
-        output << "loop number = " << loop_num; //TODO: Remove
-        output_handler(output.str());
-        output.str("");
+        output <<"loop number = " << loop_num << endl;
 
         // Evolve the system in time
         force_calculation();
         leapfrog(); // TODO: Compensate for half time steps
+        posx[loop_num]=particles[nrparticles/2].pos[0]/a;
+        posy[loop_num]=particles[nrparticles/2].pos[1]/a;
+        posz[loop_num]=particles[nrparticles/2].pos[2]/a;
 
         // Calculate properties each nrinst loops
         if (loop_num % nrinst == 0 && loop_num != 0) {
@@ -134,19 +153,32 @@ void mdsystem::run_simulation()
         update_verlet_list_if_necessary();
 
         // Process events
-        process_events();
+        print_output_and_process_events();
     }
-    cout << "Simulation completed" << endl;
+    output << "Simulation completed" << endl;
 
     // Open the output files
     out_etot_data .open("TotalEnergy.dat");
     out_temp_data .open("Temperature.dat");
     out_therm_data.open("Thermostat.dat" );
     out_msd_data  .open("MSD.dat"        );
+    out_cohe_data  .open("cohe.dat"      );
+    out_posx.open("posx.dat");
+    out_posy.open("posy.dat");
+    out_posz.open("posz.dat");
     if( !out_etot_data || !out_temp_data ) { // file couldn't be opened
         cerr << "Error: Output files could not be opened" << endl;
     }
     else {
+        for (uint i = 1; i < posx.size(); i++)
+        {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_posx<<setprecision(9)<<posx[i]<<endl;
+            out_posy<<setprecision(9)<<posy[i]<<endl;
+            out_posz<<setprecision(9)<<posz[i]<<endl;
+        }
         for (uint i = 1; i < temp.size(); i++) {
             if (abort_activities_requested) {
                 break;
@@ -155,14 +187,19 @@ void mdsystem::run_simulation()
             out_temp_data  << setprecision(9) << temp [i]         << endl;
             out_therm_data << setprecision(9) << therm[i]         << endl;
             out_msd_data   << setprecision(9) << msd  [i]         << endl;
+            out_cohe_data  << setprecision(9) << cohesive_energy  [i]<< endl;
 
             // Process events
-            process_events();
+            print_output_and_process_events();
         }
         out_etot_data .close();
         out_temp_data .close();
         out_therm_data.close();
         out_msd_data  .close();
+        out_cohe_data  .close();
+        out_posx.close();
+        out_posy.close();
+        out_posz.close();
     }
 
     for (uint i = 1; i < temp.size();i++)
@@ -170,17 +207,19 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        cout << "Temp            = " <<setprecision(9) << temp[i]               << endl;
-        cout << "Ek + Ep         = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
-        cout << "Ek              = " <<setprecision(9) << Ek  [i]               << endl;
-        cout << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
-        cout << "Cohesive energy = " <<setprecision(9) << cohesive_energy [i]   << endl;
-        cout << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
+        output << "Temp            = " <<setprecision(9) << temp[i]               << endl;
+        output << "Ek + Ep         = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
+        output << "Ek              = " <<setprecision(9) << Ek  [i]               << endl;
+        output << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
+        output << "Cohesive energy = " <<setprecision(9) << (cohesive_energy [i])/P_EV   << endl;
+        output << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
+        output << "msd             = " <<setprecision(9) << msd [i]               << endl;
+
         
         // Process events
-        process_events();
+        print_output_and_process_events();
     }
-
+    cout<<"Complete"<<endl;
 operation_finished:
     // Finish the operation
     finish_operation();
@@ -211,27 +250,27 @@ void mdsystem::init_particles() {
                 for (uint x = 0; x < n; x++) {
                     int help_index = 4*(x + n*(y + n*z));
 
-                    (particles[help_index + 0]).start_pos[0] = x*a;
-                    (particles[help_index + 0]).start_pos[1] = y*a;
-                    (particles[help_index + 0]).start_pos[2] = z*a;
+                    (particles[help_index + 0]).pos[0] = x*a;
+                    (particles[help_index + 0]).pos[1] = y*a;
+                    (particles[help_index + 0]).pos[2] = z*a;
 
-                    (particles[help_index + 1]).start_pos[0] = x*a;
-                    (particles[help_index + 1]).start_pos[1] = (y + 0.5f)*a;
-                    (particles[help_index + 1]).start_pos[2] = (z + 0.5f)*a;
+                    (particles[help_index + 1]).pos[0] = x*a;
+                    (particles[help_index + 1]).pos[1] = (y + 0.5f)*a;
+                    (particles[help_index + 1]).pos[2] = (z + 0.5f)*a;
 
-                    (particles[help_index + 2]).start_pos[0] = (x + 0.5f)*a;
-                    (particles[help_index + 2]).start_pos[1] = y*a;
-                    (particles[help_index + 2]).start_pos[2] = (z + 0.5f)*a;
+                    (particles[help_index + 2]).pos[0] = (x + 0.5f)*a;
+                    (particles[help_index + 2]).pos[1] = y*a;
+                    (particles[help_index + 2]).pos[2] = (z + 0.5f)*a;
 
-                    (particles[help_index + 3]).start_pos[0] = (x + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[1] = (y + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[2] = z*a;
+                    (particles[help_index + 3]).pos[0] = (x + 0.5f)*a;
+                    (particles[help_index + 3]).pos[1] = (y + 0.5f)*a;
+                    (particles[help_index + 3]).pos[2] = z*a;
                 } // X
             } // Y
         } // Z
     }
     
-    //Randomixe the velocities
+    //Randomize the velocities
     vec3 sum_vel = vec3(0, 0, 0);
     ftype sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
@@ -248,13 +287,12 @@ void mdsystem::init_particles() {
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
     vec3 average_vel = sum_vel/ftype(nrparticles);
     ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
-    ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
+    ftype scale_factor = sqrt(3.0f * P_KB * init_temp / (vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)*scale_factor;
-        particles[i].pos = particles[i].start_pos;
-        particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
-        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].start_pos;
     }
+
+    reset_non_modulated_relative_particle_positions();
 }
 
 void mdsystem::update_verlet_list_if_necessary()
@@ -270,7 +308,7 @@ void mdsystem::update_verlet_list_if_necessary()
     }
     if (i < nrparticles) {
         // Displacement that is to large was found
-        cout<<int(100*loop_num/nrtimesteps)<<" % done"<<endl;
+        output << int(100*loop_num/nrtimesteps) << " % done" <<endl;
         create_verlet_list();
     }
 }
@@ -279,7 +317,7 @@ void mdsystem::create_verlet_list()
 {
     //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < nrparticles; i++) {
-        update_single_non_modulated_particle_position(i);
+        update_single_non_modulated_relative_particle_position(i);
         particles[i].pos_when_verlet_list_created = particles[i].pos;
     }
 
@@ -391,14 +429,27 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     }
 }
 
-void mdsystem::update_non_modulated_particle_positions()
+void mdsystem::reset_non_modulated_relative_particle_positions()
 {
     for (uint i = 0; i < nrparticles; i++) {
-        update_single_non_modulated_particle_position(i);
+        reset_single_non_modulated_relative_particle_positions(i);
     }
 }
 
-inline void mdsystem::update_single_non_modulated_particle_position(uint i)
+inline void mdsystem::reset_single_non_modulated_relative_particle_positions(uint i)
+{
+    particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
+    particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
+}
+
+void mdsystem::update_non_modulated_relative_particle_positions()
+{
+    for (uint i = 0; i < nrparticles; i++) {
+        update_single_non_modulated_relative_particle_position(i);
+    }
+}
+
+inline void mdsystem::update_single_non_modulated_relative_particle_position(uint i)
 {
     particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_non_modulated_relative_pos_was_calculated, particles[i].pos);
     particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
@@ -417,9 +468,9 @@ void mdsystem::leapfrog()
 #endif
 
     for (uint i = 0; i < nrparticles; i++) {
-        //cout << "\ti = " << i << endl;
+        //output << "\ti = " << i << endl;
         if (loop_num == 2) {
-            //cout << "i = " << i << endl;
+            //output << "i = " << i << endl;
             if (i == 22) {
                 i = i; //TODO
             }
@@ -536,17 +587,16 @@ void mdsystem::force_calculation() { //Using si-units
 }
 
 void mdsystem::calculate_properties() {
-    update_non_modulated_particle_positions();
+    update_non_modulated_relative_particle_positions();
     calculate_temperature();
     if (Cv_on) calculate_specific_heat();            
     if (pressure_on) calculate_pressure();
-    if (msd_on) calculate_mean_square_displacement();
-        
     if (Ep_on) {
         calculate_Ep();
         calculate_cohesive_energy();
     }
     if (Ek_on) calculate_Ek();
+    if (msd_on) calculate_mean_square_displacement();
     if (diff_c_on) calculate_diffusion_coefficient();
 }
 
@@ -596,11 +646,29 @@ void mdsystem::calculate_pressure() {
 
 void mdsystem::calculate_mean_square_displacement() {
     ftype sum = 0;
-    for (uint i = 0; i < nrparticles;i++) {
-        sum += (particles[i].non_modulated_relative_pos - particles[i].start_pos).sqr_length();
+    if (equilibrium == false && loop_num/nrinst) {
+        // Check if equilibrium has been reached
+        ftype variation = (Ep[loop_num/nrinst] - Ep[loop_num/nrinst - 1]) / Ep[loop_num/nrinst];
+        variation = variation >= 0 ? variation : -variation;
+        if (variation < deltaEp) {
+            // The requirements for equilibrium has been reached
+            equilibrium = true;
+            // Consider the particles to "start" now
+            reset_non_modulated_relative_particle_positions();
+        }
     }
-    sum = sum/nrparticles;
-    msd[loop_num/nrinst] = sum;
+    if (equilibrium) {
+        // Calculate mean square displacement
+        for (uint i = 0; i < nrparticles;i++) {
+            sum += particles[i].non_modulated_relative_pos.sqr_length();
+        }
+        sum = sum/nrparticles;
+        msd[loop_num/nrinst] = sum;
+    }
+    else {
+        // Equilibrium not reached; don't calculate this property.
+        msd[loop_num/nrinst] = 0;
+    }
 }
 
 void mdsystem::calculate_diffusion_coefficient() {
@@ -653,11 +721,32 @@ vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
     return d;
 }
 
+void mdsystem::print_output_and_process_events()
+{
+    print_output();
+    process_events();
+}
+
 void mdsystem::process_events()
 {
-    if (event_handler) {
-        event_handler();
+    // Let the application process its events
+    if (event_callback.func) {
+        event_callback.func(event_callback.param);
     }
+}
+
+void mdsystem::print_output()
+{
+    if (output.str().empty()) {
+        // Nothing to write
+        return;
+    }
+
+    // Print the contents of the output buffer and then empty it
+    if (output_callback.func) {
+        output_callback.func(output_callback.param, output.str());
+    }
+    output.str("");
 }
 
 void mdsystem::start_operation()
@@ -671,6 +760,7 @@ void mdsystem::start_operation()
 
 void mdsystem::finish_operation()
 {
+    print_output();
     if (!operating) {
         throw runtime_error("Tried to finish operation that was never started");
     }
