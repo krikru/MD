@@ -116,7 +116,7 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-
+        cout<<"loop number = " << loop_num<<endl;
         output << "loop number = " << loop_num; //TODO: Remove
         output_handler(output.str());
         output.str("");

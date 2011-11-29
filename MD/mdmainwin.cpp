@@ -36,7 +36,7 @@ mdmainwin::~mdmainwin()
 
 void mdmainwin::on_start_simulation_pb_clicked()
 {
-#if 0
+#if 1
     // Randomize the simulation with a random seed based on the current time
     uint random_seed = (unsigned int)time(NULL);
 #else
@@ -45,7 +45,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     srand(random_seed);
 
     // Init element specific constants
-#if 1
+#if 0
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -53,7 +53,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype epsilon_in = ftype(320e-16) * P_ERG; //1 erg = 10^-7 J
     ftype mass_in = ftype(131.293) * P_U;
     ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
-
+    cout<<"Xenon"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(100.0); // [K]
@@ -74,19 +74,19 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype epsilon_in = ftype(0.34) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(107.8682) * P_U;
     ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
-
+    cout<<"Silver"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(300.0); // [K]
+    ftype temperature_in = ftype(80000.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #endif
 
     // Init simulation specific constants
     uint nrparticles_in = 1000; // The number of particles
-    uint nrinst_in = 100;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 500; // Desired (or minimum) total number of timesteps
+    uint nrinst_in = 10;       // Number of timesteps between measurements of properties
+    uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
-    ftype outer_cutoff_in = ftype(1.01) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
+    ftype outer_cutoff_in = ftype(2.0) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
     // Control
     ftype nrthermostat_time_in = 3;
@@ -105,7 +105,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     simulation.init(write_to_text_browser, process_events, nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
 
-    //std::cout << "Random seed " << random_seed << std::endl;
+    std::cout << "Random seed " << random_seed << std::endl;
 }
 
 void mdmainwin::closeEvent(QCloseEvent *event)
