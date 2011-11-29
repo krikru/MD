@@ -11,6 +11,7 @@ using std::runtime_error;
 using std::endl;
 #include <fstream>
 using std::ofstream;
+
 // Own includes
 #include "mdsystem.h"
 
@@ -677,6 +678,12 @@ void mdsystem::process_events()
 
 void mdsystem::print_output()
 {
+    if (output.str().empty()) {
+        // Nothing to write
+        return;
+    }
+
+    // Print the contents of the output buffer and then empty it
     if (output_callback.func) {
         output_callback.func(output_callback.param, output.str());
     }
