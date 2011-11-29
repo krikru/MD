@@ -28,7 +28,7 @@ mdsystem::mdsystem()
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
@@ -79,6 +79,7 @@ void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(
         cells_used = false;
     }
     cellsize = n*a/nrcells;
+    deltaEp = deltaEp_in;
     diff_c_on = diff_c_on_in;
     Cv_on = Cv_on_in;
     pressure_on = pressure_on_in;
@@ -88,6 +89,7 @@ void mdsystem::init(void (*output_handler_in)(string), void (*event_handler_in)(
     desiredtemp = desiredtemp_in;
     thermostat_time = thermostat_time_in;
     thermostat_on = thermostat_on_in;
+    equilibrium = false;
 
     abort_activities_requested = false;
 
@@ -176,6 +178,8 @@ void mdsystem::run_simulation()
         cout << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
         cout << "Cohesive energy = " <<setprecision(9) << cohesive_energy [i]   << endl;
         cout << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
+        cout << "msd             = " <<setprecision(9) << msd [i]               << endl;
+
         
         // Process events
         process_events();
@@ -211,27 +215,27 @@ void mdsystem::init_particles() {
                 for (uint x = 0; x < n; x++) {
                     int help_index = 4*(x + n*(y + n*z));
 
-                    (particles[help_index + 0]).start_pos[0] = x*a;
-                    (particles[help_index + 0]).start_pos[1] = y*a;
-                    (particles[help_index + 0]).start_pos[2] = z*a;
+                    (particles[help_index + 0]).pos[0] = x*a;
+                    (particles[help_index + 0]).pos[1] = y*a;
+                    (particles[help_index + 0]).pos[2] = z*a;
 
-                    (particles[help_index + 1]).start_pos[0] = x*a;
-                    (particles[help_index + 1]).start_pos[1] = (y + 0.5f)*a;
-                    (particles[help_index + 1]).start_pos[2] = (z + 0.5f)*a;
+                    (particles[help_index + 1]).pos[0] = x*a;
+                    (particles[help_index + 1]).pos[1] = (y + 0.5f)*a;
+                    (particles[help_index + 1]).pos[2] = (z + 0.5f)*a;
 
-                    (particles[help_index + 2]).start_pos[0] = (x + 0.5f)*a;
-                    (particles[help_index + 2]).start_pos[1] = y*a;
-                    (particles[help_index + 2]).start_pos[2] = (z + 0.5f)*a;
+                    (particles[help_index + 2]).pos[0] = (x + 0.5f)*a;
+                    (particles[help_index + 2]).pos[1] = y*a;
+                    (particles[help_index + 2]).pos[2] = (z + 0.5f)*a;
 
-                    (particles[help_index + 3]).start_pos[0] = (x + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[1] = (y + 0.5f)*a;
-                    (particles[help_index + 3]).start_pos[2] = z*a;
+                    (particles[help_index + 3]).pos[0] = (x + 0.5f)*a;
+                    (particles[help_index + 3]).pos[1] = (y + 0.5f)*a;
+                    (particles[help_index + 3]).pos[2] = z*a;
                 } // X
             } // Y
         } // Z
     }
     
-    //Randomixe the velocities
+    //Randomize the velocities
     vec3 sum_vel = vec3(0, 0, 0);
     ftype sum_sqr_vel = 0;
     for (uint i = 0; i < nrparticles; i++) {
@@ -251,9 +255,8 @@ void mdsystem::init_particles() {
     ftype scale_factor = sqrt(1.5f * P_KB * init_temp / (0.5f * vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp
     for (uint i = 0; i < nrparticles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)*scale_factor;
-        particles[i].pos = particles[i].start_pos;
         particles[i].non_modulated_relative_pos = vec3(0, 0, 0);
-        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].start_pos;
+        particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
     }
 }
 
@@ -540,13 +543,12 @@ void mdsystem::calculate_properties() {
     calculate_temperature();
     if (Cv_on) calculate_specific_heat();            
     if (pressure_on) calculate_pressure();
-    if (msd_on) calculate_mean_square_displacement();
-        
     if (Ep_on) {
         calculate_Ep();
         calculate_cohesive_energy();
     }
     if (Ek_on) calculate_Ek();
+    if (msd_on) calculate_mean_square_displacement();
     if (diff_c_on) calculate_diffusion_coefficient();
 }
 
@@ -596,11 +598,20 @@ void mdsystem::calculate_pressure() {
 
 void mdsystem::calculate_mean_square_displacement() {
     ftype sum = 0;
-    for (uint i = 0; i < nrparticles;i++) {
-        sum += (particles[i].non_modulated_relative_pos - particles[i].start_pos).sqr_length();
+    if ((equilibrium == false)&&(sqrt(((Ep[loop_num/nrinst]-Ep[loop_num/nrinst-1])/Ep[loop_num/nrinst])*((Ep[loop_num/nrinst]-Ep[loop_num/nrinst-1])/Ep[loop_num/nrinst])) < deltaEp)) {
+        equilibrium = true;
+        for (uint i = 0; i < nrparticles; i++) {
+            particles[i].start_pos = particles[i].non_modulated_relative_pos;
+        }
     }
-    sum = sum/nrparticles;
-    msd[loop_num/nrinst] = sum;
+    if (equilibrium) {
+        for (uint i = 0; i < nrparticles;i++) {
+            sum += (particles[i].non_modulated_relative_pos - particles[i].start_pos).sqr_length();
+        }
+        sum = sum/nrparticles;
+        msd[loop_num/nrinst] = sum;
+    }
+    else {msd[loop_num/nrinst] = 0;}
 }
 
 void mdsystem::calculate_diffusion_coefficient() {

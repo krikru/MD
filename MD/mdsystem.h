@@ -28,7 +28,7 @@ class mdsystem
     /********************
      * Public functions *
      ********************/
-    void init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    void init(void (*output_handler_in)(string), void (*event_handler_in)(void), uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
     void run_simulation();
     void abort_activities();
     bool is_operating() const;
@@ -95,6 +95,8 @@ private:
     ftype four_epsilon; // Four times epsilon in the Lennard Jones potential
     //
     ftype distanceforcesum;
+    ftype deltaEp;      //equilibrium is reached when abs((Ep(current)-Ep(previous))/Ep(current)) is below this value
+    bool equilibrium;
     // Flags
     bool thermostat_on;
     bool diff_c_on;

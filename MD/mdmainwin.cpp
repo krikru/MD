@@ -91,6 +91,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     // Control
     ftype nrthermostat_time_in = 3;
     ftype thermostat_time_in = nrthermostat_time_in * dt_in;
+    ftype deltaEp_in = ftype(0.1);
 
     // Init flags
     bool thermostat_on_in = !true;
@@ -102,7 +103,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool Ek_on_in = true;
 
     // Init system and run simulation
-    simulation.init(write_to_text_browser, process_events, nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
+    simulation.init(write_to_text_browser, process_events, nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
 
     std::cout << "Random seed " << random_seed << std::endl;
