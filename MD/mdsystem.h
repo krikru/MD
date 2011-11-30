@@ -79,7 +79,7 @@ private:
     vector<uint> verlet_neighbors_list; // List with index numbers to neighbors.
     ftype        sqr_inner_cutoff;      // Square of the inner cut-off radius in the Verlet list
     ftype        sqr_outer_cutoff;      // Square of the outer cut-off radius in the Verlet list
-    // Measurements
+    // Graphs & measurements
     uint          nrinst;           // Number of timesteps between each measurement
     vector<ftype> temp;             // Temperature
     vector<ftype> insttemp;         // Instant temperature
@@ -140,6 +140,8 @@ private:
     void calculate_pressure();
     void calculate_mean_square_displacement();
     void calculate_diffusion_coefficient();
+    // Output
+    ofstream* open_ofstream_file(ofstream &o, const char* path) const;
 
     // Arithmetic operations
     vec3 modulus_position_minus(vec3 pos1, vec3 pos2) const;

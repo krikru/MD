@@ -115,19 +115,20 @@ void mdsystem::run_simulation()
     // The system is *always* operating when running non-const functions
     start_operation();
 
-    // The out files are like cin
+    // Open the output files. They work like cin
     ofstream out_etot_data ;
     ofstream out_temp_data ;
     ofstream out_therm_data;
     ofstream out_msd_data  ;
     ofstream out_cohe_data ;
-    ofstream out_posx  ;
-    ofstream out_posy  ;
-    ofstream out_posz  ;
+    ofstream out_posx      ;
+    ofstream out_posy      ;
+    ofstream out_posz      ;
 
-    vector<float> posx(nrtimesteps + 1);
-    vector<float> posy(nrtimesteps + 1);
-    vector<float> posz(nrtimesteps + 1);
+    vector<float> posx(nrtimesteps + 1); // TODO: This code shouldn't be here
+    vector<float> posy(nrtimesteps + 1); // TODO: This code shouldn't be here
+    vector<float> posz(nrtimesteps + 1); // TODO: This code shouldn't be here
+
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
 
@@ -155,29 +156,30 @@ void mdsystem::run_simulation()
         // Process events
         print_output_and_process_events();
     }
-    output << "Simulation completed" << endl;
+    output << "Simulation completed." << endl;
 
-    // Open the output files
-    out_etot_data .open("TotalEnergy.dat");
-    out_temp_data .open("Temperature.dat");
-    out_therm_data.open("Thermostat.dat" );
-    out_msd_data  .open("MSD.dat"        );
-    out_cohe_data .open("cohe.dat"      );
-    out_posx.open("posx.dat");
-    out_posy.open("posy.dat");
-    out_posz.open("posz.dat");
-    if( !out_etot_data || !out_temp_data ) { // file couldn't be opened
+    output << "Opening output files..." << endl;
+    if (!(open_ofstream_file(out_etot_data , "TotalEnergy.dat") &&
+          open_ofstream_file(out_temp_data , "Temperature.dat") &&
+          open_ofstream_file(out_therm_data, "Thermostat.dat" ) &&
+          open_ofstream_file(out_msd_data  , "MSD.dat"        ) &&
+          open_ofstream_file(out_cohe_data , "cohe.dat"       ) &&
+          open_ofstream_file(out_posx      , "posx.dat"       ) &&
+          open_ofstream_file(out_posy      , "posy.dat"       ) &&
+          open_ofstream_file(out_posz      , "posz.dat"       )
+          )) {
         cerr << "Error: Output files could not be opened" << endl;
     }
     else {
+        output << "Writing to output files..." << endl;
         for (uint i = 1; i < posx.size(); i++)
         {
             if (abort_activities_requested) {
                 break;
             }
-            out_posx<<setprecision(9)<<posx[i]<<endl;
-            out_posy<<setprecision(9)<<posy[i]<<endl;
-            out_posz<<setprecision(9)<<posz[i]<<endl;
+            out_posx << setprecision(9) << posx[i] << endl;
+            out_posy << setprecision(9) << posy[i] << endl;
+            out_posz << setprecision(9) << posz[i] << endl;
         }
         for (uint i = 1; i < temp.size(); i++) {
             if (abort_activities_requested) {
@@ -201,6 +203,7 @@ void mdsystem::run_simulation()
         out_posy.close();
         out_posz.close();
     }
+    output << "Writing to output files done." << endl;
 
     for (uint i = 1; i < temp.size();i++)
     {
@@ -683,8 +686,15 @@ void mdsystem::calculate_mean_square_displacement() {
     }
 }
 
-void mdsystem::calculate_diffusion_coefficient() {
+void mdsystem::calculate_diffusion_coefficient()
+{
     diffusion_coefficient[loop_num/nrinst] = msd[loop_num/nrinst]/(6*dt*loop_num);
+}
+
+ofstream* mdsystem::open_ofstream_file(ofstream &o, const char* path) const
+{
+    o.open(path);
+    return &o;
 }
 
 vec3 mdsystem::modulus_position_minus(vec3 pos1, vec3 pos2) const
