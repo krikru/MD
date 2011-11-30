@@ -162,7 +162,7 @@ void mdsystem::run_simulation()
     out_temp_data .open("Temperature.dat");
     out_therm_data.open("Thermostat.dat" );
     out_msd_data  .open("MSD.dat"        );
-    out_cohe_data  .open("cohe.dat"      );
+    out_cohe_data .open("cohe.dat"      );
     out_posx.open("posx.dat");
     out_posy.open("posy.dat");
     out_posz.open("posz.dat");
@@ -219,7 +219,8 @@ void mdsystem::run_simulation()
         // Process events
         print_output_and_process_events();
     }
-    cout<<"Complete"<<endl;
+    output << "Complete" << endl;
+
 operation_finished:
     // Finish the operation
     finish_operation();
@@ -233,6 +234,16 @@ void mdsystem::abort_activities()
 bool mdsystem::is_operating() const
 {
     return operating;
+}
+
+uint mdsystem::get_loop_num() const
+{
+    return loop_num;
+}
+
+uint mdsystem::get_max_loops_num() const
+{
+    return nrtimesteps;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -301,7 +312,7 @@ void mdsystem::update_verlet_list_if_necessary()
     ftype sqr_limit = (sqr_outer_cutoff + sqr_inner_cutoff - 2*sqrt(sqr_outer_cutoff*sqr_inner_cutoff));
     uint i;
     for (i = 0; i < nrparticles; i++) {
-        ftype sqr_displacement = modulos_distance(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
+        ftype sqr_displacement = modulus_position_minus(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
         if (sqr_displacement > sqr_limit) {
             break;
         }
@@ -400,7 +411,8 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                         cellindex = uint(modulated_x + nrcells * (modulated_y + nrcells * modulated_z)); // Calculate neighbouring cell index
                         neighbour_particle_index = cell_list[cellindex]; // Get the largest particle index of the particles in this cell
                         while (neighbour_particle_index > i) { // Loop though all particles in the cell with greater index
-                            ftype sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
+                            // TODO: The modolus can be removed if
+                            ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                             if(sqr_distance < sqr_outer_cutoff) {
                                 verlet_neighbors_list[verlet_particles_list[i]] += 1;
                                 verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
@@ -414,7 +426,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         } // if (cells_used)
         else {
             for (neighbour_particle_index = i+1; neighbour_particle_index < nrparticles; neighbour_particle_index++) { // Loop though all particles with greater index
-                ftype sqr_distance = modulos_distance(particles[neighbour_particle_index].pos, particles[i].pos).sqr_length();
+                ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                 if(sqr_distance < sqr_outer_cutoff) {
                     verlet_neighbors_list[verlet_particles_list[i]] += 1;
                     verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
@@ -451,7 +463,7 @@ void mdsystem::update_non_modulated_relative_particle_positions()
 
 inline void mdsystem::update_single_non_modulated_relative_particle_position(uint i)
 {
-    particles[i].non_modulated_relative_pos += modulos_distance(particles[i].pos_when_non_modulated_relative_pos_was_calculated, particles[i].pos);
+    particles[i].non_modulated_relative_pos += modulus_position_minus(particles[i].pos, particles[i].pos_when_non_modulated_relative_pos_was_calculated);
     particles[i].pos_when_non_modulated_relative_pos_was_calculated = particles[i].pos;
 }
 
@@ -553,7 +565,7 @@ void mdsystem::force_calculation() { //Using si-units
             // TODO: automatically detect if a boundary is crossed and compensate for that in this function
             // Calculate the closest distance to the second (possibly) interacting particle
             uint i2 = verlet_neighbors_list[j];
-            vec3 r = modulos_distance(particles[i2].pos, particles[i1].pos);
+            vec3 r = modulus_position_minus(particles[i1].pos, particles[i2].pos);
             sqr_distance = r.sqr_length();
             if (sqr_distance >= sqr_inner_cutoff) {
                 continue; // Skip this interaction and continue with the next one
@@ -675,9 +687,9 @@ void mdsystem::calculate_diffusion_coefficient() {
     diffusion_coefficient[loop_num/nrinst] = msd[loop_num/nrinst]/(6*dt*loop_num);
 }
 
-vec3 mdsystem::modulos_distance(vec3 pos1, vec3 pos2) const
+vec3 mdsystem::modulus_position_minus(vec3 pos1, vec3 pos2) const
 {
-    vec3 d = pos2 - pos1;
+    vec3 d = pos1 - pos2;
 
     // Check boundaries in x-direction
     if (d[0] >= p_half_box_size) {

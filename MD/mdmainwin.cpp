@@ -17,14 +17,32 @@
 #include "ui_mdmainwin.h"
 
 ////////////////////////////////////////////////////////////////
-// PUBLIC MEMBER FUNCTIONS
+// CONSTRUCTOR & DESTRUCTOR
 ////////////////////////////////////////////////////////////////
 
 mdmainwin::mdmainwin(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::mdmainwin)
 {
+    // Set up user interface
     ui->setupUi(this);
+
+    // Set up simulation output text browser
+    int font_size = 7;
+    int tab_width = 8;
+    // Create font for the text browser
+    QFont log_font("Courier New", font_size + 2, QFont::Normal, false); /* TODO: Why does Qt remove 2 from the font size?? */
+    // Create text browser
+    QTextEdit *tb = ui->simulation_output_tb;
+    tb->setAutoFormatting(QTextEdit::AutoNone); /* Don't format inserted text */
+    tb->setFont(log_font);
+    tb->setLineWrapMode(QTextEdit::WidgetWidth); /* Wrap text at widget edge */
+    tb->setOverwriteMode(false); /* Don't overwrite other text when inserting new one */
+    tb->setReadOnly(true); /* Don't accept user inputed text */
+    tb->setTabChangesFocus(true); /* Change focus when tab is pressed */
+    tb->setTabStopWidth(tab_width * font_size); /* Tab width in pixels */
+    tb->setUndoRedoEnabled(false); /* Don't allow undo */
+    tb->setWordWrapMode(QTextOption::WrapAnywhere); /* Use all characters places on each line */
 }
 
 mdmainwin::~mdmainwin()
@@ -99,7 +117,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     // Init simulation specific constants
     uint nrparticles_in = 1000; // The number of particles
     uint nrinst_in = 10;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
+    uint nrtimesteps_in = 1000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
@@ -118,12 +136,13 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool Ek_on_in = true;
 
     // Init system and run simulation
-    callback<void (*)(void*        )> event_callback_in (process_events       , this);
-    callback<void (*)(void*, string)> output_callback_in(write_to_text_browser, this);
+    callback<void (*)(void*        )> event_callback_in (static_process_events       , this);
+    callback<void (*)(void*, string)> output_callback_in(static_write_to_text_browser, this);
     simulation.set_event_callback (event_callback_in );
     simulation.set_output_callback(output_callback_in);
     simulation.init(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, nrinst_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
+    ui->statusbar->showMessage("Simulation finished.");
 
     std::cout << "Random seed " << random_seed << std::endl;
 }
@@ -147,18 +166,47 @@ void mdmainwin::closeEvent(QCloseEvent *event)
 }
 
 ////////////////////////////////////////////////////////////////
-// PRIVATE MEMBER FUNCTIONS
+// PRIVATE NON-STATIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-void mdmainwin::write_to_text_browser(void* void_ptr_mainwin, string output)
+void mdmainwin::write_to_text_browser(string output)
 {
     QString qstr = QString::fromStdString(output.c_str());
-    QTextBrowser* tb = ((mdmainwin*)void_ptr_mainwin)->ui->simulation_output_tb;
-    tb->append(qstr); //TODO: Automatically adds newline to the end of the row. Remove that!
+
+    // Get the pointer to the text browser
+    QTextBrowser *tb = ui->simulation_output_tb;
+    // Move cursor to insert the text at the end of the text browser
+    tb->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+    tb->insertPlainText(qstr);
 }
 
-void mdmainwin::process_events(void* void_ptr_mainwin)
+////////////////////////////////////////////////////////////////
+// PRIVATE STATIC MEMBER FUNCTIONS
+////////////////////////////////////////////////////////////////
+
+void mdmainwin::static_write_to_text_browser(void* void_ptr_mainwin, string output)
 {
-    void_ptr_mainwin = void_ptr_mainwin;
+    // Cast to the right pointer type
+    mdmainwin *mainwin_ptr = (mdmainwin*)void_ptr_mainwin;
+
+    // Call the non-static version of this function
+    mainwin_ptr->write_to_text_browser(output);
+}
+
+void mdmainwin::static_process_events(void* void_ptr_mainwin)
+{
+    // Cast to the right pointer type
+    mdmainwin *mainwin_ptr = (mdmainwin*)void_ptr_mainwin;
+
+    // Get the pointer to the system
+    mdsystem *sys_ptr = &(mainwin_ptr->simulation);
+
+    if (sys_ptr->is_operating()) {
+        uint pre_cent_finished = 100 * sys_ptr->get_loop_num() / sys_ptr->get_max_loops_num();
+        mainwin_ptr->ui->statusbar->showMessage("Running simulation... " + QString::number(pre_cent_finished) + " %");
+    }
+    else {
+        mainwin_ptr->ui->statusbar->showMessage("Idle");
+    }
     QApplication::processEvents(QEventLoop::AllEvents);
 }
