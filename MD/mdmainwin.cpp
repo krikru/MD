@@ -65,28 +65,24 @@ void mdmainwin::on_start_simulation_pb_clicked()
     srand(random_seed);
 
     // Init element specific constants
-#if 1
+#if 0
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
+    //Cohesive energy: 0.16 eV/atom
+
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
     ftype sigma_in = ftype(3.98) * P_ANGSTROM;
     ftype epsilon_in = ftype(320e-16) * P_ERG; //1 erg = 10^-7 J
     ftype mass_in = ftype(131.293) * P_U;
-    ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);
+    ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
     cout<<"Xenon"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(800.0); // [K]//MSD linear at approx. 800K, why??
+    ftype temperature_in = ftype(0.01); // [K]//MSD linear at approx. 800K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 1
+#elif 0
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
-
-    /* Should have the following properties:
-     * -------------------------------------
-     * Cohesive energy (corrected  ): 55.8 Kcal/mol
-     * Cohesive energy (uncurrected): 58.9 Kcal/mol
-     * Cohesive energy (observed   ): 68.0 Kcal/mol
-     */
+    //Cohesive energy: 2.95 eV/atom
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -97,27 +93,44 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(800.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in = ftype(0.01); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Copper (Melting point 1356.6 K)
+    //Cohesive energy: 3.49 eV/atom
+
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
     ftype sigma_in = ftype(2.338) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.4096) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(63.546) * P_U;
     ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
-    cout<<"Silver"<<endl;
+    cout<<"Copper"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(800.0); // [K]
+    ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
+#elif 1
+    //Argon (Melting point 83.8 K)
+    //Cohesive energy: 0.080 eV/atom
+
+    // Element constants
+    uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
+    ftype sigma_in = ftype(3.40) * P_ANGSTROM;
+    ftype epsilon_in = ftype(167e-16) * P_ERG; //1 erg = 10^-7 J
+    ftype mass_in = ftype(39.948) * P_U;
+    ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
+    cout<<"Argon"<<endl;
+    // Simulation constants
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype temperature_in = ftype(100.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #endif
 
     // Init simulation specific constants
     uint nrparticles_in = 1000; // The number of particles
     uint nrinst_in = 10;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 1000; // Desired (or minimum) total number of timesteps
+    uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
@@ -127,7 +140,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype deltaEp_in = ftype(0.1);
 
     // Init flags
-    bool thermostat_on_in = !true;
+    bool thermostat_on_in = true;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
