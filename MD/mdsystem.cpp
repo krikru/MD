@@ -158,6 +158,11 @@ void mdsystem::run_simulation()
     }
     output << "Simulation completed." << endl;
 
+    /*
+     * TODO: The following code should be moved into another public function.
+     * This function should *just* run the simulation since that is what it
+     * says it does.
+     */
     output << "Opening output files..." << endl;
     if (!(open_ofstream_file(out_etot_data , "TotalEnergy.dat") &&
           open_ofstream_file(out_temp_data , "Temperature.dat") &&
@@ -172,6 +177,7 @@ void mdsystem::run_simulation()
     }
     else {
         output << "Writing to output files..." << endl;
+        print_output_and_process_events();
         for (uint i = 1; i < posx.size(); i++)
         {
             if (abort_activities_requested) {
@@ -218,7 +224,6 @@ void mdsystem::run_simulation()
         output << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
         output << "msd             = " <<setprecision(9) << msd [i]               << endl;
 
-        
         // Process events
         print_output_and_process_events();
     }
