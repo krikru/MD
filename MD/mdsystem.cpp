@@ -656,7 +656,7 @@ void mdsystem::calculate_specific_heat() {
         T2 += insttemp[i]*insttemp[i];
     }
     T2 = T2/nrinst;
-    Cv[loop_num/nrinst] = 9*P_KB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_MOL;
+    Cv[loop_num/nrinst] = 9*P_KB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
 }
 
 void mdsystem::calculate_pressure() {
