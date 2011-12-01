@@ -136,15 +136,16 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        output <<"loop number = " << loop_num << endl;
+        //output <<"loop number = " << loop_num << endl;
 
         // Evolve the system in time
         force_calculation();
         leapfrog(); // TODO: Compensate for half time steps
+        /*
         posx[loop_num]=particles[nrparticles/2].pos[0]/a;
         posy[loop_num]=particles[nrparticles/2].pos[1]/a;
         posz[loop_num]=particles[nrparticles/2].pos[2]/a;
-
+        */
         // Calculate properties each nrinst loops
         if (loop_num % nrinst == 0 && loop_num != 0) {
             calculate_properties();
@@ -178,7 +179,7 @@ void mdsystem::run_simulation()
     else {
         output << "Writing to output files..." << endl;
         print_output_and_process_events();
-        for (uint i = 1; i < posx.size(); i++)
+        /*for (uint i = 1; i < posx.size(); i++)
         {
             if (abort_activities_requested) {
                 break;
@@ -186,7 +187,7 @@ void mdsystem::run_simulation()
             out_posx << setprecision(9) << posx[i] << endl;
             out_posy << setprecision(9) << posy[i] << endl;
             out_posz << setprecision(9) << posz[i] << endl;
-        }
+        }*/
         for (uint i = 1; i < temp.size(); i++) {
             if (abort_activities_requested) {
                 break;
@@ -655,7 +656,7 @@ void mdsystem::calculate_specific_heat() {
         T2 += insttemp[i]*insttemp[i];
     }
     T2 = T2/nrinst;
-    Cv[loop_num/nrinst] = 9*P_KB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]));
+    Cv[loop_num/nrinst] = 9*P_KB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_MOL;
 }
 
 void mdsystem::calculate_pressure() {

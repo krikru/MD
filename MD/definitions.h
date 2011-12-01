@@ -55,5 +55,5 @@ const ftype P_U        = ftype(1.66053892173e-27); // [kg ] The "unified atomic 
 //const ftype P_PS       = ftype(1e-12            ); // [s  ] pikoseconds
 const ftype P_FS       = ftype(1e-15            ); // [s  ] femtoseconds
 const ftype P_KB       = ftype(1.380648813e-23  ); // [J/K] Boltzmann constant (1.3806488(13)*10^-23)
-
+const ftype P_MOL      = ftype(6.0221420e23     ); // Avogadro constant
 #endif  /* DEFINITIONS_H */
