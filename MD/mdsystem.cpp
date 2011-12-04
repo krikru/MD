@@ -44,70 +44,157 @@ void mdsystem::set_output_callback(callback<void (*)(void*, string)> output_call
 
 void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
-    // The system is *always* operating when running non-const functions
-    start_operation();
+#if RU_ON == 1
+        // The system is *always* operating when running non-const functions
+        start_operation();
 
-    lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
-    dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
-    sqr_outer_cutoff = outer_cutoff_in*outer_cutoff_in; // Parameter for the Verlet list
-    sqr_inner_cutoff = inner_cutoff_in*inner_cutoff_in; // Parameter for the Verlet list
+        mass = mass_in;
+        sqr_sigma = sigma_in * sigma_in;
+        four_epsilon = 4 * epsilon_in;
+        sigma = sigma_in;
+        epsilon = epsilon_in;
 
-    loop_num = 0;
-    nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+        //reduced unit
+        dt = dt_in / sqrt(mass * sqr_sigma / epsilon);
+        cout<<"dt="<< dt << endl;
+        init_temp = temperature_in * P_KB/ epsilon;
+        cout<<"init_temp= "<<init_temp<<endl;
+        desiredtemp = desiredtemp_in * P_KB/ epsilon;
+        thermostat_time = thermostat_time_in / sqrt(mass * sqr_sigma / epsilon);
+        a = latticeconstant_in / sigma;
+        inner_cutoff = inner_cutoff_in / sigma;
+        outer_cutoff = outer_cutoff_in / sigma;
+        sqr_outer_cutoff =outer_cutoff*outer_cutoff ; // Parameter for the Verlet list
+        sqr_inner_cutoff =inner_cutoff*inner_cutoff ; // Parameter for the Verlet list
 
-    insttemp.resize(nrinst_in);
-    instEk  .resize(nrinst_in);
-    instEp  .resize(nrinst_in);
-    temp                 .resize(nrtimesteps/nrinst_in + 1);
-    therm                .resize(nrtimesteps/nrinst_in + 1);
-    Ek                   .resize(nrtimesteps/nrinst_in + 1);
-    Ep                   .resize(nrtimesteps/nrinst_in + 1);
-    cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
-    Cv                   .resize(nrtimesteps/nrinst_in + 1);
-    pressure             .resize(nrtimesteps/nrinst_in + 1);
-    msd                  .resize(nrtimesteps/nrinst_in + 1);
-    diffusion_coefficient.resize(nrtimesteps/nrinst_in + 1);
-    if (lattice_type == LT_FCC) {
-        n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
-        nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
-    }
-    mass = mass_in;
-    sqr_sigma = sigma_in*sigma_in;
-    four_epsilon = 4*epsilon_in;
-    nrinst = nrinst_in;
-    init_temp = temperature_in;
-    distanceforcesum = 0;
-    a = latticeconstant_in;
-    box_size = a*n;
-    p_half_box_size = 0.5f * box_size;
-    n_half_box_size = -p_half_box_size;
-    nrcells = int(n*a/outer_cutoff_in);
-    if (nrcells > 3) {
-        cells_used = true;
-    }
-    else {
-        cells_used = false;
-    }
-    cellsize = n*a/nrcells;
-    deltaEp = deltaEp_in;
-    diff_c_on = diff_c_on_in;
-    Cv_on = Cv_on_in;
-    pressure_on = pressure_on_in;
-    msd_on = msd_on_in;
-    Ep_on = Ep_on_in;
-    Ek_on = Ek_on_in;
-    desiredtemp = desiredtemp_in;
-    thermostat_time = thermostat_time_in;
-    thermostat_on = thermostat_on_in;
-    equilibrium = false;
+        //
+        lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
 
-    abort_activities_requested = false;
+        loop_num = 0;
+        nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+        insttemp.resize(nrinst_in);
+        instEk  .resize(nrinst_in);
+        instEp  .resize(nrinst_in);
+        temp                 .resize(nrtimesteps/nrinst_in + 1);
+        therm                .resize(nrtimesteps/nrinst_in + 1);
+        Ek                   .resize(nrtimesteps/nrinst_in + 1);
+        Ep                   .resize(nrtimesteps/nrinst_in + 1);
+        cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
+        Cv                   .resize(nrtimesteps/nrinst_in + 1);
+        pressure             .resize(nrtimesteps/nrinst_in + 1);
+        msd                  .resize(nrtimesteps/nrinst_in + 1);
+        diffusion_coefficient.resize(nrtimesteps/nrinst_in + 1);
+        if (lattice_type == LT_FCC) {
+            n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
+            nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+        }
 
-    init_particles();
-    create_verlet_list();
+        nrinst = nrinst_in;
+        distanceforcesum = 0;
 
-    // Finish the operation
-    finish_operation();
+        box_size = a*n;
+        cout<< "a=" << a<<endl;
+        cout<< "boxsize=" << box_size<<endl;
+        p_half_box_size = 0.5f * box_size;
+        n_half_box_size = -p_half_box_size;
+
+        nrcells = int(box_size/outer_cutoff);
+        if (nrcells > 3) {
+            cells_used = true;
+        }
+        else {
+            cells_used = false;
+        }
+        cellsize = box_size/nrcells;
+
+        // turned off some functions for the time being
+        deltaEp = deltaEp_in;
+        diff_c_on = 0;
+        Cv_on = 0;
+        pressure_on = 0;
+        msd_on = 0;
+        Ep_on = 1;
+        Ek_on = 1;
+        thermostat_on = 0;
+        equilibrium = false;
+
+        abort_activities_requested = false;
+
+        init_particles();
+        create_verlet_list();
+
+        // Finish the operation
+        finish_operation();
+
+#else
+        // The system is *always* operating when running non-const functions
+        start_operation();
+
+        lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
+        dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
+
+        sqr_outer_cutoff = outer_cutoff_in*outer_cutoff_in; // Parameter for the Verlet list
+        sqr_inner_cutoff = inner_cutoff_in*inner_cutoff_in; // Parameter for the Verlet list
+
+        loop_num = 0;
+        nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+
+        insttemp.resize(nrinst_in);
+        instEk  .resize(nrinst_in);
+        instEp  .resize(nrinst_in);
+        temp                 .resize(nrtimesteps/nrinst_in + 1);
+        therm                .resize(nrtimesteps/nrinst_in + 1);
+        Ek                   .resize(nrtimesteps/nrinst_in + 1);
+        Ep                   .resize(nrtimesteps/nrinst_in + 1);
+        cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
+        Cv                   .resize(nrtimesteps/nrinst_in + 1);
+        pressure             .resize(nrtimesteps/nrinst_in + 1);
+        msd                  .resize(nrtimesteps/nrinst_in + 1);
+        diffusion_coefficient.resize(nrtimesteps/nrinst_in + 1);
+        if (lattice_type == LT_FCC) {
+            n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
+            nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+        }
+        mass = mass_in;
+        sqr_sigma = sigma_in*sigma_in;
+        four_epsilon = 4*epsilon_in;
+        nrinst = nrinst_in;
+        init_temp = temperature_in;
+        distanceforcesum = 0;
+        a = latticeconstant_in;
+        box_size = a*n;
+        p_half_box_size = 0.5f * box_size;
+        n_half_box_size = -p_half_box_size;
+        nrcells = int(n*a/outer_cutoff_in);
+
+        if (nrcells > 3) {
+            cells_used = true;
+        }
+        else {
+            cells_used = false;
+        }
+        cellsize = n*a/nrcells;
+        deltaEp = deltaEp_in;
+        diff_c_on = diff_c_on_in;
+        Cv_on = Cv_on_in;
+        pressure_on = pressure_on_in;
+        msd_on = msd_on_in;
+        Ep_on = Ep_on_in;
+        Ek_on = Ek_on_in;
+        desiredtemp = desiredtemp_in;
+        thermostat_time = thermostat_time_in;
+        thermostat_on = thermostat_on_in;
+        equilibrium = false;
+
+        abort_activities_requested = false;
+
+        init_particles();
+        create_verlet_list();
+
+        // Finish the operation
+        finish_operation();
+
+#endif
 }
 
 void mdsystem::run_simulation()
@@ -139,6 +226,7 @@ void mdsystem::run_simulation()
         //output <<"loop number = " << loop_num << endl;
 
         // Evolve the system in time
+        cout << loop_num << endl;
         force_calculation();
         leapfrog(); // TODO: Compensate for half time steps
         /*
@@ -307,9 +395,15 @@ void mdsystem::init_particles() {
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
     vec3 average_vel = sum_vel/ftype(nrparticles);
     ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
-    ftype scale_factor = sqrt(3.0f * P_KB * init_temp / (vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
+    ftype scale_factor;
+#if RU_ON == 1
+        scale_factor = sqrt(3.0f  * init_temp * epsilon / (vel_variance * sqr_sigma / P_KB)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
+        cout << "ff= " << scale_factor<<endl;
+#else
+        scale_factor = sqrt(3.0f * P_KB * init_temp / (vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
+#endif
     for (uint i = 0; i < nrparticles; i++) {
-        particles[i].vel = (particles[i].vel - average_vel)*scale_factor;
+        particles[i].vel = (particles[i].vel - average_vel)* scale_factor;
     }
 
     reset_non_modulated_relative_particle_positions();
@@ -506,9 +600,9 @@ void mdsystem::leapfrog()
         }
 #endif
         particles[i].vel += dt * particles[i].acc;
-		
-	    // Update positions
+            // Update positions
         particles[i].pos += dt * particles[i].vel;
+
         // Check boundaries in x-dir
         if (particles[i].pos[0] >= box_size) {
             particles[i].pos[0] -= box_size;
@@ -550,9 +644,16 @@ void mdsystem::leapfrog()
 
         // TODO: Remove this from leapfrog and place it somewhere else
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
+
+
+
     }
+#if RU_ON ==1
+    insttemp[loop_num % nrinst] =  sum_sqr_vel * sqr_sigma/ (3 * nrparticles );
+    cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
+#else
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
-    
+#endif
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
 }
 
@@ -564,10 +665,17 @@ void mdsystem::force_calculation() { //Using si-units
     ftype sqr_distance;
     ftype sqr_distance_inv;
     ftype distance_inv;
-    ftype p = sqr_sigma / sqr_inner_cutoff; // For calculating the cutoff energy
-    p = p*p*p;
+    ftype p;
+#if RU_ON == 1
+        p = 1/sqr_inner_cutoff;
+#else
+        p = sqr_sigma / sqr_inner_cutoff; // For calculating the cutoff energy
+        ftype mass_inv = 1/mass;
+#endif
+    p = p * p * p;
     ftype E_cutoff = four_epsilon * p * (p - 1);
-    ftype mass_inv = 1/mass;             
+
+
     instEp[loop_num % nrinst] = 0;
     for (uint i1 = 0; i1 < nrparticles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
@@ -583,9 +691,17 @@ void mdsystem::force_calculation() { //Using si-units
 
             //Calculating acceleration
             distance_inv = sqrt(sqr_distance_inv);
-            p = sqr_sigma * sqr_distance_inv;
+            ftype acceleration;
+#if RU_ON == 1
+            p = sqr_distance_inv;
             p = p*p*p;
-            ftype acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
+            acceleration = 48  * distance_inv * p * (p - 0.5f);
+#else
+            p = sqr_sigma * sqr_distance_inv;; // For calculating the cutoff energy
+            p = p*p*p;
+            acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
+#endif
+
 
             // Update accelerations of interacting particles
             vec3 r_hat = r * distance_inv;

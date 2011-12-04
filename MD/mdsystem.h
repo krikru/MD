@@ -112,6 +112,11 @@ private:
     bool msd_on;
     bool Ep_on;
     bool Ek_on;
+    //Reduced unit
+    ftype epsilon;
+    ftype sigma;
+    ftype outer_cutoff;
+    ftype inner_cutoff;
 
     /*********************
      * Private functions *

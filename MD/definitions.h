@@ -27,6 +27,12 @@
 //#define  THERMOSTAT              CHING_CHIS_THERMOSTAT
 #define  THERMOSTAT              LASSES_THERMOSTAT
 
+
+////////////////////////////////////////////////////////////////
+//Using reduced units
+////////////////////////////////////////////////////////////////
+#define RU_ON 1
+
 ////////////////////////////////////////////////////////////////
 // TYPEDEFS
 ////////////////////////////////////////////////////////////////
@@ -50,7 +56,7 @@ const ftype M_E      = ftype(2.7182818284590452353602874713526624977572470936999
 //Physical constants
 const ftype P_ERG      = ftype(1e-7             ); // [J  ] Ergon
 const ftype P_EV       = ftype(1.60217648740e-19); // [J  ] Electron volt
-const ftype P_ANGSTROM = ftype(1e-10            ); // [m  ] Ångström
+const ftype P_ANGSTROM = ftype(1e-10            ); // [m  ] A
 const ftype P_U        = ftype(1.66053892173e-27); // [kg ] The "unified atomic mass unit" (1.660538921(73)*10^-27)
 //const ftype P_PS       = ftype(1e-12            ); // [s  ] pikoseconds
 const ftype P_FS       = ftype(1e-15            ); // [s  ] femtoseconds
