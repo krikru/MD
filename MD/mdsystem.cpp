@@ -56,9 +56,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 
         //reduced unit
         dt = dt_in / sqrt(mass * sqr_sigma / epsilon);
-        cout<<"dt="<< dt << endl;
         init_temp = temperature_in * P_KB/ epsilon;
-        cout<<"init_temp= "<<init_temp<<endl;
         desiredtemp = desiredtemp_in * P_KB/ epsilon;
         thermostat_time = thermostat_time_in / sqrt(mass * sqr_sigma / epsilon);
         a = latticeconstant_in / sigma;
@@ -93,8 +91,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
         distanceforcesum = 0;
 
         box_size = a*n;
-        cout<< "a=" << a<<endl;
-        cout<< "boxsize=" << box_size<<endl;
+
         p_half_box_size = 0.5f * box_size;
         n_half_box_size = -p_half_box_size;
 
@@ -109,12 +106,14 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 
         // turned off some functions for the time being
         deltaEp = deltaEp_in;
-        diff_c_on = 0;
-        Cv_on = 0;
-        pressure_on = 0;
-        msd_on = 0;
-        Ep_on = 1;
-        Ek_on = 1;
+        diff_c_on = diff_c_on_in;
+        Cv_on = Cv_on_in;
+        pressure_on = pressure_on_in;
+        msd_on = msd_on_in;
+        Ep_on = Ep_on_in;
+        Ek_on = Ek_on_in;
+        desiredtemp = desiredtemp_in;
+        thermostat_time = thermostat_time_in;
         thermostat_on = 0;
         equilibrium = false;
 
@@ -204,6 +203,7 @@ void mdsystem::run_simulation()
 
     // Open the output files. They work like cin
     ofstream out_etot_data ;
+    ofstream out_ep_data ;
     ofstream out_temp_data ;
     ofstream out_therm_data;
     ofstream out_msd_data  ;
@@ -254,10 +254,11 @@ void mdsystem::run_simulation()
      */
     output << "Opening output files..." << endl;
     if (!(open_ofstream_file(out_etot_data , "TotalEnergy.dat") &&
+          open_ofstream_file(out_ep_data   , "Potential.dat") &&
           open_ofstream_file(out_temp_data , "Temperature.dat") &&
           open_ofstream_file(out_therm_data, "Thermostat.dat" ) &&
           open_ofstream_file(out_msd_data  , "MSD.dat"        ) &&
-          open_ofstream_file(out_cohe_data , "cohe.dat"       ) &&
+          open_ofstream_file(out_cohe_data , "cohesive.dat"       ) &&
           open_ofstream_file(out_posx      , "posx.dat"       ) &&
           open_ofstream_file(out_posy      , "posy.dat"       ) &&
           open_ofstream_file(out_posz      , "posz.dat"       )
@@ -281,6 +282,7 @@ void mdsystem::run_simulation()
                 break;
             }
             out_etot_data  << setprecision(9) << Ek   [i] + Ep[i] << endl;
+            out_ep_data    << setprecision(9) << Ep[i]            << endl;
             out_temp_data  << setprecision(9) << temp [i]         << endl;
             out_therm_data << setprecision(9) << therm[i]         << endl;
             out_msd_data   << setprecision(9) << msd  [i]         << endl;
@@ -290,6 +292,7 @@ void mdsystem::run_simulation()
             print_output_and_process_events();
         }
         out_etot_data .close();
+        out_ep_data   .close();
         out_temp_data .close();
         out_therm_data.close();
         out_msd_data  .close();
@@ -316,6 +319,10 @@ void mdsystem::run_simulation()
         // Process events
         print_output_and_process_events();
     }
+    output<< "a=" << a<<endl;
+    output<< "boxsize=" << box_size<<endl;
+    output<<"dt="<< dt << endl;
+    output<<"init_temp= "<<init_temp<<endl;
     output << "Complete" << endl;
 
 operation_finished:
@@ -397,8 +404,7 @@ void mdsystem::init_particles() {
     ftype vel_variance = sum_sqr_vel/nrparticles - average_vel.sqr_length();
     ftype scale_factor;
 #if RU_ON == 1
-        scale_factor = sqrt(3.0f  * init_temp * epsilon / (vel_variance * sqr_sigma / P_KB)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
-        cout << "ff= " << scale_factor<<endl;
+        scale_factor = sqrt(3.0f  * init_temp  / (vel_variance)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
 #else
         scale_factor = sqrt(3.0f * P_KB * init_temp / (vel_variance * mass)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
 #endif
@@ -651,10 +657,12 @@ void mdsystem::leapfrog()
 #if RU_ON ==1
     insttemp[loop_num % nrinst] =  sum_sqr_vel / (3 * nrparticles );
     cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
+    if (Ek_on) instEk[loop_num % nrinst] = 0.5f * sum_sqr_vel;
 #else
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
-#endif
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * mass * sum_sqr_vel;
+#endif
+
 }
 
 void mdsystem::force_calculation() { //Using si-units
@@ -668,13 +676,14 @@ void mdsystem::force_calculation() { //Using si-units
     ftype p;
 #if RU_ON == 1
         p = 1/sqr_inner_cutoff;
+        p = p * p * p;
+        ftype E_cutoff = 4 * p * (p - 1);
 #else
         p = sqr_sigma / sqr_inner_cutoff; // For calculating the cutoff energy
         ftype mass_inv = 1/mass;
+        p = p * p * p;
+        ftype E_cutoff = four_epsilon * p * (p - 1);
 #endif
-    p = p * p * p;
-    ftype E_cutoff = four_epsilon * p * (p - 1);
-
 
     instEp[loop_num % nrinst] = 0;
     for (uint i1 = 0; i1 < nrparticles ; i1++) { // Loop through all particles
@@ -710,8 +719,13 @@ void mdsystem::force_calculation() { //Using si-units
 
             // Update properties
             //TODO: Remove these two from force calculation and place them somewhere else
+#if RU_ON ==1
+            if (Ep_on) instEp[loop_num % nrinst] += 4 * p * (p - 1) - E_cutoff;
+            if (pressure_on) distanceforcesum += acceleration / distance_inv;
+#else
             if (Ep_on) instEp[loop_num % nrinst] += four_epsilon * p * (p - 1) - E_cutoff;
             if (pressure_on) distanceforcesum += mass * acceleration / distance_inv;
+#endif
         }
     }
 #if THERMOSTAT == LASSES_THERMOSTAT
@@ -772,12 +786,26 @@ void mdsystem::calculate_specific_heat() {
         T2 += insttemp[i]*insttemp[i];
     }
     T2 = T2/nrinst;
-    Cv[loop_num/nrinst] = 9*P_KB/(6/nrparticles+4-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
+#if RU_ON == 1
+    ftype sqr_avgT = temp[loop_num/nrinst]*temp[loop_num/nrinst];
+    cout<< "<T>2=" << sqr_avgT << endl;
+    cout<< "<T2>=" << T2 << endl;
+    ftype Cv_inv = (2/3.0/nrparticles - 4/9*((T2/sqr_avgT)-1)) ;
+    cout<< "Cv_inv=" << Cv_inv << endl;
+    Cv[loop_num/nrinst] = 1/Cv_inv;
+#else
+    Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
+#endif
+
 }
 
 void mdsystem::calculate_pressure() {
     ftype V = n*a*n*a*n*a;
+#if RU_ON == 1
+    pressure[loop_num/nrinst] = nrparticles*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
+#else
     pressure[loop_num/nrinst] = nrparticles*P_KB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
+#endif
     distanceforcesum = 0;
 }
 
