@@ -649,7 +649,7 @@ void mdsystem::leapfrog()
 
     }
 #if RU_ON ==1
-    insttemp[loop_num % nrinst] =  sum_sqr_vel * sqr_sigma/ (3 * nrparticles );
+    insttemp[loop_num % nrinst] =  sum_sqr_vel / (3 * nrparticles );
     cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
 #else
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
