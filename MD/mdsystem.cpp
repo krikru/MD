@@ -44,154 +44,153 @@ void mdsystem::set_output_callback(callback<void (*)(void*, string)> output_call
 
 void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
+    // The system is *always* operating when running non-const functions
+    start_operation();
+#if THERMOSTAT == LASSES_THERMOSTAT
+    thermostat = 0;
+#endif
 #if RU_ON == 1
-        // The system is *always* operating when running non-const functions
-        start_operation();
+    mass = mass_in;
+    sqr_sigma = sigma_in * sigma_in;
+    four_epsilon = 4 * epsilon_in;
+    sigma = sigma_in;
+    epsilon = epsilon_in;
 
-        mass = mass_in;
-        sqr_sigma = sigma_in * sigma_in;
-        four_epsilon = 4 * epsilon_in;
-        sigma = sigma_in;
-        epsilon = epsilon_in;
+    //reduced unit
+    dt = dt_in / sqrt(mass * sqr_sigma / epsilon);
+    init_temp = temperature_in * P_KB/ epsilon;
+    desiredtemp = desiredtemp_in * P_KB/ epsilon;
+    thermostat_time = thermostat_time_in / sqrt(mass * sqr_sigma / epsilon);
+    a = latticeconstant_in / sigma;
+    inner_cutoff = inner_cutoff_in / sigma;
+    outer_cutoff = outer_cutoff_in / sigma;
+    sqr_outer_cutoff =outer_cutoff*outer_cutoff ; // Parameter for the Verlet list
+    sqr_inner_cutoff =inner_cutoff*inner_cutoff ; // Parameter for the Verlet list
 
-        //reduced unit
-        dt = dt_in / sqrt(mass * sqr_sigma / epsilon);
-        init_temp = temperature_in * P_KB/ epsilon;
-        desiredtemp = desiredtemp_in * P_KB/ epsilon;
-        thermostat_time = thermostat_time_in / sqrt(mass * sqr_sigma / epsilon);
-        a = latticeconstant_in / sigma;
-        inner_cutoff = inner_cutoff_in / sigma;
-        outer_cutoff = outer_cutoff_in / sigma;
-        sqr_outer_cutoff =outer_cutoff*outer_cutoff ; // Parameter for the Verlet list
-        sqr_inner_cutoff =inner_cutoff*inner_cutoff ; // Parameter for the Verlet list
+    //
+    lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
 
-        //
-        lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
+    loop_num = 0;
+    nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+    insttemp.resize(nrinst_in);
+    instEk  .resize(nrinst_in);
+    instEp  .resize(nrinst_in);
+    temp                 .resize(nrtimesteps/nrinst_in + 1);
+    therm                .resize(nrtimesteps/nrinst_in + 1);
+    Ek                   .resize(nrtimesteps/nrinst_in + 1);
+    Ep                   .resize(nrtimesteps/nrinst_in + 1);
+    cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
+    Cv                   .resize(nrtimesteps/nrinst_in + 1);
+    pressure             .resize(nrtimesteps/nrinst_in + 1);
+    msd                  .resize(nrtimesteps/nrinst_in + 1);
+    diffusion_coefficient.resize(nrtimesteps/nrinst_in + 1);
+    if (lattice_type == LT_FCC) {
+        n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
+        nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+    }
 
-        loop_num = 0;
-        nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
-        insttemp.resize(nrinst_in);
-        instEk  .resize(nrinst_in);
-        instEp  .resize(nrinst_in);
-        temp                 .resize(nrtimesteps/nrinst_in + 1);
-        therm                .resize(nrtimesteps/nrinst_in + 1);
-        Ek                   .resize(nrtimesteps/nrinst_in + 1);
-        Ep                   .resize(nrtimesteps/nrinst_in + 1);
-        cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
-        Cv                   .resize(nrtimesteps/nrinst_in + 1);
-        pressure             .resize(nrtimesteps/nrinst_in + 1);
-        msd                  .resize(nrtimesteps/nrinst_in + 1);
-        diffusion_coefficient.resize(nrtimesteps/nrinst_in + 1);
-        if (lattice_type == LT_FCC) {
-            n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
-            nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
-        }
+    nrinst = nrinst_in;
+    distanceforcesum = 0;
 
-        nrinst = nrinst_in;
-        distanceforcesum = 0;
+    box_size = a*n;
 
-        box_size = a*n;
+    p_half_box_size = 0.5f * box_size;
+    n_half_box_size = -p_half_box_size;
 
-        p_half_box_size = 0.5f * box_size;
-        n_half_box_size = -p_half_box_size;
+    nrcells = int(box_size/outer_cutoff);
+    if (nrcells > 3) {
+        cells_used = true;
+    }
+    else {
+        cells_used = false;
+    }
+    cellsize = box_size/nrcells;
 
-        nrcells = int(box_size/outer_cutoff);
-        if (nrcells > 3) {
-            cells_used = true;
-        }
-        else {
-            cells_used = false;
-        }
-        cellsize = box_size/nrcells;
+    // turned off some functions for the time being
+    deltaEp = deltaEp_in;
+    diff_c_on = diff_c_on_in;
+    Cv_on = Cv_on_in;
+    pressure_on = pressure_on_in;
+    msd_on = msd_on_in;
+    Ep_on = Ep_on_in;
+    Ek_on = Ek_on_in;
+    desiredtemp = desiredtemp_in;
+    thermostat_time = thermostat_time_in;
+    thermostat_on = 0;
+    equilibrium = false;
 
-        // turned off some functions for the time being
-        deltaEp = deltaEp_in;
-        diff_c_on = diff_c_on_in;
-        Cv_on = Cv_on_in;
-        pressure_on = pressure_on_in;
-        msd_on = msd_on_in;
-        Ep_on = Ep_on_in;
-        Ek_on = Ek_on_in;
-        desiredtemp = desiredtemp_in;
-        thermostat_time = thermostat_time_in;
-        thermostat_on = 0;
-        equilibrium = false;
+    abort_activities_requested = false;
 
-        abort_activities_requested = false;
+    init_particles();
+    create_verlet_list();
 
-        init_particles();
-        create_verlet_list();
-
-        // Finish the operation
-        finish_operation();
+    // Finish the operation
+    finish_operation();
 
 #else
-        // The system is *always* operating when running non-const functions
-        start_operation();
+    lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
+    dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
 
-        lattice_type = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
-        dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
+    sqr_outer_cutoff = outer_cutoff_in*outer_cutoff_in; // Parameter for the Verlet list
+    sqr_inner_cutoff = inner_cutoff_in*inner_cutoff_in; // Parameter for the Verlet list
 
-        sqr_outer_cutoff = outer_cutoff_in*outer_cutoff_in; // Parameter for the Verlet list
-        sqr_inner_cutoff = inner_cutoff_in*inner_cutoff_in; // Parameter for the Verlet list
+    loop_num = 0;
+    nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
 
-        loop_num = 0;
-        nrtimesteps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+    insttemp.resize(nrinst_in);
+    instEk  .resize(nrinst_in);
+    instEp  .resize(nrinst_in);
+    temp                 .resize(nrtimesteps/nrinst_in + 1);
+    therm                .resize(nrtimesteps/nrinst_in + 1);
+    Ek                   .resize(nrtimesteps/nrinst_in + 1);
+    Ep                   .resize(nrtimesteps/nrinst_in + 1);
+    cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
+    Cv                   .resize(nrtimesteps/nrinst_in + 1);
+    pressure             .resize(nrtimesteps/nrinst_in + 1);
+    msd                  .resize(nrtimesteps/nrinst_in + 1);
+    diffusion_coefficient.resize(nrtimesteps/nrinst_in + 1);
+    if (lattice_type == LT_FCC) {
+        n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
+        nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+    }
+    mass = mass_in;
+    sqr_sigma = sigma_in*sigma_in;
+    four_epsilon = 4*epsilon_in;
+    nrinst = nrinst_in;
+    init_temp = temperature_in;
+    distanceforcesum = 0;
+    a = latticeconstant_in;
+    box_size = a*n;
+    p_half_box_size = 0.5f * box_size;
+    n_half_box_size = -p_half_box_size;
+    nrcells = int(n*a/outer_cutoff_in);
 
-        insttemp.resize(nrinst_in);
-        instEk  .resize(nrinst_in);
-        instEp  .resize(nrinst_in);
-        temp                 .resize(nrtimesteps/nrinst_in + 1);
-        therm                .resize(nrtimesteps/nrinst_in + 1);
-        Ek                   .resize(nrtimesteps/nrinst_in + 1);
-        Ep                   .resize(nrtimesteps/nrinst_in + 1);
-        cohesive_energy      .resize(nrtimesteps/nrinst_in + 1);
-        Cv                   .resize(nrtimesteps/nrinst_in + 1);
-        pressure             .resize(nrtimesteps/nrinst_in + 1);
-        msd                  .resize(nrtimesteps/nrinst_in + 1);
-        diffusion_coefficient.resize(nrtimesteps/nrinst_in + 1);
-        if (lattice_type == LT_FCC) {
-            n = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
-            nrparticles = 4*n*n*n;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
-        }
-        mass = mass_in;
-        sqr_sigma = sigma_in*sigma_in;
-        four_epsilon = 4*epsilon_in;
-        nrinst = nrinst_in;
-        init_temp = temperature_in;
-        distanceforcesum = 0;
-        a = latticeconstant_in;
-        box_size = a*n;
-        p_half_box_size = 0.5f * box_size;
-        n_half_box_size = -p_half_box_size;
-        nrcells = int(n*a/outer_cutoff_in);
+    if (nrcells > 3) {
+        cells_used = true;
+    }
+    else {
+        cells_used = false;
+    }
+    cellsize = n*a/nrcells;
+    deltaEp = deltaEp_in;
+    diff_c_on = diff_c_on_in;
+    Cv_on = Cv_on_in;
+    pressure_on = pressure_on_in;
+    msd_on = msd_on_in;
+    Ep_on = Ep_on_in;
+    Ek_on = Ek_on_in;
+    desiredtemp = desiredtemp_in;
+    thermostat_time = thermostat_time_in;
+    thermostat_on = thermostat_on_in;
+    equilibrium = false;
 
-        if (nrcells > 3) {
-            cells_used = true;
-        }
-        else {
-            cells_used = false;
-        }
-        cellsize = n*a/nrcells;
-        deltaEp = deltaEp_in;
-        diff_c_on = diff_c_on_in;
-        Cv_on = Cv_on_in;
-        pressure_on = pressure_on_in;
-        msd_on = msd_on_in;
-        Ep_on = Ep_on_in;
-        Ek_on = Ek_on_in;
-        desiredtemp = desiredtemp_in;
-        thermostat_time = thermostat_time_in;
-        thermostat_on = thermostat_on_in;
-        equilibrium = false;
+    abort_activities_requested = false;
 
-        abort_activities_requested = false;
+    init_particles();
+    create_verlet_list();
 
-        init_particles();
-        create_verlet_list();
-
-        // Finish the operation
-        finish_operation();
+    // Finish the operation
+    finish_operation();
 
 #endif
 }

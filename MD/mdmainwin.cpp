@@ -104,11 +104,11 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype sigma_in = ftype(2.338) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.4096) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(63.546) * P_U;
-    ftype latticeconstant_in = ftype(3.610 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
+    ftype latticeconstant_in = ftype(3.6100000000) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
     cout<<"Copper"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(4000.0); // [K]
+    ftype temperature_in = ftype(800.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 0
     //Argon (Melting point 83.8 K)
@@ -140,7 +140,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype deltaEp_in = ftype(0.01);
 
     // Init flags
-    bool thermostat_on_in = !true;
+    bool thermostat_on_in = true;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
