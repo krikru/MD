@@ -204,6 +204,8 @@ void mdsystem::run_simulation()
     // Open the output files. They work like cin
     ofstream out_etot_data ;
     ofstream out_ep_data ;
+    ofstream out_ek_data;
+    ofstream out_cv_data;
     ofstream out_temp_data ;
     ofstream out_therm_data;
     ofstream out_msd_data  ;
@@ -226,7 +228,7 @@ void mdsystem::run_simulation()
         //output <<"loop number = " << loop_num << endl;
 
         // Evolve the system in time
-        cout << loop_num << endl;
+        //cout << loop_num << endl;
         force_calculation();
         leapfrog(); // TODO: Compensate for half time steps
         /*
@@ -255,6 +257,8 @@ void mdsystem::run_simulation()
     output << "Opening output files..." << endl;
     if (!(open_ofstream_file(out_etot_data , "TotalEnergy.dat") &&
           open_ofstream_file(out_ep_data   , "Potential.dat") &&
+          open_ofstream_file(out_ek_data   , "Kinetic.dat") &&
+          open_ofstream_file(out_cv_data   , "Cv.dat") &&
           open_ofstream_file(out_temp_data , "Temperature.dat") &&
           open_ofstream_file(out_therm_data, "Thermostat.dat" ) &&
           open_ofstream_file(out_msd_data  , "MSD.dat"        ) &&
@@ -283,6 +287,8 @@ void mdsystem::run_simulation()
             }
             out_etot_data  << setprecision(9) << Ek   [i] + Ep[i] << endl;
             out_ep_data    << setprecision(9) << Ep[i]            << endl;
+            out_ek_data    << setprecision(9) << Ek[i]            << endl;
+            out_cv_data    << setprecision(9) << Cv[i]            << endl;
             out_temp_data  << setprecision(9) << temp [i]         << endl;
             out_therm_data << setprecision(9) << therm[i]         << endl;
             out_msd_data   << setprecision(9) << msd  [i]         << endl;
@@ -293,6 +299,8 @@ void mdsystem::run_simulation()
         }
         out_etot_data .close();
         out_ep_data   .close();
+        out_ek_data   .close();
+        out_cv_data   .close();
         out_temp_data .close();
         out_therm_data.close();
         out_msd_data  .close();
@@ -656,7 +664,7 @@ void mdsystem::leapfrog()
     }
 #if RU_ON ==1
     insttemp[loop_num % nrinst] =  sum_sqr_vel / (3 * nrparticles );
-    cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
+    //cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
     if (Ek_on) instEk[loop_num % nrinst] = 0.5f * sum_sqr_vel;
 #else
     insttemp[loop_num % nrinst] = mass * sum_sqr_vel / (3 * nrparticles * P_KB);
@@ -788,10 +796,10 @@ void mdsystem::calculate_specific_heat() {
     T2 = T2/nrinst;
 #if RU_ON == 1
     ftype sqr_avgT = temp[loop_num/nrinst]*temp[loop_num/nrinst];
-    cout<< "<T>2=" << sqr_avgT << endl;
-    cout<< "<T2>=" << T2 << endl;
+    //cout<< "<T>2=" << sqr_avgT << endl;
+    //cout<< "<T2>=" << T2 << endl;
     ftype Cv_inv = (2/3.0/nrparticles - 4/9*((T2/sqr_avgT)-1)) ;
-    cout<< "Cv_inv=" << Cv_inv << endl;
+    //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
 #else
     Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
