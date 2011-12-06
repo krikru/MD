@@ -285,7 +285,7 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_etot_data  << setprecision(9) << Ek   [i] + Ep[i] << endl;
+            out_etot_data  << setprecision(9) << Ep[i] + Ek[i]    << endl;
             out_ep_data    << setprecision(9) << Ep[i]            << endl;
             out_ek_data    << setprecision(9) << Ek[i]            << endl;
             out_cv_data    << setprecision(9) << Cv[i]            << endl;
@@ -802,7 +802,7 @@ void mdsystem::calculate_specific_heat() {
     //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
 #else
-    Cv[loop_num/nrinst] = P_KB/(2.0f/(3*(ftype(nrparticles)))+1.0f-T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO/(ftype(nrparticles));
+    Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) * P_AVOGADRO;
     //Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
 #endif
 
