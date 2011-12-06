@@ -95,7 +95,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(300.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 0
+#elif 1
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
 
@@ -108,7 +108,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Copper"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(600.0); // [K]
+    ftype temperature_in = ftype(4000.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 0
     //Argon (Melting point 83.8 K)
