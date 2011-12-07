@@ -812,7 +812,7 @@ void mdsystem::calculate_specific_heat() {
     //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
 #else
-    Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) * P_AVOGADRO;
+    Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) /(1000 * mass);
     //Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
 #endif
 
