@@ -103,6 +103,8 @@ private:
     // 
     ftype distanceforcesum;
     ftype deltaEp;      //equilibrium is reached when abs((Ep(current)-Ep(previous))/Ep(current)) is below this value
+    ftype Cv_sum;
+    uint Cv_num;
     bool equilibrium;
     // Flags
     bool thermostat_on;

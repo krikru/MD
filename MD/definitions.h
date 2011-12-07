@@ -33,7 +33,7 @@
 ////////////////////////////////////////////////////////////////
 
 #define  RU_ON                 0
-#define  USE_DOUBLE_PRECITION  1
+#define  USE_DOUBLE_PRECITION  0
 
 ////////////////////////////////////////////////////////////////
 // TYPEDEFS
@@ -43,6 +43,7 @@ typedef  unsigned int            uint ;
 #if USE_DOUBLE_PRECITION
 typedef  double                  ftype;
 #else
+typedef  float                   ftype;
 #endif
 typedef  base_float_vec3<ftype>  vec3 ;
 

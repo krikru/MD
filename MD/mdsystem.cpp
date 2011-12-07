@@ -326,6 +326,17 @@ void mdsystem::run_simulation()
         // Process events
         print_output_and_process_events();
     }
+    Cv_sum = 0;
+    Cv_num = 0;
+    for(uint i = uint(Cv.size()/10); i < Cv.size(); i++)
+    {
+        if ((Cv[i] < 100) && (Cv[i] > 0))
+        {
+            Cv_sum += Cv[i];
+            Cv_num++;
+        }
+    }
+    output << "Cv = " <<setprecision(9) << Cv_sum/Cv_num << endl;
     output<< "a=" << a<<endl;
     output<< "boxsize=" << box_size<<endl;
     output<<"dt="<< dt << endl;

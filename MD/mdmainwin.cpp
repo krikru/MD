@@ -93,7 +93,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(300.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in = ftype(290.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Copper (Melting point 1356.6 K)
@@ -140,7 +140,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype deltaEp_in = ftype(0.01);
 
     // Init flags
-    bool thermostat_on_in = true;
+    bool thermostat_on_in = !true;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
