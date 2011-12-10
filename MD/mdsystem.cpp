@@ -222,15 +222,25 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_etot_data  << setprecision(9) << Ep[i] + Ek[i]    << endl;
-            out_ep_data    << setprecision(9) << Ep[i]            << endl;
-            out_ek_data    << setprecision(9) << Ek[i]            << endl;
-            out_cv_data    << setprecision(9) << Cv[i]            << endl;
-            out_temp_data  << setprecision(9) << temp [i]         << endl;
-            out_therm_data << setprecision(9) << therm[i]         << endl;
-            out_msd_data   << setprecision(9) << msd  [i]         << endl;
+#if RU_ON ==1
+        out_temp_data  << setprecision(9) << temp[i] *epsilon/P_KB     << endl;
+        out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
+        out_ek_data    << setprecision(9) << Ek[i]*epsilon             << endl;
+        out_ep_data    << setprecision(9) << Ep[i]*epsilon             << endl;
+        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
+        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * mass)  << endl;
+        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma        << endl;
+        out_therm_data << setprecision(9) << therm[i]         << endl;
+#else
+            out_etot_data  << setprecision(9) << Ep[i] + Ek[i]       << endl;
+            out_ep_data    << setprecision(9) << Ep[i]               << endl;
+            out_ek_data    << setprecision(9) << Ek[i]               << endl;
+            out_cv_data    << setprecision(9) << Cv[i]               << endl;
+            out_temp_data  << setprecision(9) << temp [i]            << endl;
+            out_therm_data << setprecision(9) << therm[i]            << endl;
+            out_msd_data   << setprecision(9) << msd  [i]            << endl;
             out_cohe_data  << setprecision(9) << cohesive_energy  [i]<< endl;
-
+#endif
             // Process events
             print_output_and_process_events();
         }
@@ -253,14 +263,23 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        output << "Temp            = " <<setprecision(9) << temp[i]               << endl;
-        output << "Ek + Ep         = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
-        output << "Ek              = " <<setprecision(9) << Ek  [i]               << endl;
-        output << "Ep              = " <<setprecision(9) << Ep  [i]               << endl;
-        output << "Cohesive energy = " <<setprecision(9) << (cohesive_energy [i])/P_EV   << endl;
-        output << "Cv              = " <<setprecision(9) << Cv  [i]               << endl;
-        output << "msd             = " <<setprecision(9) << msd [i]               << endl;
-
+#if RU_ON ==1
+        output << "Temp            (K)   = " <<setprecision(9) << temp[i] *epsilon/P_KB     << endl;
+        output << "Ek + Ep         (J)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
+        output << "Ek              (J)   = " <<setprecision(9) << Ek[i]*epsilon             << endl;
+        output << "Ep              (J)   = " <<setprecision(9) << Ep[i]*epsilon             << endl;
+        output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
+        output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * mass)  << endl;
+        output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
+#else
+        output << "Temp            (K)   = " <<setprecision(9) << temp[i]               << endl;
+        output << "Ek + Ep         (J)   = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
+        output << "Ek              (J)   = " <<setprecision(9) << Ek  [i]               << endl;
+        output << "Ep              (J)   = " <<setprecision(9) << Ep  [i]               << endl;
+        output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy [i])/P_EV   << endl;
+        output << "Cv              (J/K) = " <<setprecision(9) << Cv  [i]               << endl;
+        output << "msd                   = " <<setprecision(9) << msd [i]               << endl;
+#endif
         // Process events
         print_output_and_process_events();
     }
@@ -274,6 +293,7 @@ void mdsystem::run_simulation()
             Cv_num++;
         }
     }
+    output <<"*******************"<<endl;
     output << "Cv = " <<setprecision(9) << Cv_sum/Cv_num << endl;
     output<< "a=" << a<<endl;
     output<< "boxsize=" << box_size<<endl;
@@ -746,12 +766,16 @@ void mdsystem::calculate_specific_heat() {
     }
     T2 = T2/nrinst;
 #if RU_ON == 1
+    ///// OLD-CV /////
+    /*
     ftype sqr_avgT = temp[loop_num/nrinst]*temp[loop_num/nrinst];
     //cout<< "<T>2=" << sqr_avgT << endl;
     //cout<< "<T2>=" << T2 << endl;
     ftype Cv_inv = (2/3.0/nrparticles - 4/9*((T2/sqr_avgT)-1)) ;
     //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
+    */
+    Cv[loop_num/nrinst] = 1/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])));
 #else
     Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) /(1000 * mass);
     //Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
@@ -760,9 +784,10 @@ void mdsystem::calculate_specific_heat() {
 }
 
 void mdsystem::calculate_pressure() {
-    ftype V = n*a*n*a*n*a;
+    ftype V = box_size*box_size*box_size;
 #if RU_ON == 1
     pressure[loop_num/nrinst] = nrparticles*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
+
 #else
     pressure[loop_num/nrinst] = nrparticles*P_KB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
 #endif
