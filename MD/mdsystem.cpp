@@ -193,13 +193,13 @@ void mdsystem::run_simulation()
      */
     output << "Opening output files..." << endl;
     if (!(open_ofstream_file(out_etot_data , "TotalEnergy.dat") &&
-          open_ofstream_file(out_ep_data   , "Potential.dat") &&
-          open_ofstream_file(out_ek_data   , "Kinetic.dat") &&
-          open_ofstream_file(out_cv_data   , "Cv.dat") &&
+          open_ofstream_file(out_ep_data   , "Potential.dat"  ) &&
+          open_ofstream_file(out_ek_data   , "Kinetic.dat"    ) &&
+          open_ofstream_file(out_cv_data   , "Cv.dat"         ) &&
           open_ofstream_file(out_temp_data , "Temperature.dat") &&
           open_ofstream_file(out_therm_data, "Thermostat.dat" ) &&
           open_ofstream_file(out_msd_data  , "MSD.dat"        ) &&
-          open_ofstream_file(out_cohe_data , "cohesive.dat"       ) &&
+          open_ofstream_file(out_cohe_data , "cohesive.dat"   ) &&
           open_ofstream_file(out_posx      , "posx.dat"       ) &&
           open_ofstream_file(out_posy      , "posy.dat"       ) &&
           open_ofstream_file(out_posz      , "posz.dat"       )
@@ -230,16 +230,16 @@ void mdsystem::run_simulation()
         out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * mass)  << endl;
         out_msd_data   << setprecision(9) << msd[i]*sigma*sigma        << endl;
-        out_therm_data << setprecision(9) << therm[i]         << endl;
+        out_therm_data << setprecision(9) << therm[i]                  << endl;
 #else
-            out_etot_data  << setprecision(9) << Ep[i] + Ek[i]       << endl;
-            out_ep_data    << setprecision(9) << Ep[i]               << endl;
-            out_ek_data    << setprecision(9) << Ek[i]               << endl;
-            out_cv_data    << setprecision(9) << Cv[i]               << endl;
-            out_temp_data  << setprecision(9) << temp [i]            << endl;
-            out_therm_data << setprecision(9) << therm[i]            << endl;
-            out_msd_data   << setprecision(9) << msd  [i]            << endl;
-            out_cohe_data  << setprecision(9) << cohesive_energy  [i]<< endl;
+        out_etot_data  << setprecision(9) << Ep[i] + Ek[i]       << endl;
+        out_ep_data    << setprecision(9) << Ep[i]               << endl;
+        out_ek_data    << setprecision(9) << Ek[i]               << endl;
+        out_cv_data    << setprecision(9) << Cv[i]               << endl;
+        out_temp_data  << setprecision(9) << temp [i]            << endl;
+        out_therm_data << setprecision(9) << therm[i]            << endl;
+        out_msd_data   << setprecision(9) << msd  [i]            << endl;
+        out_cohe_data  << setprecision(9) << cohesive_energy  [i]<< endl;
 #endif
             // Process events
             print_output_and_process_events();
@@ -777,17 +777,15 @@ void mdsystem::calculate_specific_heat() {
     */
     Cv[loop_num/nrinst] = 1/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])));
 #else
-    Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) /(1000 * mass);
+    Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) / (1000 * mass);
     //Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
 #endif
-
 }
 
 void mdsystem::calculate_pressure() {
     ftype V = box_size*box_size*box_size;
 #if RU_ON == 1
     pressure[loop_num/nrinst] = nrparticles*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
-
 #else
     pressure[loop_num/nrinst] = nrparticles*P_KB*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
 #endif
