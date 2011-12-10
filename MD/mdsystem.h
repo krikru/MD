@@ -55,24 +55,24 @@ private:
     // The time
     ftype            dt;          // The length of each timestep
     uint             loop_num;    // How many timesteps that has been taken in the simulation
-    uint             nrtimesteps; // How many timesteps the simulation will take in total
+    uint             num_time_steps; // How many timesteps the simulation will take in total
     // The particles
-    uint             nrparticles;  // The number of particles in the system
-    uint             lattice_type; // (enum_lattice_types)
-    ftype            mass;         // The mass of one atom
-    vector<particle> particles;    // The elements in the vector particles are particle objects
+    uint             num_particles; // The number of particles in the system
+    uint             lattice_type;  // (enum_lattice_types)
+    ftype            particle_mass; // The mass of one atom
+    vector<particle> particles;     // The elements in the vector particles are particle objects
     // Initialization
-    ftype init_temp; // The temperature the system has when it is initialized
-    ftype a;         // The lattice constant
-    uint  n;         // Length of one side of the box in conventional unit cells //TODO: Move away this variable
+    ftype init_temp;                     // The temperature the system has when it is initialized
+    ftype lattice_constant;              // The lattice constant
+    uint  box_size_in_lattice_constants; // Length of one side of the box in conventional unit cells //TODO: Move away this variable
     // The box
     ftype box_size;        // Length of one side of the box in length units
-    ftype p_half_box_size; // Half box side
-    ftype n_half_box_size; // Negated half box side
+    ftype pos_half_box_size; // Half box side
+    ftype neg_half_box_size; // Negated half box side
     // Verlet list
     bool         cells_used;            // Flag to tell is the cell list is used or not
-    uint         nrcells;               // Given in one dimension TODO: Change name?
-    ftype        cellsize;              // Could be the same as outer_cutoff but perhaps we should think about that...
+    uint         box_size_in_cells;     // Given in one dimension TODO: Change name?
+    ftype        cell_size;             // Could be the same as outer_cutoff but perhaps we should think about that...
     vector<uint> cell_linklist;         // Contains the particle index of the next particle (with decreasing order of the particles) that is in the same cell as the particle the list entry corresponds to. If these is no more particle in the cell, the entry will be 0.
     vector<uint> cell_list;             // Contains the largest particle index each cell contains. The list is coded as if each cell would contain particle zero (although it is probably not located there!)
     vector<uint> verlet_particles_list; // List of integernumber, each index points to an element in the verlet_neighbors_list which is the first neighbor to corresponding particle.
@@ -80,8 +80,8 @@ private:
     ftype        sqr_inner_cutoff;      // Square of the inner cut-off radius in the Verlet list
     ftype        sqr_outer_cutoff;      // Square of the outer cut-off radius in the Verlet list
     // Graphs & measurements
-    uint          nrinst;           // Number of timesteps between each measurement
-    vector<ftype> temp;             // Temperature
+    uint          sample_period;    // Number of timesteps between each measurement
+    vector<ftype> temperature;      // Temperature
     vector<ftype> insttemp;         // Instant temperature
     vector<ftype> Cv;               // Heat capacity
     vector<ftype> pressure;         // Pressure
@@ -93,18 +93,16 @@ private:
     vector<ftype> instEp;           // Instat potential energy
     vector<ftype> diffusion_coefficient;
     // Constrol
-    ftype         thermostat;      // Varying parameter telling how the velocities should change to adjust the temperature
-    ftype         desiredtemp;     // The temperature the system strives to obtain
-    ftype         thermostat_time; // The half time for the existing temperature deviation
-    vector<ftype> therm;           // To store the values of the thermostat
+    ftype         thermostat_value;  // Varying parameter telling how the velocities should change to adjust the temperature
+    ftype         desired_temp;      // The temperature the system strives to obtain
+    ftype         thermostat_time;   // The half time for the existing temperature deviation
+    vector<ftype> thermostat_values; // To store the values of the thermostat
     // Lennard Jones potential
     ftype sqr_sigma;    // Square of sigma in the Lennard Jones potential
     ftype four_epsilon; // Four times epsilon in the Lennard Jones potential
     // 
-    ftype distanceforcesum;
-    ftype deltaEp;      //equilibrium is reached when abs((Ep(current)-Ep(previous))/Ep(current)) is below this value
-    ftype Cv_sum;
-    uint  Cv_num;
+    ftype distance_force_sum; // For pressure calculation
+    ftype dEp_tolerance;      //equilibrium is reached when abs((Ep(current)-Ep(previous))/Ep(current)) is below this value
     bool  equilibrium;
     // Flags
     bool thermostat_on;
