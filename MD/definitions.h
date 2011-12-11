@@ -17,6 +17,7 @@
 // COMPILE TIME OPTIONS
 ////////////////////////////////////////////////////////////////
 
+// Enumeration of thermostats
 #define  NO_THERMOSTAT           0
 #define  BERENDSEN_THERMOSTAT    1
 #define  NOSE_HOOVER_THERMOSTAT  2
