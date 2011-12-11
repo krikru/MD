@@ -68,7 +68,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #if 0
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     //Cohesive energy: 0.16 eV/atom
-    //Specific heat: 0.097 J/g
+    //Specific heat: 0.097 J/(g*K)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -114,7 +114,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #elif 1
     //Argon (Melting point 83.8 K)
     //Cohesive energy: 0.080 eV/atom
-    //Specific heat: 0.312 J/g
+    //Specific heat: 0.312 J/(g*K)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
