@@ -147,13 +147,6 @@ void mdsystem::run_simulation()
     ofstream out_therm_data;
     ofstream out_msd_data  ;
     ofstream out_cohe_data ;
-    ofstream out_posx      ;
-    ofstream out_posy      ;
-    ofstream out_posz      ;
-
-    vector<float> posx(nrtimesteps + 1); // TODO: This code shouldn't be here
-    vector<float> posy(nrtimesteps + 1); // TODO: This code shouldn't be here
-    vector<float> posz(nrtimesteps + 1); // TODO: This code shouldn't be here
 
     // Start simulating
     for (loop_num = 0; loop_num <= nrtimesteps; loop_num++) {
@@ -168,11 +161,7 @@ void mdsystem::run_simulation()
         //cout << loop_num << endl;
         force_calculation();
         leapfrog(); // TODO: Compensate for half time steps
-        /*
-        posx[loop_num]=particles[nrparticles/2].pos[0]/a;
-        posy[loop_num]=particles[nrparticles/2].pos[1]/a;
-        posz[loop_num]=particles[nrparticles/2].pos[2]/a;
-        */
+
         // Calculate properties each nrinst loops
         if (loop_num % nrinst == 0 && loop_num != 0) {
             calculate_properties();
@@ -199,25 +188,14 @@ void mdsystem::run_simulation()
           open_ofstream_file(out_temp_data , "Temperature.dat") &&
           open_ofstream_file(out_therm_data, "Thermostat.dat" ) &&
           open_ofstream_file(out_msd_data  , "MSD.dat"        ) &&
-          open_ofstream_file(out_cohe_data , "cohesive.dat"       ) &&
-          open_ofstream_file(out_posx      , "posx.dat"       ) &&
-          open_ofstream_file(out_posy      , "posy.dat"       ) &&
-          open_ofstream_file(out_posz      , "posz.dat"       )
+          open_ofstream_file(out_cohe_data , "cohesive.dat"       )
           )) {
         cerr << "Error: Output files could not be opened" << endl;
     }
     else {
         output << "Writing to output files..." << endl;
         print_output_and_process_events();
-        /*for (uint i = 1; i < posx.size(); i++)
-        {
-            if (abort_activities_requested) {
-                break;
-            }
-            out_posx << setprecision(9) << posx[i] << endl;
-            out_posy << setprecision(9) << posy[i] << endl;
-            out_posz << setprecision(9) << posz[i] << endl;
-        }*/
+
         for (uint i = 1; i < temp.size(); i++) {
             if (abort_activities_requested) {
                 break;
@@ -252,9 +230,6 @@ void mdsystem::run_simulation()
         out_therm_data.close();
         out_msd_data  .close();
         out_cohe_data  .close();
-        out_posx.close();
-        out_posy.close();
-        out_posz.close();
     }
     output << "Writing to output files done." << endl;
 
@@ -283,18 +258,8 @@ void mdsystem::run_simulation()
         // Process events
         print_output_and_process_events();
     }
-    Cv_sum = 0;
-    Cv_num = 0;
-    for(uint i = uint(Cv.size()/10); i < Cv.size(); i++)
-    {
-        if ((Cv[i] < 100) && (Cv[i] > 0))
-        {
-            Cv_sum += Cv[i];
-            Cv_num++;
-        }
-    }
+
     output <<"*******************"<<endl;
-    output << "Cv = " <<setprecision(9) << Cv_sum/Cv_num << endl;
     output<< "a=" << a<<endl;
     output<< "boxsize=" << box_size<<endl;
     output<<"dt="<< dt << endl;
@@ -449,7 +414,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(nrparticles);
-    verlet_neighbors_list.resize(nrparticles * 100); //This might be unnecessarily large //TODO: CHANGE THIS AS SOON AS POSSIBLE!!!
+    verlet_neighbors_list.resize(nrparticles * uint((nrparticles+1)/2)); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
 
     //Creating new verlet_list
     verlet_particles_list[0] = 0;
@@ -565,13 +530,6 @@ void mdsystem::leapfrog()
 #endif
 
     for (uint i = 0; i < nrparticles; i++) {
-        //output << "\ti = " << i << endl;
-        if (loop_num == 2) {
-            //output << "i = " << i << endl;
-            if (i == 22) {
-                i = i; //TODO
-            }
-        }
 
         //TODO: Check if vel and pos are stored for the same time or not, in that case, compensate for that
 
@@ -626,9 +584,6 @@ void mdsystem::leapfrog()
 
         // TODO: Remove this from leapfrog and place it somewhere else
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
-
-
-
     }
 #if RU_ON ==1
     insttemp[loop_num % nrinst] =  sum_sqr_vel / (3 * nrparticles );
@@ -777,7 +732,7 @@ void mdsystem::calculate_specific_heat() {
     */
     Cv[loop_num/nrinst] = 1/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])));
 #else
-    Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) /(1000 * mass);
+    Cv[loop_num/nrinst] = P_KB/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst]))) /(1000 * mass);//To get J/g
     //Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
 #endif
 
