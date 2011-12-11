@@ -51,7 +51,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     thermostat_value = 0;
 #endif
     particle_mass = mass_in;
-    sigma=sigma_in;
+    sigma = sigma_in;
     sqr_sigma = sigma*sigma;
     epsilon = epsilon_in;
     four_epsilon = 4*epsilon;
@@ -65,9 +65,9 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     inner_cutoff=inner_cutoff_in;
 #if RU_ON == 1
     //reduced unit
-    a = a / sigma;
+    lattice_constant = lattice_constant / sigma;
     init_temp = init_temp * P_KB/ epsilon;
-    dt = dt / sqrt(mass * sqr_sigma / epsilon);
+    dt = dt / sqrt(particle_mass * sqr_sigma / epsilon);
     inner_cutoff = inner_cutoff / sigma;
     outer_cutoff = outer_cutoff / sigma;
 #endif
@@ -117,8 +117,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     thermostat_time = thermostat_time_in;
 #if RU_ON == 1
     //reduced unit
-    desiredtemp = desiredtemp * P_KB/ epsilon;
-    thermostat_time = thermostat_time / sqrt(mass * sqr_sigma / epsilon);
+    desired_temp = desired_temp * P_KB/ epsilon;
+    thermostat_time = thermostat_time / sqrt(particle_mass * sqr_sigma / epsilon);
 #endif
     thermostat_on = thermostat_on_in;
     equilibrium = false;
@@ -153,8 +153,8 @@ void mdsystem::run_simulation()
     ofstream out_msd_data  ;
     ofstream out_cohe_data ;
     // For calculating the average specific heat
-    ftype Cv_sum;
-    ftype Cv_num;
+    //ftype Cv_sum;
+    //ftype Cv_num;
 
     // Start simulating
     for (loop_num = 0; loop_num <= num_time_steps; loop_num++) {
@@ -209,14 +209,14 @@ void mdsystem::run_simulation()
                 break;
             }
 #if RU_ON ==1
-        out_temp_data  << setprecision(9) << temp[i] *epsilon/P_KB     << endl;
+        out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
         out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
         out_ek_data    << setprecision(9) << Ek[i]*epsilon             << endl;
         out_ep_data    << setprecision(9) << Ep[i]*epsilon             << endl;
         out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
-        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * mass)  << endl;
+        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         out_msd_data   << setprecision(9) << msd[i]*sigma*sigma        << endl;
-        out_therm_data << setprecision(9) << therm[i]                  << endl;
+        out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
 #else
         out_etot_data  << setprecision(9) << Ep[i] + Ek[i]       << endl;
         out_ep_data    << setprecision(9) << Ep[i]               << endl;
@@ -247,12 +247,12 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 #if RU_ON ==1
-        output << "Temp            (K)   = " <<setprecision(9) << temp[i] *epsilon/P_KB     << endl;
+        output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
         output << "Ek + Ep         (J)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
         output << "Ek              (J)   = " <<setprecision(9) << Ek[i]*epsilon             << endl;
         output << "Ep              (J)   = " <<setprecision(9) << Ep[i]*epsilon             << endl;
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
-        output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * mass)  << endl;
+        output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
 #else
         output << "Temp            (K)   = " <<setprecision(9) << temperature[i]               << endl;
@@ -425,7 +425,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(num_particles);
-    verlet_neighbors_list.resize(nrparticles * uint((nrparticles+1)/2)); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
+    verlet_neighbors_list.resize(num_particles * uint((num_particles+1)/2)); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
 
     //Creating new verlet_list
     verlet_particles_list[0] = 0;
@@ -597,9 +597,9 @@ void mdsystem::leapfrog()
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
 #if RU_ON ==1
-    insttemp[loop_num % nrinst] =  sum_sqr_vel / (3 * nrparticles );
+    insttemp[loop_num % sample_period] =  sum_sqr_vel / (3 * num_particles );
     //cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
-    if (Ek_on) instEk[loop_num % nrinst] = 0.5f * sum_sqr_vel;
+    if (Ek_on) instEk[loop_num % sample_period] = 0.5f * sum_sqr_vel;
 #else
     insttemp[loop_num % sample_period] = particle_mass * sum_sqr_vel / (3 * num_particles * P_KB);
     if (Ek_on) instEk[loop_num % sample_period] = 0.5f * particle_mass * sum_sqr_vel;
@@ -663,9 +663,9 @@ void mdsystem::force_calculation() { //Using si-units
             //TODO: Remove these two from force calculation and place them somewhere else
 #if RU_ON ==1
             if (Ep_on) {
-                instEp[loop_num % nrinst] += 4 * p * (p - 1) - E_cutoff;
+                instEp[loop_num % sample_period] += 4 * p * (p - 1) - E_cutoff;
             }
-            if (pressure_on) distanceforcesum += acceleration / distance_inv;
+            if (pressure_on) distance_force_sum += acceleration / distance_inv;
 
 #else
             if (Ep_on) instEp[loop_num % sample_period] += four_epsilon * p * (p - 1) - E_cutoff;
@@ -741,7 +741,7 @@ void mdsystem::calculate_specific_heat() {
     //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
     */
-    Cv[loop_num/nrinst] = 1/(ftype(2)/3 + nrparticles*(1 - T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])));
+    Cv[loop_num/sample_period] = 1/(ftype(2)/3 + num_particles*(1 - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])));
 #else
     Cv[loop_num/sample_period] = P_KB/(ftype(2)/3 + num_particles*(1 - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period]))) / (1000 * particle_mass);
     //Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
@@ -751,7 +751,7 @@ void mdsystem::calculate_specific_heat() {
 void mdsystem::calculate_pressure() {
     ftype V = box_size*box_size*box_size;
 #if RU_ON == 1
-    pressure[loop_num/nrinst] = nrparticles*temp[loop_num/nrinst]/V + distanceforcesum/(6*V*nrinst);
+    pressure[loop_num/sample_period] = num_particles*temperature[loop_num/sample_period]/V + distance_force_sum/(6*V*sample_period);
 #else
     pressure[loop_num/sample_period] = num_particles*P_KB*temperature[loop_num/sample_period]/V + distance_force_sum/(6*V*sample_period);
 #endif
