@@ -26,6 +26,10 @@ private slots:
     void closeEvent(QCloseEvent *event);
 
 
+    void on_sigma_le_editingFinished();
+
+    void on_epsilon_le_editingFinished();
+
 private:
     // Private functions
     void write_to_text_browser(string output);

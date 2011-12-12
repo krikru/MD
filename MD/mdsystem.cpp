@@ -64,7 +64,15 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     outer_cutoff=outer_cutoff_in;
     inner_cutoff=inner_cutoff_in;
 #if RU_ON == 1
-    //reduced unit
+    /*
+     * Reduced units
+     *
+     * Length unit: sigma
+     * Energy unit: epsilon
+     * Mass unit: particle mass
+     *
+     * Time unit: sigma * (particle mass / epsilon)^.5
+     */
     lattice_constant = lattice_constant / sigma;
     init_temp = init_temp * P_KB/ epsilon;
     dt = dt / sqrt(particle_mass * sqr_sigma / epsilon);

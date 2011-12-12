@@ -225,3 +225,13 @@ void mdmainwin::static_process_events(void* void_ptr_mainwin)
     }
     QApplication::processEvents(QEventLoop::AllEvents);
 }
+
+void mdmainwin::on_sigma_le_editingFinished()
+{
+    ui->statusbar->showMessage("Editing sigma finished.");
+}
+
+void mdmainwin::on_epsilon_le_editingFinished()
+{
+    ui->statusbar->showMessage("Editing epsilon finished.");
+}
