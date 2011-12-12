@@ -215,13 +215,13 @@ void mdsystem::run_simulation()
                 break;
             }
 
-        out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
-        out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
-        out_ek_data    << setprecision(9) << Ek[i]*epsilon             << endl;
-        out_ep_data    << setprecision(9) << Ep[i]*epsilon             << endl;
-        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
-        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
-        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma        << endl;
+        out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
+        out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon/P_EV          << endl;
+        out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
+        out_ep_data    << setprecision(9) << Ep[i]*epsilon/P_EV                    << endl;
+        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
+        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
+        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
         out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
 
             // Process events
@@ -244,10 +244,10 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
-        output << "Ek + Ep         (J)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
-        output << "Ek              (J)   = " <<setprecision(9) << Ek[i]*epsilon             << endl;
-        output << "Ep              (J)   = " <<setprecision(9) << Ep[i]*epsilon             << endl;
+        output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB       << endl;
+        output << "Ek + Ep         (eV)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon/P_EV      << endl;
+        output << "Ek              (eV)   = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
+        output << "Ep              (eV)   = " <<setprecision(9) << Ep[i]*epsilon/P_EV                << endl;
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
@@ -658,7 +658,7 @@ void mdsystem::force_calculation() {
 
             p = sqr_distance_inv;
             p = p*p*p;
-            acceleration = 48  * distance_inv * p * (p - 0.5f);
+            acceleration = 48  * distance_inv * p * (p - ftype(0.5));
 
             // Update accelerations of interacting particles
             vec3 r_hat = r * distance_inv;
@@ -671,8 +671,9 @@ void mdsystem::force_calculation() {
             if (Ep_on) {
                 instEp[loop_num % sample_period] += 4 * p * (p - 1) - E_cutoff;
             }
-            if (pressure_on) distance_force_sum += acceleration / distance_inv;
-
+            if (pressure_on) {
+                distance_force_sum += acceleration / distance_inv;
+            }
 
         }
     }
