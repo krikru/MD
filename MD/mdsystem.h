@@ -99,7 +99,6 @@ private:
     vector<ftype> thermostat_values; // To store the values of the thermostat
     // Lennard Jones potential
     ftype sqr_sigma;    // Square of sigma in the Lennard Jones potential
-    ftype four_epsilon; // Four times epsilon in the Lennard Jones potential
     // 
     ftype distance_force_sum; // For pressure calculation
     ftype dEp_tolerance;      //equilibrium is reached when abs((Ep(current)-Ep(previous))/Ep(current)) is below this value
@@ -117,12 +116,19 @@ private:
     ftype sigma;
     ftype outer_cutoff;
     ftype inner_cutoff;
+    ftype Ep_shift;
+    ftype E_cutoff;
+    ftype sqr_distance;
+    ftype sqr_distance_inv;
+    ftype distance_inv;
 
     /*********************
      * Private functions *
      *********************/
     // Initialization
     void init_particles();
+    void potential_energy_shift();
+    void potential_energy_cutoff();
     // Verlet list
     void update_verlet_list_if_necessary();
     void create_verlet_list();
