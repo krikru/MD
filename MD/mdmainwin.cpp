@@ -237,3 +237,163 @@ void mdmainwin::on_epsilon_le_editingFinished()
 {
     ui->statusbar->showMessage("Editing epsilon finished.");
 }
+
+void mdmainwin::on_mass_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_lattice_constant_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_lattice_type_cb_activated(const QString &arg1)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_epsilon_unit_cb_activated(const QString &arg1)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_num_particles_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_init_temperature_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_desired_pressure_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_desire_temperature_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_desired_pressure_unit_cb_activated(const QString &arg1)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_time_step_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_num_time_steps_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_inner_cutoff_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_outer_cutoff_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_measurement_interval_sb_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_npe_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_nve_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_nvt_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_npt_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_diffoceff_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_pressure_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_cv_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_msd_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_energy_total_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_energy_kinetic_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_energy_potential_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_cohesive_energy_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_store_particle_possitions_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_settings_bb_accepted()
+{
+    ui->statusbar->showMessage("Settings accepted");
+}
+
+void mdmainwin::on_settings_bb_rejected()
+{
+    ui->statusbar->showMessage("Settings rejected");
+}
+
+void mdmainwin::on_draw_particles_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_save_element_pb_clicked()
+{
+    ui->statusbar->showMessage("Saving element... (don't wait in vain)");
+}
+
+void mdmainwin::on_load_element_pb_clicked()
+{
+    ui->statusbar->showMessage("Loading element... (don't wait in vain)");
+}
