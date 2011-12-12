@@ -78,37 +78,39 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype latticeconstant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
     cout<<"Xenon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.10) * P_FS; // [s]
-    ftype temperature_in = ftype(30.0); // [K]//MSD linear at approx. 800K, why??
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype temperature_in = ftype(580.0); // [K]//MSD linear at approx. 800K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 1
+#elif 0
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
     //Cohesive energy: 2.95 eV/atom
+    //Specific heat: 0.233 J/(g*k)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
     ftype sigma_in = ftype(2.65) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.34) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(107.8682) * P_U;
-    ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
+    ftype latticeconstant_in = ftype(4.090 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
     cout<<"Silver"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.10) * P_FS; // [s]
-    ftype temperature_in = ftype(1000.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 1
+#elif 0
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
+    //Specific heat: 0.386 J/(g*K)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
     ftype sigma_in = ftype(2.338) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.4096) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(63.546) * P_U;
-    ftype latticeconstant_in = ftype(3.6100000000) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
+    ftype latticeconstant_in = ftype(3.610) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
     cout<<"Copper"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.010) * P_FS; // [s]
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
@@ -124,15 +126,15 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype latticeconstant_in = ftype(5.260 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
     cout<<"Argon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.10) * P_FS; // [s]
+    ftype dt_in = ftype(0.10) * P_FS; // [s] //It seems like it needs to be 0.1 if we want to simulate at 580K (to calculate the specific heat at 20 Celsius) otherwise we get bad results
     ftype temperature_in = ftype(580.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 400; // The number of particles
+    uint nrparticles_in = 1000; // The number of particles
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 1000; // Desired (or minimum) total number of timesteps
+    uint nrtimesteps_in = 50000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 

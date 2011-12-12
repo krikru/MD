@@ -159,8 +159,8 @@ void mdsystem::run_simulation()
     ofstream out_msd_data  ;
     ofstream out_cohe_data ;
     // For calculating the average specific heat
-    //ftype Cv_sum;
-    //ftype Cv_num;
+    ftype Cv_sum;
+    ftype Cv_num;
 
     // Start simulating
     for (loop_num = 0; loop_num <= num_time_steps; loop_num++) {
@@ -259,7 +259,21 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
+        Cv_sum = 0;
+        Cv_num = 0;
+        for(uint i = 0; i < Cv.size();i++)//I know it's an ugly filtering method but it actually gives a very nice result,
+        {
+            if (abort_activities_requested) {
+                goto operation_finished;
+            }
+            if((Cv[i]*P_KB/(1000 * particle_mass)< 1.0f)&& (Cv[i]*P_KB/(1000 * particle_mass) > 0.0f))
+            {
+                Cv_sum += Cv[i]*P_KB/(1000 * particle_mass);
+                Cv_num++;
+            }
+        }
     output <<"*******************"<<endl;
+    output<<"Cv = "<<Cv_sum/Cv_num<<endl;
     output<< "a=" << lattice_constant<<endl;
     output<< "boxsize=" << box_size<<endl;
     output<<"dt="<< dt << endl;
