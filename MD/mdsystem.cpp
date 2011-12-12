@@ -762,7 +762,7 @@ void mdsystem::calculate_mean_square_displacement() {
         // Check if equilibrium has been reached
         ftype variation = (Ep[loop_num/sample_period] - Ep[loop_num/sample_period - 1]) / Ep[loop_num/sample_period];
         variation = variation >= 0 ? variation : -variation;
-        if (variation < dEp_tolerance) {
+        if (variation < dEp_tolerance) { //TODO: Is this a sufficient check? Probably not
             // The requirements for equilibrium has been reached
             equilibrium = true;
             // Consider the particles to "start" now
