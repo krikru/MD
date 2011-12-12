@@ -130,9 +130,9 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 4000; // The number of particles
+    uint nrparticles_in = 400; // The number of particles
     uint nrinst_in = 100;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
+    uint nrtimesteps_in = 1000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 

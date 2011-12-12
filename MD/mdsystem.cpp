@@ -54,7 +54,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     sigma = sigma_in;
     sqr_sigma = sigma*sigma;
     epsilon = epsilon_in;
-    four_epsilon = 4*epsilon;
     sample_period = nrinst_in;
     init_temp = temperature_in;
     distance_force_sum = 0;
@@ -63,7 +62,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     dt = dt_in;                     // Delta time, the time step to be taken when solving the diff.eq.
     outer_cutoff=outer_cutoff_in;
     inner_cutoff=inner_cutoff_in;
-#if RU_ON == 1
     /*
      * Reduced units
      *
@@ -78,7 +76,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     dt = dt / sqrt(particle_mass * sqr_sigma / epsilon);
     inner_cutoff = inner_cutoff / sigma;
     outer_cutoff = outer_cutoff / sigma;
-#endif
+
     sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
 
@@ -123,11 +121,10 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     Ek_on = Ek_on_in;
     desired_temp = desiredtemp_in;
     thermostat_time = thermostat_time_in;
-#if RU_ON == 1
     //reduced unit
     desired_temp = desired_temp * P_KB/ epsilon;
     thermostat_time = thermostat_time / sqrt(particle_mass * sqr_sigma / epsilon);
-#endif
+
     thermostat_on = thermostat_on_in;
     equilibrium = false;
 
@@ -135,7 +132,10 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 
     init_particles();
     create_verlet_list();
-
+    potential_energy_cutoff();
+#if SHIFT_EP == 1
+    potential_energy_shift();
+#endif
     // Finish the operation
     finish_operation();
 }
@@ -214,7 +214,7 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-#if RU_ON ==1
+
         out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
         out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
         out_ek_data    << setprecision(9) << Ek[i]*epsilon             << endl;
@@ -223,16 +223,7 @@ void mdsystem::run_simulation()
         out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         out_msd_data   << setprecision(9) << msd[i]*sigma*sigma        << endl;
         out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
-#else
-        out_etot_data  << setprecision(9) << Ep[i] + Ek[i]       << endl;
-        out_ep_data    << setprecision(9) << Ep[i]               << endl;
-        out_ek_data    << setprecision(9) << Ek[i]               << endl;
-        out_cv_data    << setprecision(9) << Cv[i]               << endl;
-        out_temp_data  << setprecision(9) << temperature [i]            << endl;
-        out_therm_data << setprecision(9) << thermostat_values[i]            << endl;
-        out_msd_data   << setprecision(9) << msd  [i]            << endl;
-        out_cohe_data  << setprecision(9) << cohesive_energy  [i]<< endl;
-#endif
+
             // Process events
             print_output_and_process_events();
         }
@@ -252,7 +243,7 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-#if RU_ON ==1
+
         output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
         output << "Ek + Ep         (J)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
         output << "Ek              (J)   = " <<setprecision(9) << Ek[i]*epsilon             << endl;
@@ -260,15 +251,7 @@ void mdsystem::run_simulation()
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
-#else
-        output << "Temp            (K)   = " <<setprecision(9) << temperature[i]               << endl;
-        output << "Ek + Ep         (J)   = " <<setprecision(9) << Ek  [i] + Ep[i]       << endl;
-        output << "Ek              (J)   = " <<setprecision(9) << Ek  [i]               << endl;
-        output << "Ep              (J)   = " <<setprecision(9) << Ep  [i]               << endl;
-        output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy [i])/P_EV   << endl;
-        output << "Cv              (J/K) = " <<setprecision(9) << Cv  [i]               << endl;
-        output << "msd                   = " <<setprecision(9) << msd [i]               << endl;
-#endif
+
         // Process events
         print_output_and_process_events();
     }
@@ -361,16 +344,50 @@ void mdsystem::init_particles() {
     vec3 average_vel = sum_vel/ftype(num_particles);
     ftype vel_variance = sum_sqr_vel/num_particles - average_vel.sqr_length();
     ftype scale_factor;
-#if RU_ON == 1
+
         scale_factor = sqrt(3.0f  * init_temp  / (vel_variance)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
-#else
-        scale_factor = sqrt(3.0f * P_KB * init_temp / (vel_variance * particle_mass)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
-#endif
+
     for (uint i = 0; i < num_particles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)* scale_factor;
     }
 
     reset_non_modulated_relative_particle_positions();
+}
+
+void mdsystem::potential_energy_shift(){
+    Ep_shift = 0;
+    for (uint i1 = 0; i1 < num_particles ; i1++) { // Loop through all particles
+        for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) {
+            // TODO: automatically detect if a boundary is crossed and compensate for that in this function
+            // Calculate the closest distance to the second (possibly) interacting particle
+            uint i2 = verlet_neighbors_list[j];
+            vec3 r = modulus_position_minus(particles[i1].pos, particles[i2].pos);
+            sqr_distance = r.sqr_length();
+            if (sqr_distance >= sqr_inner_cutoff) {
+                continue; // Skip this interaction and continue with the next one
+            }
+            sqr_distance_inv = 1/sqr_distance;
+
+            //Calculating acceleration
+            distance_inv = sqrt(sqr_distance_inv);
+            ftype p;
+
+            p = sqr_distance_inv;
+            p = p*p*p;
+
+            if (Ep_on) Ep_shift += 4 * p * (p - 1) - E_cutoff;
+
+        }
+    }
+}
+void mdsystem::potential_energy_cutoff()
+{
+
+        ftype q;
+        q = 1/sqr_inner_cutoff;
+        q = q * q * q;
+        E_cutoff = 4 * q * (q - 1);
+
 }
 
 void mdsystem::update_verlet_list_if_necessary()
@@ -602,38 +619,26 @@ void mdsystem::leapfrog()
         // TODO: Remove this from leapfrog and place it somewhere else
         sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
     }
-#if RU_ON ==1
+
     insttemp[loop_num % sample_period] =  sum_sqr_vel / (3 * num_particles );
     //cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
     if (Ek_on) instEk[loop_num % sample_period] = 0.5f * sum_sqr_vel;
-#else
-    insttemp[loop_num % sample_period] = particle_mass * sum_sqr_vel / (3 * num_particles * P_KB);
-    if (Ek_on) instEk[loop_num % sample_period] = 0.5f * particle_mass * sum_sqr_vel;
-#endif
+
 
 }
 
-void mdsystem::force_calculation() { //Using si-units
+void mdsystem::force_calculation() {
+
     // Reset accelrations for all particles
     for (uint k = 0; k < num_particles; k++) {
         particles[k].acc = vec3(0, 0, 0);
     }
-    ftype sqr_distance;
-    ftype sqr_distance_inv;
-    ftype distance_inv;
-    ftype p;
-#if RU_ON == 1
-        p = 1/sqr_inner_cutoff;
-        p = p * p * p;
-        ftype E_cutoff = 4 * p * (p - 1);
-#else
-        p = sqr_sigma / sqr_inner_cutoff; // For calculating the cutoff energy
-        ftype mass_inv = 1/particle_mass;
-        p = p * p * p;
-        ftype E_cutoff = four_epsilon * p * (p - 1);
-#endif
 
+#if SHIFT_EP == 1
+    instEp[loop_num % sample_period] = -Ep_shift;
+#else
     instEp[loop_num % sample_period] = 0;
+#endif
     for (uint i1 = 0; i1 < num_particles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
             // TODO: automatically detect if a boundary is crossed and compensate for that in this function
@@ -649,16 +654,11 @@ void mdsystem::force_calculation() { //Using si-units
             //Calculating acceleration
             distance_inv = sqrt(sqr_distance_inv);
             ftype acceleration;
-#if RU_ON == 1
+            ftype p;
+
             p = sqr_distance_inv;
             p = p*p*p;
             acceleration = 48  * distance_inv * p * (p - 0.5f);
-#else
-            p = sqr_sigma * sqr_distance_inv;; // For calculating the cutoff energy
-            p = p*p*p;
-            acceleration = 12 * four_epsilon * distance_inv * p * (p - 0.5f) * mass_inv;
-#endif
-
 
             // Update accelerations of interacting particles
             vec3 r_hat = r * distance_inv;
@@ -667,16 +667,13 @@ void mdsystem::force_calculation() { //Using si-units
 
             // Update properties
             //TODO: Remove these two from force calculation and place them somewhere else
-#if RU_ON ==1
+
             if (Ep_on) {
                 instEp[loop_num % sample_period] += 4 * p * (p - 1) - E_cutoff;
             }
             if (pressure_on) distance_force_sum += acceleration / distance_inv;
 
-#else
-            if (Ep_on) instEp[loop_num % sample_period] += four_epsilon * p * (p - 1) - E_cutoff;
-            if (pressure_on) distance_force_sum += particle_mass * acceleration / distance_inv;
-#endif
+
         }
     }
 #if THERMOSTAT == LASSES_THERMOSTAT
@@ -737,7 +734,7 @@ void mdsystem::calculate_specific_heat() {
         T2 += insttemp[i]*insttemp[i];
     }
     T2 = T2/sample_period;
-#if RU_ON == 1
+
     ///// OLD-CV /////
     /*
     ftype sqr_avgT = temp[loop_num/nrinst]*temp[loop_num/nrinst];
@@ -748,19 +745,14 @@ void mdsystem::calculate_specific_heat() {
     Cv[loop_num/nrinst] = 1/Cv_inv;
     */
     Cv[loop_num/sample_period] = 1/(ftype(2)/3 + num_particles*(1 - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])));
-#else
-    Cv[loop_num/sample_period] = P_KB/(ftype(2)/3 + num_particles*(1 - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period]))) / (1000 * particle_mass); //To get J/(g*K)
-    //Cv[loop_num/nrinst] = 9*P_KB/(6.0f/nrparticles+4.0f-4*T2/(temp[loop_num/nrinst]*temp[loop_num/nrinst])) * P_AVOGADRO;
-#endif
+
 }
 
 void mdsystem::calculate_pressure() {
     ftype V = box_size*box_size*box_size;
-#if RU_ON == 1
+
     pressure[loop_num/sample_period] = num_particles*temperature[loop_num/sample_period]/V + distance_force_sum/(6*V*sample_period);
-#else
-    pressure[loop_num/sample_period] = num_particles*P_KB*temperature[loop_num/sample_period]/V + distance_force_sum/(6*V*sample_period);
-#endif
+
     distance_force_sum = 0;
 }
 
