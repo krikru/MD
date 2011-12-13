@@ -135,6 +135,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     potential_energy_cutoff();
 #if SHIFT_EP == 1
     potential_energy_shift();
+#else
+    Ep_shift=0;
 #endif
     // Finish the operation
     finish_operation();
@@ -215,13 +217,13 @@ void mdsystem::run_simulation()
                 break;
             }
 
-        out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
-        out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
-        out_ek_data    << setprecision(9) << Ek[i]*epsilon             << endl;
-        out_ep_data    << setprecision(9) << Ep[i]*epsilon             << endl;
-        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
-        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
-        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma        << endl;
+        out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
+        out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
+        out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
+        out_ep_data    << setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                    << endl;
+        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
+        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
+        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
         out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
 
             // Process events
@@ -244,10 +246,10 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
-        output << "Ek + Ep         (J)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
-        output << "Ek              (J)   = " <<setprecision(9) << Ek[i]*epsilon             << endl;
-        output << "Ep              (J)   = " <<setprecision(9) << Ep[i]*epsilon             << endl;
+        output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB       << endl;
+        output << "Ek + Ep         (eV)   = " <<setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV      << endl;
+        output << "Ek              (eV)   = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
+        output << "Ep              (eV)   = " <<setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                << endl;
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
@@ -648,11 +650,9 @@ void mdsystem::force_calculation() {
         particles[k].acc = vec3(0, 0, 0);
     }
 
-#if SHIFT_EP == 1
-    instEp[loop_num % sample_period] = -Ep_shift;
-#else
+
     instEp[loop_num % sample_period] = 0;
-#endif
+
     for (uint i1 = 0; i1 < num_particles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
             // TODO: automatically detect if a boundary is crossed and compensate for that in this function
@@ -672,7 +672,7 @@ void mdsystem::force_calculation() {
 
             p = sqr_distance_inv;
             p = p*p*p;
-            acceleration = 48  * distance_inv * p * (p - 0.5f);
+            acceleration = 48  * distance_inv * p * (p - ftype(0.5));
 
             // Update accelerations of interacting particles
             vec3 r_hat = r * distance_inv;
@@ -685,8 +685,9 @@ void mdsystem::force_calculation() {
             if (Ep_on) {
                 instEp[loop_num % sample_period] += 4 * p * (p - 1) - E_cutoff;
             }
-            if (pressure_on) distance_force_sum += acceleration / distance_inv;
-
+            if (pressure_on) {
+                distance_force_sum += acceleration / distance_inv;
+            }
 
         }
     }
