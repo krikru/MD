@@ -81,20 +81,21 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
 
     loop_num = 0;
-    num_time_steps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+    num_time_steps = ((nrtimesteps_in - 1) / sample_period + 1) * sample_period; // Make the smallest multiple of sample_period that has at least the specified size
+    num_sampling_points = num_time_steps/sample_period + 1;
 
-    insttemp.resize(nrinst_in);
-    instEk  .resize(nrinst_in);
-    instEp  .resize(nrinst_in);
-    temperature                 .resize(num_time_steps/nrinst_in + 1);
-    thermostat_values                .resize(num_time_steps/nrinst_in + 1);
-    Ek                   .resize(num_time_steps/nrinst_in + 1);
-    Ep                   .resize(num_time_steps/nrinst_in + 1);
-    cohesive_energy      .resize(num_time_steps/nrinst_in + 1);
-    Cv                   .resize(num_time_steps/nrinst_in + 1);
-    pressure             .resize(num_time_steps/nrinst_in + 1);
-    msd                  .resize(num_time_steps/nrinst_in + 1);
-    diffusion_coefficient.resize(num_time_steps/nrinst_in + 1);
+    insttemp.resize(sample_period);
+    instEk  .resize(sample_period);
+    instEp  .resize(sample_period);
+    temperature          .resize(num_sampling_points);
+    thermostat_values    .resize(num_sampling_points);
+    Ek                   .resize(num_sampling_points);
+    Ep                   .resize(num_sampling_points);
+    cohesive_energy      .resize(num_sampling_points);
+    Cv                   .resize(num_sampling_points);
+    pressure             .resize(num_sampling_points);
+    msd                  .resize(num_sampling_points);
+    diffusion_coefficient.resize(num_sampling_points);
     if (lattice_type == LT_FCC) {
         box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
         num_particles = 4*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
