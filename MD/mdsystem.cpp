@@ -136,6 +136,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     potential_energy_cutoff();
 #if SHIFT_EP == 1
     potential_energy_shift();
+#else
+    Ep_shift=0;
 #endif
     // Finish the operation
     finish_operation();
@@ -216,13 +218,13 @@ void mdsystem::run_simulation()
                 break;
             }
 
-        out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
-        out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
-        out_ek_data    << setprecision(9) << Ek[i]*epsilon             << endl;
-        out_ep_data    << setprecision(9) << Ep[i]*epsilon             << endl;
-        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
-        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
-        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma        << endl;
+        out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
+        out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
+        out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
+        out_ep_data    << setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                    << endl;
+        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
+        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
+        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
         out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
 
             // Process events
@@ -245,10 +247,10 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB     << endl;
-        output << "Ek + Ep         (J)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon   << endl;
-        output << "Ek              (J)   = " <<setprecision(9) << Ek[i]*epsilon             << endl;
-        output << "Ep              (J)   = " <<setprecision(9) << Ep[i]*epsilon             << endl;
+        output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB       << endl;
+        output << "Ek + Ep         (eV)   = " <<setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV      << endl;
+        output << "Ek              (eV)   = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
+        output << "Ep              (eV)   = " <<setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                << endl;
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
@@ -463,13 +465,13 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(num_particles);
-    verlet_neighbors_list.resize(uint(num_particles * (num_particles+1)/2)); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
+    verlet_neighbors_list.resize(0); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
 
     //Creating new verlet_list
     verlet_particles_list[0] = 0;
     for (uint i = 0; i < num_particles;) { // Loop through all particles
         // Init this neighbour list and point to the next list
-        verlet_neighbors_list[verlet_particles_list[i]] = 0; // Reset number of neighbours
+        verlet_neighbors_list.push_back(0); // Reset number of neighbours
         int next_particle_list = verlet_particles_list[i] + 1; // Link to the next particle list
 
         if (cells_used) { //Loop through all neighbour cells
@@ -514,7 +516,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                             ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                             if(sqr_distance < sqr_outer_cutoff) {
                                 verlet_neighbors_list[verlet_particles_list[i]] += 1;
-                                verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                                verlet_neighbors_list.push_back(neighbour_particle_index);
                                 next_particle_list++;
                             }
                             neighbour_particle_index = cell_linklist[neighbour_particle_index]; // Get the next particle in the cell
@@ -528,7 +530,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                 ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                 if(sqr_distance < sqr_outer_cutoff) {
                     verlet_neighbors_list[verlet_particles_list[i]] += 1;
-                    verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                    verlet_neighbors_list.push_back(neighbour_particle_index);
                     next_particle_list++;
                 }
             }
@@ -649,11 +651,9 @@ void mdsystem::force_calculation() {
         particles[k].acc = vec3(0, 0, 0);
     }
 
-#if SHIFT_EP == 1
-    instEp[loop_num % sample_period] = -Ep_shift;
-#else
+
     instEp[loop_num % sample_period] = 0;
-#endif
+
     for (uint i1 = 0; i1 < num_particles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
             // TODO: automatically detect if a boundary is crossed and compensate for that in this function
@@ -673,7 +673,7 @@ void mdsystem::force_calculation() {
 
             p = sqr_distance_inv;
             p = p*p*p;
-            acceleration = 48  * distance_inv * p * (p - 0.5f);
+            acceleration = 48  * distance_inv * p * (p - ftype(0.5));
 
             // Update accelerations of interacting particles
             vec3 r_hat = r * distance_inv;
@@ -686,8 +686,9 @@ void mdsystem::force_calculation() {
             if (Ep_on) {
                 instEp[loop_num % sample_period] += 4 * p * (p - 1) - E_cutoff;
             }
-            if (pressure_on) distance_force_sum += acceleration / distance_inv;
-
+            if (pressure_on) {
+                distance_force_sum += acceleration / distance_inv;
+            }
 
         }
     }
@@ -759,8 +760,8 @@ void mdsystem::calculate_specific_heat() {
     //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
     */
-    Cv[loop_num/sample_period] = 1/(ftype(2)/3 + num_particles*(1 - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])));
-
+    Cv[loop_num/sample_period] = 1/(ftype(2)/ftype(3) + num_particles*(ftype(1) - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])));
+    cout<< "loopnum: "<<int(loop_num/sample_period) <<"  Cv_= " << ftype(2)/3 + num_particles*(ftype(1) - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])) << endl;
 }
 
 void mdsystem::calculate_pressure() {

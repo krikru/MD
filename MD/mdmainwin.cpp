@@ -81,7 +81,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K]//MSD linear at approx. 800K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 0
+#elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
     //Cohesive energy: 2.95 eV/atom
     //Specific heat: 0.233 J/(g*k)
@@ -95,7 +95,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in = ftype(1200.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 0
     //Copper (Melting point 1356.6 K)
@@ -132,9 +132,9 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 1000; // The number of particles
-    uint nrinst_in = 100;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 50000; // Desired (or minimum) total number of timesteps
+    uint nrparticles_in = 100; // The number of particles
+    uint nrinst_in = 50000;       // Number of timesteps between measurements of properties
+    uint nrtimesteps_in = 1000000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.0) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
