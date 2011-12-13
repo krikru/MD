@@ -93,6 +93,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype mass_in = ftype(107.8682) * P_U;
     ftype latticeconstant_in = ftype(4.090 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
     cout<<"Silver"<<endl;
+
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
