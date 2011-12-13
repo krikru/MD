@@ -22,6 +22,7 @@ using std::ofstream;
 mdsystem::mdsystem()
 {
     operating = false;
+    abort_activities_requested = false;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -132,8 +133,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     thermostat_on = thermostat_on_in;
     equilibrium = false;
 
-    abort_activities_requested = false;
-
     init_particles();
     create_verlet_list();
     create_impulseresponse();
@@ -143,6 +142,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 #else
     Ep_shift=0;
 #endif
+
     // Finish the operation
     finish_operation();
 }
@@ -191,7 +191,6 @@ void mdsystem::run_simulation()
                 sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
             }
             insttemp[loop_num/sample_period] =  sum_sqr_vel / (3 * num_particles );
-            //cout <<"insttemp= "<<insttemp[loop_num % nrinst]<<endl;
             if (Ek_on) instEk[loop_num/sample_period] = 0.5f * sum_sqr_vel;
             thermostat_values[loop_num/sample_period] = thermostat_value;
             if (msd_on) calculate_mean_square_displacement();
@@ -305,6 +304,10 @@ operation_finished:
 
 void mdsystem::abort_activities()
 {
+    /*
+     * This is not an *operation* in that sence since the variable being
+     * changed cannot be locked for writing to a single thread
+     */
     abort_activities_requested = true;
 }
 
@@ -435,7 +438,7 @@ void mdsystem::update_verlet_list_if_necessary()
     }
     if (i < num_particles) {
         // Displacement that is to large was found
-        output << int(100*loop_num/num_time_steps) << " % done" <<endl;
+        output << "Verlet list updated. " << int(100*loop_num/num_time_steps) << " % done" <<endl;
         create_verlet_list();
     }
 }
@@ -587,10 +590,10 @@ void mdsystem::leapfrog()
 {
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
 #if THERMOSTAT == LASSES_THERMOSTAT
-    thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) % sample_period]) / (2*thermostat_time) : 0;
+    thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sample_period]) / (2*thermostat_time) : 0;
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
     /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-    thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) % nrinst] - 1)) : 1;
+    thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) / nrinst] - 1)) : 1;
 #endif
 
     for (uint i = 0; i < num_particles; i++) {
