@@ -135,6 +135,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     potential_energy_cutoff();
 #if SHIFT_EP == 1
     potential_energy_shift();
+#else
+    Ep_shift=0;
 #endif
     // Finish the operation
     finish_operation();
@@ -216,9 +218,9 @@ void mdsystem::run_simulation()
             }
 
         out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
-        out_etot_data  << setprecision(9) << (Ek[i] + Ep[i])*epsilon/P_EV          << endl;
+        out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
         out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
-        out_ep_data    << setprecision(9) << Ep[i]*epsilon/P_EV                    << endl;
+        out_ep_data    << setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                    << endl;
         out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
         out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
         out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
@@ -245,9 +247,9 @@ void mdsystem::run_simulation()
         }
 
         output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB       << endl;
-        output << "Ek + Ep         (eV)   = " <<setprecision(9) << (Ek[i] + Ep[i])*epsilon/P_EV      << endl;
+        output << "Ek + Ep         (eV)   = " <<setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV      << endl;
         output << "Ek              (eV)   = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
-        output << "Ep              (eV)   = " <<setprecision(9) << Ep[i]*epsilon/P_EV                << endl;
+        output << "Ep              (eV)   = " <<setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                << endl;
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
@@ -648,11 +650,9 @@ void mdsystem::force_calculation() {
         particles[k].acc = vec3(0, 0, 0);
     }
 
-#if SHIFT_EP == 1
-    instEp[loop_num % sample_period] = -Ep_shift;
-#else
+
     instEp[loop_num % sample_period] = 0;
-#endif
+
     for (uint i1 = 0; i1 < num_particles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
             // TODO: automatically detect if a boundary is crossed and compensate for that in this function
