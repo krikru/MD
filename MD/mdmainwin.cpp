@@ -68,53 +68,55 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #if 0
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     //Cohesive energy: 0.16 eV/atom
-    //Specific heat: 0.097 J/g
+    //Specific heat: 0.097 J/(g*K)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
     ftype sigma_in = ftype(3.98) * P_ANGSTROM;
     ftype epsilon_in = ftype(320e-16) * P_ERG; //1 erg = 10^-7 J
     ftype mass_in = ftype(131.293) * P_U;
-    ftype latticeconstant_in = ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
+    ftype latticeconstant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
     cout<<"Xenon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.10) * P_FS; // [s]
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K]//MSD linear at approx. 800K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
     //Cohesive energy: 2.95 eV/atom
+    //Specific heat: 0.233 J/(g*k)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
     ftype sigma_in = ftype(2.65) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.34) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(107.8682) * P_U;
-    ftype latticeconstant_in = ftype(4.090) * P_ANGSTROM;  //  ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
+    ftype latticeconstant_in = ftype(4.090 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
     cout<<"Silver"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.1) * P_FS; // [s]
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 0
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
+    //Specific heat: 0.386 J/(g*K)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
     ftype sigma_in = ftype(2.338) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.4096) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(63.546) * P_U;
-    ftype latticeconstant_in = ftype(3.6100000000) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
+    ftype latticeconstant_in = ftype(3.610) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
     cout<<"Copper"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(800.0); // [K]
+    ftype temperature_in = ftype(580.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Argon (Melting point 83.8 K)
     //Cohesive energy: 0.080 eV/atom
-    //Specific heat: 0.312 J/g
+    //Specific heat: 0.312 J/(g*K)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -124,13 +126,13 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype latticeconstant_in = ftype(5.260 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
     cout<<"Argon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.10) * P_FS; // [s]
+    ftype dt_in = ftype(0.10) * P_FS; // [s] //It seems like it needs to be 0.1 if we want to simulate at 580K (to calculate the specific heat at 20 Celsius) otherwise we get bad results
     ftype temperature_in = ftype(580.0); // [K]
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #endif
 
     // Init simulation specific constants
-    uint  nrparticles_in = 1000; // The number of particles
+    uint  nrparticles_in = 100; // The number of particles
     uint  nrinst_in = 1;       // Number of timesteps between measurements of properties
     uint  nrtimesteps_in = 100000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
@@ -226,4 +228,174 @@ void mdmainwin::static_process_events(void* void_ptr_mainwin)
         mainwin_ptr->ui->statusbar->showMessage("Idle");
     }
     QApplication::processEvents(QEventLoop::AllEvents);
+}
+
+void mdmainwin::on_sigma_le_editingFinished()
+{
+    ui->statusbar->showMessage("Editing sigma finished.");
+}
+
+void mdmainwin::on_epsilon_le_editingFinished()
+{
+    ui->statusbar->showMessage("Editing epsilon finished.");
+}
+
+void mdmainwin::on_mass_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_lattice_constant_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_lattice_type_cb_activated(const QString &arg1)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_epsilon_unit_cb_activated(const QString &arg1)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_num_particles_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_init_temperature_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_desired_pressure_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_desire_temperature_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_desired_pressure_unit_cb_activated(const QString &arg1)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_time_step_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_num_time_steps_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_inner_cutoff_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_outer_cutoff_le_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_measurement_interval_sb_editingFinished()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_npe_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_nve_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_nvt_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_npt_rb_clicked()
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_diffoceff_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_pressure_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_cv_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_msd_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_energy_total_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_energy_kinetic_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_energy_potential_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_cohesive_energy_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_store_particle_possitions_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_settings_bb_accepted()
+{
+    ui->statusbar->showMessage("Settings accepted");
+}
+
+void mdmainwin::on_settings_bb_rejected()
+{
+    ui->statusbar->showMessage("Settings rejected");
+}
+
+void mdmainwin::on_draw_particles_cb_clicked(bool checked)
+{
+    ui->statusbar->showMessage("Code needed");
+}
+
+void mdmainwin::on_save_element_pb_clicked()
+{
+    ui->statusbar->showMessage("Saving element... (don't wait in vain)");
+}
+
+void mdmainwin::on_load_element_pb_clicked()
+{
+    ui->statusbar->showMessage("Loading element... (don't wait in vain)");
 }

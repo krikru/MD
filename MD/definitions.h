@@ -17,6 +17,7 @@
 // COMPILE TIME OPTIONS
 ////////////////////////////////////////////////////////////////
 
+// Enumeration of thermostats
 #define  NO_THERMOSTAT           0
 #define  BERENDSEN_THERMOSTAT    1
 #define  NOSE_HOOVER_THERMOSTAT  2
@@ -32,8 +33,9 @@
 // MISCELANEOUS DEFINITIONS
 ////////////////////////////////////////////////////////////////
 
-#define  RU_ON                 0
+
 #define  USE_DOUBLE_PRECITION  0
+#define  SHIFT_EP              1
 
 ////////////////////////////////////////////////////////////////
 // TYPEDEFS
