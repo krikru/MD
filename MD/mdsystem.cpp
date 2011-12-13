@@ -462,13 +462,13 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(num_particles);
-    verlet_neighbors_list.resize(uint(num_particles * (num_particles+1)/2)); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
+    verlet_neighbors_list.resize(0); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
 
     //Creating new verlet_list
     verlet_particles_list[0] = 0;
     for (uint i = 0; i < num_particles;) { // Loop through all particles
         // Init this neighbour list and point to the next list
-        verlet_neighbors_list[verlet_particles_list[i]] = 0; // Reset number of neighbours
+        verlet_neighbors_list.push_back(0); // Reset number of neighbours
         int next_particle_list = verlet_particles_list[i] + 1; // Link to the next particle list
 
         if (cells_used) { //Loop through all neighbour cells
@@ -513,7 +513,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                             ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                             if(sqr_distance < sqr_outer_cutoff) {
                                 verlet_neighbors_list[verlet_particles_list[i]] += 1;
-                                verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                                verlet_neighbors_list.push_back(neighbour_particle_index);
                                 next_particle_list++;
                             }
                             neighbour_particle_index = cell_linklist[neighbour_particle_index]; // Get the next particle in the cell
@@ -527,7 +527,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                 ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                 if(sqr_distance < sqr_outer_cutoff) {
                     verlet_neighbors_list[verlet_particles_list[i]] += 1;
-                    verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                    verlet_neighbors_list.push_back(neighbour_particle_index);
                     next_particle_list++;
                 }
             }
@@ -758,8 +758,8 @@ void mdsystem::calculate_specific_heat() {
     //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
     */
-    Cv[loop_num/sample_period] = 1/(ftype(2)/3 + num_particles*(1 - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])));
-
+    Cv[loop_num/sample_period] = 1/(ftype(2)/ftype(3) + num_particles*(ftype(1) - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])));
+    cout<< "loopnum: "<<int(loop_num/sample_period) <<"  Cv_= " << ftype(2)/3 + num_particles*(ftype(1) - T2/(temperature[loop_num/sample_period]*temperature[loop_num/sample_period])) << endl;
 }
 
 void mdsystem::calculate_pressure() {
