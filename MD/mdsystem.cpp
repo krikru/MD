@@ -46,7 +46,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 {
     // The system is *always* operating when running non-const functions
     start_operation();
-
 #if THERMOSTAT == LASSES_THERMOSTAT
     thermostat_value = 0;
 #endif
@@ -76,26 +75,29 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     inner_cutoff = inner_cutoff / sigma;
     outer_cutoff = outer_cutoff / sigma;
 
+    impulseresponse_width = impulseresponse_width_in;
+    impulseresponse_exponent = impulseresponse_exponent_in;
+
     sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
 
     loop_num = 0;
-    num_time_steps = ((nrtimesteps_in - 1) / nrinst_in + 1) * nrinst_in; // Make the smallest multiple of nrinst_in that has at least the specified size
+    num_time_steps = ((nrtimesteps_in - 1) / sample_period + 1) * sample_period; // Make the smallest multiple of nrinst_in that has at least the specified size
 
     impulseresponse      .resize(impulseresponse_width);
-    insttemp             .resize(num_time_steps/nrinst_in + 1);
-    instEk               .resize(num_time_steps/nrinst_in + 1);
-    instEp               .resize(num_time_steps/nrinst_in + 1);
-    temperature          .resize(num_time_steps/nrinst_in + 1);
-    thermostat_values    .resize(num_time_steps/nrinst_in + 1);
-    Ek                   .resize(num_time_steps/nrinst_in + 1);
-    Ep                   .resize(num_time_steps/nrinst_in + 1);
-    cohesive_energy      .resize(num_time_steps/nrinst_in + 1);
-    Cv                   .resize(num_time_steps/nrinst_in + 1);
-    pressure             .resize(num_time_steps/nrinst_in + 1);
-    msd                  .resize(num_time_steps/nrinst_in + 1);
-    diffusion_coefficient.resize(num_time_steps/nrinst_in + 1);
-    distanceforcesum     .resize(num_time_steps/nrinst_in + 1);
+    insttemp             .resize(num_time_steps/sample_period + 1);
+    instEk               .resize(num_time_steps/sample_period + 1);
+    instEp               .resize(num_time_steps/sample_period + 1);
+    temperature          .resize(num_time_steps/sample_period + 1);
+    thermostat_values    .resize(num_time_steps/sample_period + 1);
+    Ek                   .resize(num_time_steps/sample_period + 1);
+    Ep                   .resize(num_time_steps/sample_period + 1);
+    cohesive_energy      .resize(num_time_steps/sample_period + 1);
+    Cv                   .resize(num_time_steps/sample_period + 1);
+    pressure             .resize(num_time_steps/sample_period + 1);
+    msd                  .resize(num_time_steps/sample_period + 1);
+    diffusion_coefficient.resize(num_time_steps/sample_period + 1);
+    distanceforcesum     .resize(num_time_steps/sample_period + 1);
 
     if (lattice_type == LT_FCC) {
         box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
@@ -123,8 +125,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     Ek_on = Ek_on_in;
     desired_temp = desiredtemp_in;
     thermostat_time = thermostat_time_in;
-    impulseresponse_width = impulseresponse_width_in;
-    impulseresponse_exponent = impulseresponse_exponent_in;
     //reduced unit
     desired_temp = desired_temp * P_KB/ epsilon;
     thermostat_time = thermostat_time / sqrt(particle_mass * sqr_sigma / epsilon);
@@ -151,7 +151,6 @@ void mdsystem::run_simulation()
 {
     // The system is *always* operating when running non-const functions
     start_operation();
-
     /*
      * All variables define in this function has to defined here since we use
      * goto's.
@@ -172,7 +171,6 @@ void mdsystem::run_simulation()
     ftype sum_sqr_vel;
     // Start simulating
     for (loop_num = 0; loop_num <= num_time_steps; loop_num++) {
-
         // Check if the simulation has been requested to abort
         if (abort_activities_requested) {
             goto operation_finished;
@@ -227,6 +225,7 @@ void mdsystem::run_simulation()
     else {
         output << "Writing to output files..." << endl;
         print_output_and_process_events();
+        cout<< "test" << endl;
 
         for (uint i = 1; i < temperature.size(); i++) {
             if (abort_activities_requested) {
@@ -880,6 +879,7 @@ vec3 mdsystem::modulus_position_minus(vec3 pos1, vec3 pos2) const
 void mdsystem::print_output_and_process_events()
 {
     print_output();
+
     process_events();
 }
 
