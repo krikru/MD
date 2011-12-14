@@ -776,9 +776,9 @@ void mdsystem::calculate_pressure() {
 
 void mdsystem::calculate_mean_square_displacement() {
     ftype sum = 0;
-    if (equilibrium == false && loop_num/sampling_period) {
+    if (equilibrium == false) {
         // Check if equilibrium has been reached
-        ftype variation = (Ep[loop_num/sampling_period] - Ep[loop_num/sampling_period - 1]) / Ep[loop_num/sampling_period];
+        ftype variation = (instEp[loop_num/sample_period] - instEp[loop_num/sample_period - 1]) / instEp[loop_num/sample_period];
         variation = variation >= 0 ? variation : -variation;
         if (variation < dEp_tolerance) { //TODO: Is this a sufficient check? Probably not
             // The requirements for equilibrium has been reached
