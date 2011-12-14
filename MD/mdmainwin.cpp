@@ -96,7 +96,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in = ftype(1200.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 0
     //Copper (Melting point 1356.6 K)

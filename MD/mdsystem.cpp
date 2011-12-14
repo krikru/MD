@@ -47,6 +47,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 {
     // The system is *always* operating when running non-const functions
     start_operation();
+
 #if THERMOSTAT == LASSES_THERMOSTAT
     thermostat_value = 0;
 #endif
@@ -83,8 +84,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
 
     loop_num = 0;
-    num_time_steps = ((nrtimesteps_in - 1) / sample_period + 1) * sample_period; // Make the smallest multiple of nrinst_in that has at least the specified size
-
+    num_time_steps = ((nrtimesteps_in - 1) / sample_period + 1) * sample_period; // Make the smallest multiple of sample_period that has at least the specified size
+    num_sampling_points = num_time_steps/sample_period + 1;
     impulseresponse      .resize(impulseresponse_width);
     insttemp             .resize(num_time_steps/sample_period + 1);
     instEk               .resize(num_time_steps/sample_period + 1);
@@ -142,7 +143,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
 #else
     Ep_shift=0;
 #endif
-
     // Finish the operation
     finish_operation();
 }
@@ -224,7 +224,6 @@ void mdsystem::run_simulation()
     else {
         output << "Writing to output files..." << endl;
         print_output_and_process_events();
-        cout<< "test" << endl;
 
         for (uint i = 1; i < temperature.size(); i++) {
             if (abort_activities_requested) {
@@ -482,13 +481,13 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(num_particles);
-    verlet_neighbors_list.resize(uint(num_particles * (num_particles+1)/2)); //This is the smallest size of the neighbors possible to be certain to have a big enough vector, whitout any closer inspction of the number of neighbors
+    verlet_neighbors_list.resize(0); //The elements will be push_back'ed to the Verlet list
 
     //Creating new verlet_list
     verlet_particles_list[0] = 0;
     for (uint i = 0; i < num_particles;) { // Loop through all particles
         // Init this neighbour list and point to the next list
-        verlet_neighbors_list[verlet_particles_list[i]] = 0; // Reset number of neighbours
+        verlet_neighbors_list.push_back(0); // Reset number of neighbours
         int next_particle_list = verlet_particles_list[i] + 1; // Link to the next particle list
 
         if (cells_used) { //Loop through all neighbour cells
@@ -533,7 +532,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                             ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                             if(sqr_distance < sqr_outer_cutoff) {
                                 verlet_neighbors_list[verlet_particles_list[i]] += 1;
-                                verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                                verlet_neighbors_list.push_back(neighbour_particle_index);
                                 next_particle_list++;
                             }
                             neighbour_particle_index = cell_linklist[neighbour_particle_index]; // Get the next particle in the cell
@@ -547,7 +546,7 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
                 ftype sqr_distance = modulus_position_minus(particles[i].pos, particles[neighbour_particle_index].pos).sqr_length();
                 if(sqr_distance < sqr_outer_cutoff) {
                     verlet_neighbors_list[verlet_particles_list[i]] += 1;
-                    verlet_neighbors_list[next_particle_list] = neighbour_particle_index;
+                    verlet_neighbors_list.push_back(neighbour_particle_index);
                     next_particle_list++;
                 }
             }
@@ -649,8 +648,8 @@ void mdsystem::leapfrog()
         }
     }
 }
-
 void mdsystem::force_calculation() {
+
 
     // Reset accelrations for all particles
     for (uint k = 0; k < num_particles; k++) {
@@ -660,6 +659,7 @@ void mdsystem::force_calculation() {
         instEp[loop_num/sample_period] = 0;
         distanceforcesum[loop_num/sample_period] = 0;
     }
+
 
     for (uint i1 = 0; i1 < num_particles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) { 
@@ -757,7 +757,6 @@ void mdsystem::calculate_specific_heat() {
     for (uint i = 0; i < Cv.size(); i++) {
         Cv[i] = 1/(ftype(2)/3 + num_particles*(1 - T2[i]/(temperature[i]*temperature[i])));
     }
-
 }
 
 void mdsystem::calculate_pressure() {
@@ -765,7 +764,7 @@ void mdsystem::calculate_pressure() {
     vector<ftype> filtereddistanceforcesum(temperature.size());
     filter(distanceforcesum,filtereddistanceforcesum);
     for (uint i = 0; i < pressure.size(); i++) {
-        pressure[i] = num_particles*temperature[i]/V + filtereddistanceforcesum[i]/(6*V);
+        pressure[i] = num_particles*temperature[i]/V + filtereddistanceforcesum[i]/(3*V);
     }
 }
 
