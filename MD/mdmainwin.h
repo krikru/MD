@@ -7,6 +7,7 @@
 
 // Own includes
 #include "mdsystem.h"
+#include "settings.h"
 
 // Qt includes
 #include <QMainWindow>
@@ -21,7 +22,7 @@ class mdmainwin : public QMainWindow
 
 private:
     //Private variables
-    //TODO: Add settings
+    settings system_settings;
 
 public:
     // Constructor and destructor
@@ -56,7 +57,7 @@ private slots:
     void on_lattice_type_cb_activated         (const QString &arg1);
     void on_epsilon_unit_cb_activated         (const QString &arg1);
     void on_desired_pressure_unit_cb_activated(const QString &arg1);
-    // Check boxex
+    // Check boxes
     void on_diffoceff_cb_clicked                (bool checked);
     void on_pressure_cb_clicked                 (bool checked);
     void on_cv_cb_clicked                       (bool checked);

@@ -13,7 +13,8 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mdmainwin.cpp \
     glwidget.cpp \
-    mdsystem.cpp
+    mdsystem.cpp \
+    settings.cpp
 
 HEADERS  += mdmainwin.h \
     glwidget.h \
@@ -21,11 +22,14 @@ HEADERS  += mdmainwin.h \
     definitions.h \
     base_float_vec3.h \
     particle.h \
-    callback.h
+    callback.h \
+    settings.h
 
 FORMS    += mdmainwin.ui
 
 RESOURCES +=
+
+
 
 
 

@@ -1,0 +1,17 @@
+#    Silver (Ag)
+#    -----------
+#
+#  Tabulated values:
+#
+# Melting point: 1235.08 K
+# Cohesive energy: 2.95 eV/atom
+# Specific heat: 0.233 J/(g*K)
+
+# Basic properties
+Sigma  : 2.65     # [A]
+Epsilon: 0.34 eV  # 1 erg = 10^-7 J #TODO: Check if it should be eV (why is erg mentioned here?)
+Mass   : 107.8682 # [u]
+
+# Resulting properties
+Lattice type    : FCC
+Lattice constant: 4.090 # [A] (Tabulated lattice constant)
