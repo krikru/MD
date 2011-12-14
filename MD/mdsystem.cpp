@@ -162,6 +162,7 @@ void mdsystem::run_simulation()
     ofstream out_therm_data;
     ofstream out_msd_data  ;
     ofstream out_cohe_data ;
+    ofstream out_pressure_data;
     // For calculating the average specific heat
     ftype Cv_sum;
     ftype Cv_num;
@@ -215,6 +216,7 @@ void mdsystem::run_simulation()
           open_ofstream_file(out_temp_data , "Temperature.dat") &&
           open_ofstream_file(out_therm_data, "Thermostat.dat" ) &&
           open_ofstream_file(out_msd_data  , "MSD.dat"        ) &&
+          open_ofstream_file(out_pressure_data,"Pressure.dat"     ) &&
           open_ofstream_file(out_cohe_data , "cohesive.dat"       )
           )) {
         cerr << "Error: Output files could not be opened" << endl;
@@ -227,7 +229,6 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-
         out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
         out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
         out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
@@ -236,6 +237,7 @@ void mdsystem::run_simulation()
         out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
         out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
         out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
+        out_pressure_data<<setprecision(9)<< pressure[i]*epsilon/(sigma*sigma*sigma)<< endl;
 
             // Process events
             print_output_and_process_events();
@@ -247,7 +249,8 @@ void mdsystem::run_simulation()
         out_temp_data .close();
         out_therm_data.close();
         out_msd_data  .close();
-        out_cohe_data  .close();
+        out_cohe_data .close();
+        out_pressure_data.close();
     }
     output << "Writing to output files done." << endl;
 
@@ -264,6 +267,7 @@ void mdsystem::run_simulation()
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
         output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
+        output << "Pressure              = " <<setprecision(9) << pressure[i]*epsilon/(sigma*sigma*sigma)     << endl;
 
         // Process events
         print_output_and_process_events();
@@ -274,7 +278,7 @@ void mdsystem::run_simulation()
         }
         Cv_sum = 0;
         Cv_num = 0;
-        for(uint i = 0; i < Cv.size();i++)//I know it's an ugly filtering method but it actually gives a very nice result,
+        for(uint i = 0; i < Cv.size();i++)//I know it's an ugly filtering method but it actually gives a very nice result sometimes...,
         {
             if (abort_activities_requested) {
                 goto operation_finished;
