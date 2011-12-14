@@ -80,21 +80,22 @@ private:
     ftype        sqr_inner_cutoff;      // Square of the inner cut-off radius in the Verlet list
     ftype        sqr_outer_cutoff;      // Square of the outer cut-off radius in the Verlet list
     // Graphs & measurements
-    uint          sample_period;    // Number of timesteps between each measurement
-    vector<ftype> temperature;      // Temperature
-    uint          impulseresponse_width;
+    uint          sample_period;       // Number of timesteps between each measurement
+    vector<ftype> temperature;         // Temperature
+    uint          impulseresponse_width; //TODO: Remove this "cut-off", as well as the impuls response
+    uint          num_sampling_points; // The number of samples taken for each property
     ftype         impulseresponse_exponent;
     vector<ftype> impulseresponse;  // Used to filter measured values
     vector<ftype> distanceforcesum; // Used to calculate the pressure
-    vector<ftype> insttemp;         // Instant temperature
-    vector<ftype> Cv;               // Heat capacity
-    vector<ftype> pressure;         // Pressure
-    vector<ftype> msd;              // Mean square distance
-    vector<ftype> Ek;               // Kinetic energy
-    vector<ftype> Ep;               // Potential energy
-    vector<ftype> cohesive_energy;  // Negative potential energy per atom
-    vector<ftype> instEk;           // Instat kinetic energy
-    vector<ftype> instEp;           // Instat potential energy
+    vector<ftype> insttemp;            // Instant temperature
+    vector<ftype> Cv;                  // Heat capacity
+    vector<ftype> pressure;            // Pressure
+    vector<ftype> msd;                 // Mean square distance
+    vector<ftype> Ek;                  // Kinetic energy
+    vector<ftype> Ep;                  // Potential energy
+    vector<ftype> cohesive_energy;     // Negative potential energy per atom
+    vector<ftype> instEk;              // Instat kinetic energy
+    vector<ftype> instEp;              // Instat potential energy
     vector<ftype> diffusion_coefficient;
     // Constrol
     ftype         thermostat_value;  // Varying parameter telling how the velocities should change to adjust the temperature
