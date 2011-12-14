@@ -94,7 +94,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype latticeconstant_in = ftype(4.090 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
     cout<<"Silver"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype dt_in = ftype(0.1) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 0
@@ -132,12 +132,12 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #endif
 
     // Init simulation specific constants
-    uint  nrparticles_in = 100; // The number of particles
+    uint  nrparticles_in = 1000; // The number of particles
     uint  nrinst_in = 1;       // Number of timesteps between measurements of properties
-    uint  nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
+    uint  nrtimesteps_in = 100000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
-    uint  impulseresponse_width_in = 10;                   //decides the number of measured values that are used by the filter function to calculate each output value
+    uint  impulseresponse_width_in = 1000;                   //decides the number of measured values that are used by the filter function to calculate each output value
     ftype impulseresponse_exponent_in = ftype(0.0);       //the exponent in the impulse response function used to filter the measured values
 
     // Control
