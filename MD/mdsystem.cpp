@@ -55,7 +55,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     particle_mass    = particle_mass_in;
     sigma            = sigma_in;
     epsilon          = epsilon_in;
-    sample_period    = sample_period_in;
+    sampling_period    = sample_period_in;
     init_temp        = temperature_in;
     lattice_constant = lattice_constant_in;
     lattice_type     = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
@@ -73,6 +73,9 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     thermostat_time  = thermostat_time_in;
     impulse_response_decay_time = impulse_response_decay_time_in;
 
+    sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
+    sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
+
     /*
      * Reduced units
      *
@@ -83,18 +86,20 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
      *
      * Time unit: sigma * (particle mass / epsilon)^.5
      */
-    lattice_constant = lattice_constant / sigma;
-    init_temp = init_temp * P_KB/ epsilon;
-    dt = dt / sqrt(particle_mass * sigma * sigma / epsilon);
-    inner_cutoff = inner_cutoff / sigma;
-    outer_cutoff = outer_cutoff / sigma;
-
-    sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
-    sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
+    // Lengths
+    lattice_constant /= sigma;
+    inner_cutoff     /= sigma;
+    outer_cutoff     /= sigma;
+    // Temperatures
+    init_temp        *= P_KB/ epsilon;
+    desired_temp     *= P_KB/ epsilon;
+    // Times
+    dt               /= sqrt(particle_mass * sigma * sigma / epsilon);
+    thermostat_time  /= sqrt(particle_mass * sigma * sigma / epsilon);
 
     loop_num = 0;
-    num_time_steps = ((nrtimesteps_in - 1) / sample_period + 1) * sample_period; // Make the smallest multiple of sample_period that has at least the specified size
-    num_sampling_points = num_time_steps/sample_period + 1;
+    num_time_steps = ((nrtimesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
+    num_sampling_points = num_time_steps/sampling_period + 1;
     insttemp             .resize(num_sampling_points);
     instEk               .resize(num_sampling_points);
     instEp               .resize(num_sampling_points);
@@ -113,34 +118,34 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
         box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
         num_particles = 4*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
+    else {
+        cerr << "Lattice type unknown" << endl;
+        return;
+    }
 
+    // Verlet list and box cells
     box_size = lattice_constant*box_size_in_lattice_constants;
     pos_half_box_size = 0.5f * box_size;
     neg_half_box_size = -pos_half_box_size;
     box_size_in_cells = int(box_size/outer_cutoff);
-
     if (box_size_in_cells > 3) {
         cells_used = true;
+        cell_size = box_size/box_size_in_cells;
     }
     else {
         cells_used = false;
     }
-    cell_size = box_size/box_size_in_cells;
-    //reduced unit
-    desired_temp = desired_temp * P_KB/ epsilon;
-    thermostat_time = thermostat_time / sqrt(particle_mass * sigma * sigma / epsilon);
 
+    // Thermostat
     thermostat_on = thermostat_on_in;
     equilibrium = false;
 
+    //
     init_particles();
     create_verlet_list();
-    potential_energy_cutoff();
-#if SHIFT_EP == 1
-    potential_energy_shift();
-#else
-    Ep_shift=0;
-#endif
+    calculate_potential_energy_cutoff();
+    calculate_potential_energy_shift();
+
     // Finish the operation
     finish_operation();
 }
@@ -181,15 +186,15 @@ void mdsystem::run_simulation()
         force_calculation();
         leapfrog(); // TODO: Compensate for half time steps
 
-        if (loop_num % sample_period == 0) {
+        if (loop_num % sampling_period == 0) {
             update_non_modulated_relative_particle_positions();
             sum_sqr_vel = 0;
             for (uint i = 0; i < num_particles; i++) {
                 sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
             }
-            insttemp[loop_num/sample_period] =  sum_sqr_vel / (3 * num_particles );
-            if (Ek_on) instEk[loop_num/sample_period] = 0.5f * sum_sqr_vel;
-            thermostat_values[loop_num/sample_period] = thermostat_value;
+            insttemp[loop_num/sampling_period] =  sum_sqr_vel / (3 * num_particles );
+            if (Ek_on) instEk[loop_num/sampling_period] = 0.5f * sum_sqr_vel;
+            thermostat_values[loop_num/sampling_period] = thermostat_value;
             if (msd_on) calculate_mean_square_displacement();
             if (diff_c_on) calculate_diffusion_coefficient();
         }
@@ -389,8 +394,9 @@ void mdsystem::init_particles() {
     reset_non_modulated_relative_particle_positions();
 }
 
-void mdsystem::potential_energy_shift(){
+void mdsystem::calculate_potential_energy_shift(){
     Ep_shift = 0;
+    if (!SHIFT_EP) return;
     for (uint i1 = 0; i1 < num_particles ; i1++) { // Loop through all particles
         for (uint j = verlet_particles_list[i1] + 1; j < verlet_particles_list[i1] + verlet_neighbors_list[verlet_particles_list[i1]] + 1 ; j++) {
             // TODO: automatically detect if a boundary is crossed and compensate for that in this function
@@ -415,12 +421,12 @@ void mdsystem::potential_energy_shift(){
         }
     }
 }
-void mdsystem::potential_energy_cutoff()
+void mdsystem::calculate_potential_energy_cutoff()
 {
-        ftype q;
-        q = 1/sqr_inner_cutoff;
-        q = q * q * q;
-        E_cutoff = 4 * q * (q - 1);
+    ftype q;
+    q = 1/sqr_inner_cutoff;
+    q = q * q * q;
+    E_cutoff = 4 * q * (q - 1);
 }
 
 void mdsystem::update_verlet_list_if_necessary()
@@ -588,7 +594,7 @@ void mdsystem::leapfrog()
 {
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
 #if THERMOSTAT == LASSES_THERMOSTAT
-    thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sample_period]) / (2*thermostat_time) : 0;
+    thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sampling_period]) / (2*thermostat_time) : 0;
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
     /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
     thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) / nrinst] - 1)) : 1;
@@ -655,9 +661,9 @@ void mdsystem::force_calculation() {
     for (uint k = 0; k < num_particles; k++) {
         particles[k].acc = vec3(0, 0, 0);
     }
-    if (loop_num % sample_period == 0) {
-        instEp[loop_num/sample_period] = 0;
-        distanceforcesum[loop_num/sample_period] = 0;
+    if (loop_num % sampling_period == 0) {
+        instEp[loop_num/sampling_period] = 0;
+        distanceforcesum[loop_num/sampling_period] = 0;
     }
 
 
@@ -690,11 +696,11 @@ void mdsystem::force_calculation() {
             // Update properties
             //TODO: Remove these two from force calculation and place them somewhere else
 
-            if (Ep_on && loop_num % sample_period == 0) {
-                instEp[loop_num / sample_period] += 4 * p * (p - 1) - E_cutoff;
+            if (Ep_on && loop_num % sampling_period == 0) {
+                instEp[loop_num / sampling_period] += 4 * p * (p - 1) - E_cutoff;
             }
-            if (pressure_on && loop_num % sample_period == 0) {
-                distanceforcesum[loop_num/sample_period] += acceleration / distance_inv;
+            if (pressure_on && loop_num % sampling_period == 0) {
+                distanceforcesum[loop_num/sampling_period] += acceleration / distance_inv;
             }
 
         }
@@ -770,9 +776,9 @@ void mdsystem::calculate_pressure() {
 
 void mdsystem::calculate_mean_square_displacement() {
     ftype sum = 0;
-    if (equilibrium == false && loop_num/sample_period) {
+    if (equilibrium == false && loop_num/sampling_period) {
         // Check if equilibrium has been reached
-        ftype variation = (Ep[loop_num/sample_period] - Ep[loop_num/sample_period - 1]) / Ep[loop_num/sample_period];
+        ftype variation = (Ep[loop_num/sampling_period] - Ep[loop_num/sampling_period - 1]) / Ep[loop_num/sampling_period];
         variation = variation >= 0 ? variation : -variation;
         if (variation < dEp_tolerance) { //TODO: Is this a sufficient check? Probably not
             // The requirements for equilibrium has been reached
@@ -787,21 +793,21 @@ void mdsystem::calculate_mean_square_displacement() {
             sum += particles[i].non_modulated_relative_pos.sqr_length();
         }
         sum = sum/num_particles;
-        msd[loop_num/sample_period] = sum;
+        msd[loop_num/sampling_period] = sum;
     }
     else {
         // Equilibrium not reached; don't calculate this property.
-        msd[loop_num/sample_period] = 0;
+        msd[loop_num/sampling_period] = 0;
     }
 }
 
 void mdsystem::calculate_diffusion_coefficient()
 {
-    diffusion_coefficient[loop_num/sample_period] = msd[loop_num/sample_period]/(6*dt*loop_num);
+    diffusion_coefficient[loop_num/sampling_period] = msd[loop_num/sampling_period]/(6*dt*loop_num);
 }
 
 void mdsystem::filter(vector<ftype> &unfiltered, vector<ftype> &filtered, ftype impulse_response_decay_time) {
-    ftype f = exp(-dt/impulse_response_decay_time);
+    ftype f = exp(-dt*sampling_period/impulse_response_decay_time);
     ftype k = 1 - f;
     ftype a, w;
     int vector_size = unfiltered.size();
