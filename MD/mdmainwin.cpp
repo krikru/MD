@@ -138,7 +138,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     uint nrtimesteps_in = 100000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
-    uint  impulseresponse_width_in = 10;                   //decides the number of measured values that are used by the filter function to calculate each output value
+    uint  impulseresponse_width_in = 100;                   //decides the number of measured values that are used by the filter function to calculate each output value
     ftype impulseresponse_exponent_in = ftype(0.0);       //the exponent in the impulse response function used to filter the measured values
 
     // Control

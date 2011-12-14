@@ -231,7 +231,6 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-
         out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
         out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
         out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
@@ -252,7 +251,7 @@ void mdsystem::run_simulation()
         out_temp_data .close();
         out_therm_data.close();
         out_msd_data  .close();
-        out_cohe_data  .close();
+        out_cohe_data .close();
         out_pressure_data.close();
     }
     output << "Writing to output files done." << endl;
@@ -886,7 +885,6 @@ vec3 mdsystem::modulus_position_minus(vec3 pos1, vec3 pos2) const
 void mdsystem::print_output_and_process_events()
 {
     print_output();
-
     process_events();
 }
 
