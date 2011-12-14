@@ -3,7 +3,7 @@
 #
 #  Tabulated values:
 #
-# Melting point 1235.08 K
+# Melting point: 1235.08 K
 # Cohesive energy: 2.95 eV/atom
 # Specific heat: 0.233 J/(g*K)
 

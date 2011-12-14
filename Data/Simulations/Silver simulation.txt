@@ -3,10 +3,10 @@
 
 Element: Silver
 
-dt                 : 1.0   # [fs]
-Initial Temperature: 580.0 # [K] MSD linear at approx. 12500 K, why not earlier??
-Desired temperature: 522   # [K] (: 0.9 * Initial temperature) #TODO: Why times 0.9?
-Desired pressure   : 1 atm # The atmospheric pressure
+dt                 : 1.0     # [fs]
+Initial temperature: 580.0   # [K] MSD linear at approx. 12500 K, why not earlier??
+Desired temperature: 522.0   # [K] ( = 0.9 * Initial temperature) #TODO: Why times 0.9?
+Desired pressure   : 1.0 atm # The atmospheric pressure
 
 # Init simulation specific constants
 Number of particles     : 100   # The number of particles
