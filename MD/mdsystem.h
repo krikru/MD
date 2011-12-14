@@ -32,7 +32,7 @@ class mdsystem
     // Functions that affect the system
     void set_event_callback (callback<void (*)(void*        )> event_callback_in );
     void set_output_callback(callback<void (*)(void*, string)> output_callback_in);
-    void init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, uint impulseresponse_width_in, ftype impulseresponse_exponent_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    void init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint nrinst_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, ftype impulse_response_decay_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
     void run_simulation();
     void abort_activities();
     // Functins that not affect the system
@@ -81,12 +81,9 @@ private:
     ftype        sqr_outer_cutoff;      // Square of the outer cut-off radius in the Verlet list
     // Graphs & measurements
     uint          sample_period;       // Number of timesteps between each measurement
-    vector<ftype> temperature;         // Temperature
-    uint          impulseresponse_width; //TODO: Remove this "cut-off", as well as the impuls response
     uint          num_sampling_points; // The number of samples taken for each property
-    ftype         impulseresponse_exponent;
-    vector<ftype> impulseresponse;  // Used to filter measured values
-    vector<ftype> distanceforcesum; // Used to calculate the pressure
+    vector<ftype> temperature;         // Temperature
+    vector<ftype> distanceforcesum;    // Used to calculate the pressure
     vector<ftype> insttemp;            // Instant temperature
     vector<ftype> Cv;                  // Heat capacity
     vector<ftype> pressure;            // Pressure
@@ -97,6 +94,8 @@ private:
     vector<ftype> instEk;              // Instat kinetic energy
     vector<ftype> instEp;              // Instat potential energy
     vector<ftype> diffusion_coefficient;
+    // Filtering
+    ftype         impulse_response_decay_time;
     // Constrol
     ftype         thermostat_value;  // Varying parameter telling how the velocities should change to adjust the temperature
     ftype         desired_temp;      // The temperature the system strives to obtain
@@ -131,7 +130,6 @@ private:
      *********************/
     // Initialization
     void init_particles();
-    void create_impulseresponse();
     void potential_energy_shift();
     void potential_energy_cutoff();
     // Verlet list
@@ -156,7 +154,7 @@ private:
     void calculate_pressure();
     void calculate_mean_square_displacement();
     void calculate_diffusion_coefficient();
-    void filter(vector<ftype> &unfiltered, vector<ftype> &filtered);
+    void filter(vector<ftype> &unfiltered, vector<ftype> &filtered, ftype impulse_response_decay_time);
     // Output
     ofstream* open_ofstream_file(ofstream &o, const char* path) const;
 
