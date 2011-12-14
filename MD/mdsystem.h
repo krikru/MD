@@ -80,7 +80,7 @@ private:
     ftype        sqr_inner_cutoff;      // Square of the inner cut-off radius in the Verlet list
     ftype        sqr_outer_cutoff;      // Square of the outer cut-off radius in the Verlet list
     // Graphs & measurements
-    uint          sample_period;       // Number of timesteps between each measurement
+    uint          sampling_period;     // Number of timesteps between each measurement
     uint          num_sampling_points; // The number of samples taken for each property
     vector<ftype> temperature;         // Temperature
     vector<ftype> distanceforcesum;    // Used to calculate the pressure
@@ -130,8 +130,8 @@ private:
      *********************/
     // Initialization
     void init_particles();
-    void potential_energy_shift();
-    void potential_energy_cutoff();
+    void calculate_potential_energy_shift();
+    void calculate_potential_energy_cutoff();
     // Verlet list
     void update_verlet_list_if_necessary();
     void create_verlet_list();
