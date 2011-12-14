@@ -73,9 +73,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     thermostat_time  = thermostat_time_in;
     impulse_response_decay_time = impulse_response_decay_time_in;
 
-    sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
-    sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
-
     /*
      * Reduced units
      *
@@ -96,6 +93,9 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     // Times
     dt               /= sqrt(particle_mass * sigma * sigma / epsilon);
     thermostat_time  /= sqrt(particle_mass * sigma * sigma / epsilon);
+
+    sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
+    sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
 
     loop_num = 0;
     num_time_steps = ((nrtimesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
@@ -778,7 +778,7 @@ void mdsystem::calculate_mean_square_displacement() {
     ftype sum = 0;
     if (equilibrium == false) {
         // Check if equilibrium has been reached
-        ftype variation = (instEp[loop_num/sample_period] - instEp[loop_num/sample_period - 1]) / instEp[loop_num/sample_period];
+        ftype variation = (instEp[loop_num/sampling_period] - instEp[loop_num/sampling_period - 1]) / instEp[loop_num/sampling_period];
         variation = variation >= 0 ? variation : -variation;
         if (variation < dEp_tolerance) { //TODO: Is this a sufficient check? Probably not
             // The requirements for equilibrium has been reached
