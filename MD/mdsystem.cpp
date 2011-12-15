@@ -55,7 +55,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     particle_mass    = particle_mass_in;
     sigma            = sigma_in;
     epsilon          = epsilon_in;
-    sampling_period    = sample_period_in;
+    sampling_period  = sample_period_in;
     init_temp        = temperature_in;
     lattice_constant = lattice_constant_in;
     lattice_type     = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
@@ -192,7 +192,7 @@ void mdsystem::run_simulation()
             for (uint i = 0; i < num_particles; i++) {
                 sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
             }
-            insttemp[loop_num/sampling_period] =  sum_sqr_vel / (3 * num_particles );
+            insttemp[loop_num / sampling_period] =  sum_sqr_vel / (3 * num_particles );
             if (Ek_on) instEk[loop_num/sampling_period] = 0.5f * sum_sqr_vel;
             thermostat_values[loop_num/sampling_period] = thermostat_value;
             if (msd_on) calculate_mean_square_displacement();
@@ -266,13 +266,13 @@ void mdsystem::run_simulation()
         }
 
         output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB       << endl;
-        output << "Ek + Ep         (eV)   = " <<setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV      << endl;
-        output << "Ek              (eV)   = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
-        output << "Ep              (eV)   = " <<setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                << endl;
+        output << "Ek + Ep         (eV)  = " <<setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV      << endl;
+        output << "Ek              (eV)  = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
+        output << "Ep              (eV)  = " <<setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                << endl;
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
-        output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
-        output << "Pressure              = " <<setprecision(9) << pressure[i]*epsilon/(sigma*sigma*sigma)     << endl;
+        output << "msd             (m^2) = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
+        output << "Pressure        (Pa)  = " <<setprecision(9) << pressure[i]*epsilon/(sigma*sigma*sigma)     << endl;
 
         // Process events
         print_output_and_process_events();
@@ -595,7 +595,19 @@ void mdsystem::leapfrog()
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
 #if THERMOSTAT == LASSES_THERMOSTAT
     thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sampling_period]) / (2*thermostat_time) : 0;
+
+    //if (thermostat_on && loop_num > 0 ) {
+    /*
+    output<<"TV="<< thermostat_value<<endl;
+    output<<"DT="<< desired_temp<<endl;
+    output<<"iT="<< desired_temp<<endl;
+    output<<"IT="<< insttemp[(loop_num-1)/ sampling_period] <<endl;
+    output<<"Tt="<< thermostat_time <<endl;
+    }
+    */
+
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
+
     /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
     thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) / nrinst] - 1)) : 1;
 #endif
@@ -700,7 +712,7 @@ void mdsystem::force_calculation() {
                 instEp[loop_num / sampling_period] += 4 * p * (p - 1) - E_cutoff;
             }
             if (pressure_on && loop_num % sampling_period == 0) {
-                distanceforcesum[loop_num/sampling_period] += acceleration / distance_inv;
+                distanceforcesum[loop_num/sampling_period] += epsilon*acceleration / distance_inv;
             }
 
         }
@@ -708,9 +720,10 @@ void mdsystem::force_calculation() {
 #if THERMOSTAT == LASSES_THERMOSTAT
     if (thermostat_on) {
         for (uint i = 0; i < num_particles; i++) {
-            particles[i].acc -= thermostat_value * particles[i].vel;
+            particles[i].acc -= thermostat_value * particles[i].vel/sampling_period;
         }
     }
+
 #endif
 }
 
@@ -769,8 +782,10 @@ void mdsystem::calculate_pressure() {
     ftype V = box_size*box_size*box_size;
     vector<ftype> filtereddistanceforcesum(temperature.size());
     filter(distanceforcesum, filtereddistanceforcesum, impulse_response_decay_time);
+
+
     for (uint i = 0; i < pressure.size(); i++) {
-        pressure[i] = num_particles*temperature[i]/V + filtereddistanceforcesum[i]/(3*V);
+        pressure[i] = epsilon*num_particles*temperature[i]/V+ filtereddistanceforcesum[i]/(3*V);
     }
 }
 
