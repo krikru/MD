@@ -594,7 +594,7 @@ void mdsystem::leapfrog()
 {
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
 #if THERMOSTAT == LASSES_THERMOSTAT
-    thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sampling_period]) / (2*thermostat_time) : 0;
+    thermostat_value = thermostat_on && loop_num > 0 && loop_num % sampling_period == 0 ? (1 - desired_temp/insttemp[loop_num / sampling_period - 1]) / (2*thermostat_time) : 0;
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
     /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
     thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) / nrinst] - 1)) : 1;
