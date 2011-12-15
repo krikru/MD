@@ -596,20 +596,10 @@ void mdsystem::leapfrog()
 #if THERMOSTAT == LASSES_THERMOSTAT
     thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sampling_period]) / (2*thermostat_time) : 0;
 
-    //if (thermostat_on && loop_num > 0 ) {
-    /*
-    output<<"TV="<< thermostat_value<<endl;
-    output<<"DT="<< desired_temp<<endl;
-    output<<"iT="<< desired_temp<<endl;
-    output<<"IT="<< insttemp[(loop_num-1)/ sampling_period] <<endl;
-    output<<"Tt="<< thermostat_time <<endl;
-    }
-    */
-
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
 
     /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-    thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) / nrinst] - 1)) : 1;
+    thermostat_value = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desired_temp) / insttemp[(loop_num-1) / sampling_period] - 1)) : 1;
 #endif
 
     for (uint i = 0; i < num_particles; i++) {
@@ -619,7 +609,7 @@ void mdsystem::leapfrog()
         // Update velocities
 #if THERMOSTAT == CHING_CHIS_THERMOSTAT
         if (thermostat_on) {
-            particles[i].vel = particles[i].vel * thermostat;
+            particles[i].vel = particles[i].vel * thermostat_value;
         }
 #endif
         particles[i].vel += dt * particles[i].acc;
