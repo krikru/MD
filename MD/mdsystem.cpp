@@ -758,23 +758,12 @@ void mdsystem::calculate_specific_heat() {
     vector<ftype> T2(temperature.size());
     for (uint i = 0; i < insttemp.size(); i++){
         instT2[i] = insttemp[i]*insttemp[i];
-        cout<< instT2[i]<<endl;
     }
     filter(instT2, T2, impulse_response_decay_time);
 
-    ///// OLD-CV /////
-    /*
-    ftype sqr_avgT = temp[loop_num/nrinst]*temp[loop_num/nrinst];
-    //cout<< "<T>2=" << sqr_avgT << endl;
-    //cout<< "<T2>=" << T2 << endl;
-    ftype Cv_inv = (2/3.0/nrparticles - 4/9*((T2/sqr_avgT)-1)) ;
-    //cout<< "Cv_inv=" << Cv_inv << endl;
-    Cv[loop_num/nrinst] = 1/Cv_inv;
-    */
     Cv.resize(T2.size());
     for (uint i = 0; i < Cv.size(); i++) {
         Cv[i] = 1/(ftype(2)/3 + num_particles*(1 - T2[i]/(temperature[i]*temperature[i])));
-        cout<<"Cv_ = "<<T2[i]<<endl;
     }
 }
 
