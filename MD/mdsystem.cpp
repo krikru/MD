@@ -247,7 +247,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < Ek.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -255,7 +255,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < Ek.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -263,7 +263,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < Ep.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -271,7 +271,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < cohesive_energy.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -279,7 +279,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < Cv.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -287,7 +287,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < msd.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -295,7 +295,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < thermostat_values.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -303,7 +303,7 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 1; i < pressure.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
