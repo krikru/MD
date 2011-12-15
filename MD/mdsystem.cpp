@@ -43,7 +43,7 @@ void mdsystem::set_output_callback(callback<void (*)(void*, string)> output_call
     finish_operation();
 }
 
-void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype particle_mass_in, ftype dt_in, uint sample_period_in, ftype temperature_in, uint nrtimesteps_in, ftype lattice_constant_in, uint lattice_type_in, ftype desired_temp_in, ftype thermostat_time_in, ftype dEp_tolerance_in, ftype impulse_response_decay_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype particle_mass_in, ftype dt_in, uint ensemblesize_in, uint sample_period_in, ftype temperature_in, uint nrtimesteps_in, ftype lattice_constant_in, uint lattice_type_in, ftype desired_temp_in, ftype thermostat_time_in, ftype dEp_tolerance_in, ftype impulse_response_decay_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
@@ -55,6 +55,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     particle_mass    = particle_mass_in;
     sigma            = sigma_in;
     epsilon          = epsilon_in;
+    ensemblesize     = ensemblesize_in;
     sampling_period  = sample_period_in;
     init_temp        = temperature_in;
     lattice_constant = lattice_constant_in;
@@ -98,8 +99,14 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
 
     loop_num = 0;
+#if FILTER == 0
     num_time_steps = ((nrtimesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
     num_sampling_points = num_time_steps/sampling_period + 1;
+#elif FILTER == 1
+    num_sampling_points = ((nrtimesteps_in - 1) / ensemblesize + 1) * ensemblesize ; // Make the smallest multiple of ensemblesize  that has at least the specified size
+    num_time_steps = num_sampling_points + 1;
+#endif
+
     insttemp             .resize(num_sampling_points);
     instEk               .resize(num_sampling_points);
     instEp               .resize(num_sampling_points);
@@ -230,7 +237,7 @@ void mdsystem::run_simulation()
         output << "Writing to output files..." << endl;
         print_output_and_process_events();
 
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 0; i < temperature.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -757,10 +764,11 @@ void mdsystem::calculate_Ek() {
 }
 
 void mdsystem::calculate_specific_heat() {
-    vector<ftype> instT2(temperature.size());
+    vector<ftype> instT2(insttemp.size());
     vector<ftype> T2(temperature.size());
-    for (uint i = 0; i < temperature.size(); i++){
+    for (uint i = 0; i < insttemp.size(); i++){
         instT2[i] = insttemp[i]*insttemp[i];
+        cout<< instT2[i]<<endl;
     }
     filter(instT2, T2, impulse_response_decay_time);
 
@@ -773,9 +781,10 @@ void mdsystem::calculate_specific_heat() {
     //cout<< "Cv_inv=" << Cv_inv << endl;
     Cv[loop_num/nrinst] = 1/Cv_inv;
     */
+    Cv.resize(T2.size());
     for (uint i = 0; i < Cv.size(); i++) {
         Cv[i] = 1/(ftype(2)/3 + num_particles*(1 - T2[i]/(temperature[i]*temperature[i])));
-        cout<<"Cv_ = "<<T2[i]/(temperature[i]*temperature[i])<<endl;
+        cout<<"Cv_ = "<<T2[i]<<endl;
     }
 }
 
@@ -823,6 +832,8 @@ void mdsystem::calculate_diffusion_coefficient()
 }
 
 void mdsystem::filter(vector<ftype> &unfiltered, vector<ftype> &filtered, ftype impulse_response_decay_time) {
+
+#if FILTER == 0
     ftype f = exp(-dt*sampling_period/impulse_response_decay_time);
     ftype k = 1 - f;
     ftype a, w;
@@ -850,6 +861,18 @@ void mdsystem::filter(vector<ftype> &unfiltered, vector<ftype> &filtered, ftype 
         // Compensate for weights at the same time
         filtered[i] /= total_weight[i];
     }
+#endif
+#if FILTER == 1
+    filtered.resize(unfiltered.size()/ensemblesize);
+    for(uint i = 0; i < filtered.size(); i++){
+        ftype sum = 0;
+        for(uint j = 0; j < ensemblesize; j++){
+            sum += unfiltered[i*ensemblesize+j];
+        }
+        filtered[i] = sum / ensemblesize;
+    }
+
+#endif
 }
 
 ofstream* mdsystem::open_ofstream_file(ofstream &o, const char* path) const

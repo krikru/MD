@@ -28,6 +28,8 @@
 //#define  THERMOSTAT              CHING_CHIS_THERMOSTAT
 #define  THERMOSTAT              LASSES_THERMOSTAT
 
+#define  FILTER                  0
+//#define  FILTER                  1
 
 ////////////////////////////////////////////////////////////////
 // MISCELANEOUS DEFINITIONS
