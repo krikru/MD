@@ -594,7 +594,7 @@ void mdsystem::leapfrog()
 {
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
 #if THERMOSTAT == LASSES_THERMOSTAT
-    thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sampling_period]) / (2*thermostat_time) : 0;
+    thermostat_value = thermostat_on && loop_num > 0 && loop_num % sampling_period == 0 ? (1 - desired_temp/insttemp[loop_num / sampling_period - 1]) / (2*thermostat_time) : 0;
 
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
 
@@ -765,6 +765,7 @@ void mdsystem::calculate_specific_heat() {
     */
     for (uint i = 0; i < Cv.size(); i++) {
         Cv[i] = 1/(ftype(2)/3 + num_particles*(1 - T2[i]/(temperature[i]*temperature[i])));
+        cout<<"Cv_ = "<<T2[i]/(temperature[i]*temperature[i])<<endl;
     }
 }
 
