@@ -237,23 +237,83 @@ void mdsystem::run_simulation()
         output << "Writing to output files..." << endl;
         print_output_and_process_events();
 
-        for (uint i = 0; i < temperature.size(); i++) {
+/////////////////Start writing files////////////////////////////////////////////////////////
+
+        for (uint i = 1; i < temperature.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
         out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
-        out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
-        out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
-        out_ep_data    << setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                    << endl;
-        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
-        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
-        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
-        out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
-        out_pressure_data<<setprecision(9)<< pressure[i]*epsilon/(sigma*sigma*sigma)<< endl;
-
             // Process events
             print_output_and_process_events();
         }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_ep_data    << setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                    << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_pressure_data<<setprecision(9)<< pressure[i]*epsilon/(sigma*sigma*sigma)<< endl;
+            // Process events
+            print_output_and_process_events();
+        }
+
+/////////////////Finish writing files///////////////////////////////////////////////////////
+
         out_etot_data .close();
         out_ep_data   .close();
         out_ek_data   .close();
