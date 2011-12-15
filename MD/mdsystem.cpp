@@ -104,7 +104,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     num_sampling_points = num_time_steps/sampling_period + 1;
 #elif FILTER == 1
     num_sampling_points = ((nrtimesteps_in - 1) / ensemblesize + 1) * ensemblesize ; // Make the smallest multiple of ensemblesize  that has at least the specified size
-    num_time_steps = num_sampling_points + 1;
+    num_time_steps = num_sampling_points - 1;
 #endif
 
     insttemp             .resize(num_sampling_points);
