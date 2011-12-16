@@ -28,6 +28,8 @@
 //#define  THERMOSTAT              CHING_CHIS_THERMOSTAT
 #define  THERMOSTAT              LASSES_THERMOSTAT
 
+//#define  FILTER                  0 //Kristofers filter
+#define  FILTER                  1 //average
 
 ////////////////////////////////////////////////////////////////
 // MISCELANEOUS DEFINITIONS

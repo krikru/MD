@@ -43,7 +43,7 @@ void mdsystem::set_output_callback(callback<void (*)(void*, string)> output_call
     finish_operation();
 }
 
-void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype particle_mass_in, ftype dt_in, uint sample_period_in, ftype temperature_in, uint nrtimesteps_in, ftype lattice_constant_in, uint lattice_type_in, ftype desired_temp_in, ftype thermostat_time_in, ftype dEp_tolerance_in, ftype impulse_response_decay_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype particle_mass_in, ftype dt_in, uint ensemblesize_in, uint sample_period_in, ftype temperature_in, uint nrtimesteps_in, ftype lattice_constant_in, uint lattice_type_in, ftype desired_temp_in, ftype thermostat_time_in, ftype dEp_tolerance_in, ftype impulse_response_decay_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
@@ -55,7 +55,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     particle_mass    = particle_mass_in;
     sigma            = sigma_in;
     epsilon          = epsilon_in;
-    sampling_period    = sample_period_in;
+    ensemblesize     = ensemblesize_in;
+    sampling_period  = sample_period_in;
     init_temp        = temperature_in;
     lattice_constant = lattice_constant_in;
     lattice_type     = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
@@ -99,8 +100,14 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
 
     loop_num = 0;
+#if FILTER == 0
     num_time_steps = ((nrtimesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
     num_sampling_points = num_time_steps/sampling_period + 1;
+#elif FILTER == 1
+    num_sampling_points = ((nrtimesteps_in - 1) / ensemblesize + 1) * ensemblesize ; // Make the smallest multiple of ensemblesize  that has at least the specified size
+    num_time_steps = num_sampling_points - 1;
+#endif
+
     insttemp             .resize(num_sampling_points);
     instEk               .resize(num_sampling_points);
     instEp               .resize(num_sampling_points);
@@ -193,7 +200,7 @@ void mdsystem::run_simulation()
             for (uint i = 0; i < num_particles; i++) {
                 sum_sqr_vel = sum_sqr_vel + particles[i].vel.sqr_length();
             }
-            insttemp[loop_num/sampling_period] =  sum_sqr_vel / (3 * num_particles );
+            insttemp[loop_num / sampling_period] =  sum_sqr_vel / (3 * num_particles );
             if (Ek_on) instEk[loop_num/sampling_period] = 0.5f * sum_sqr_vel;
             thermostat_values[loop_num/sampling_period] = thermostat_value;
             if (msd_on) calculate_mean_square_displacement();
@@ -231,23 +238,83 @@ void mdsystem::run_simulation()
         output << "Writing to output files..." << endl;
         print_output_and_process_events();
 
+/////////////////Start writing files////////////////////////////////////////////////////////
+
         for (uint i = 1; i < temperature.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
         out_temp_data  << setprecision(9) << temperature[i] *epsilon/P_KB          << endl;
-        out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
-        out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
-        out_ep_data    << setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                    << endl;
-        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
-        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
-        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
-        out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
-        out_pressure_data<<setprecision(9)<< pressure[i]*epsilon/(sigma*sigma*sigma)<< endl;
-
             // Process events
             print_output_and_process_events();
         }
+        for (uint i = 1; i < Ek.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV          << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < Ek.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_ek_data    << setprecision(9) << Ek[i]*epsilon/P_EV                    << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < Ep.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_ep_data    << setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                    << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < cohesive_energy.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon     << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < Cv.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)     << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < msd.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_msd_data   << setprecision(9) << msd[i]*sigma*sigma                    << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < thermostat_values.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < pressure.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+        out_pressure_data<<setprecision(9)<< pressure[i]*epsilon/(sigma*sigma*sigma)<< endl;
+            // Process events
+            print_output_and_process_events();
+        }
+
+/////////////////Finish writing files///////////////////////////////////////////////////////
+
         out_etot_data .close();
         out_ep_data   .close();
         out_ek_data   .close();
@@ -267,13 +334,13 @@ void mdsystem::run_simulation()
         }
 
         output << "Temp            (K)   = " <<setprecision(9) << temperature[i] *epsilon/P_KB       << endl;
-        output << "Ek + Ep         (eV)   = " <<setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV      << endl;
-        output << "Ek              (eV)   = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
-        output << "Ep              (eV)   = " <<setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                << endl;
+        output << "Ek + Ep         (eV)  = " <<setprecision(9) << (Ek[i] + (Ep[i]-Ep_shift))*epsilon/P_EV      << endl;
+        output << "Ek              (eV)  = " <<setprecision(9) << Ek[i]*epsilon/P_EV                << endl;
+        output << "Ep              (eV)  = " <<setprecision(9) << (Ep[i]-Ep_shift)*epsilon/P_EV                << endl;
         output << "Cohesive energy (eV)  = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon  << endl;
         output << "Cv              (J/K) = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass)  << endl;
-        output << "msd                   = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
-        output << "Pressure              = " <<setprecision(9) << pressure[i]*epsilon/(sigma*sigma*sigma)     << endl;
+        output << "msd             (m^2) = " <<setprecision(9) << msd[i]*sigma*sigma        << endl;
+        output << "Pressure        (Pa)  = " <<setprecision(9) << pressure[i]*epsilon/(sigma*sigma*sigma)     << endl;
 
         // Process events
         print_output_and_process_events();
@@ -595,10 +662,12 @@ void mdsystem::leapfrog()
 {
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
 #if THERMOSTAT == LASSES_THERMOSTAT
-    thermostat_value = thermostat_on && loop_num > 0 ? (1 - desired_temp/insttemp[(loop_num-1) / sampling_period]) / (2*thermostat_time) : 0;
+    thermostat_value = thermostat_on && loop_num > 0 && loop_num % sampling_period == 0 ? (1 - desired_temp/insttemp[loop_num / sampling_period - 1]) / (2*thermostat_time) : 0;
+
 #elif THERMOSTAT == CHING_CHIS_THERMOSTAT
+
     /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-    thermostat = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desiredtemp) / insttemp[(loop_num-1) / nrinst] - 1)) : 1;
+    thermostat_value = thermostat_on && loop_num > 0 ? sqrt(1 +  dt / thermostat_time * ((desired_temp) / insttemp[(loop_num-1) / sampling_period] - 1)) : 1;
 #endif
 
     for (uint i = 0; i < num_particles; i++) {
@@ -608,7 +677,7 @@ void mdsystem::leapfrog()
         // Update velocities
 #if THERMOSTAT == CHING_CHIS_THERMOSTAT
         if (thermostat_on) {
-            particles[i].vel = particles[i].vel * thermostat;
+            particles[i].vel = particles[i].vel * thermostat_value;
         }
 #endif
         particles[i].vel += dt * particles[i].acc;
@@ -701,7 +770,7 @@ void mdsystem::force_calculation() {
                 instEp[loop_num / sampling_period] += 4 * p * (p - 1) - E_cutoff;
             }
             if (pressure_on && loop_num % sampling_period == 0) {
-                distanceforcesum[loop_num/sampling_period] += acceleration / distance_inv;
+                distanceforcesum[loop_num/sampling_period] += epsilon*acceleration / distance_inv;
             }
 
         }
@@ -709,9 +778,10 @@ void mdsystem::force_calculation() {
 #if THERMOSTAT == LASSES_THERMOSTAT
     if (thermostat_on) {
         for (uint i = 0; i < num_particles; i++) {
-            particles[i].acc -= thermostat_value * particles[i].vel;
+            particles[i].acc -= thermostat_value * particles[i].vel/sampling_period;
         }
     }
+
 #endif
 }
 
@@ -745,22 +815,14 @@ void mdsystem::calculate_Ek() {
 }
 
 void mdsystem::calculate_specific_heat() {
-    vector<ftype> instT2(temperature.size());
+    vector<ftype> instT2(insttemp.size());
     vector<ftype> T2(temperature.size());
-    for (uint i = 0; i < temperature.size(); i++){
+    for (uint i = 0; i < insttemp.size(); i++){
         instT2[i] = insttemp[i]*insttemp[i];
     }
     filter(instT2, T2, impulse_response_decay_time);
 
-    ///// OLD-CV /////
-    /*
-    ftype sqr_avgT = temp[loop_num/nrinst]*temp[loop_num/nrinst];
-    //cout<< "<T>2=" << sqr_avgT << endl;
-    //cout<< "<T2>=" << T2 << endl;
-    ftype Cv_inv = (2/3.0/nrparticles - 4/9*((T2/sqr_avgT)-1)) ;
-    //cout<< "Cv_inv=" << Cv_inv << endl;
-    Cv[loop_num/nrinst] = 1/Cv_inv;
-    */
+    Cv.resize(T2.size());
     for (uint i = 0; i < Cv.size(); i++) {
         Cv[i] = 1/(ftype(2)/3 + num_particles*(1 - T2[i]/(temperature[i]*temperature[i])));
     }
@@ -770,8 +832,10 @@ void mdsystem::calculate_pressure() {
     ftype V = box_size*box_size*box_size;
     vector<ftype> filtereddistanceforcesum(temperature.size());
     filter(distanceforcesum, filtereddistanceforcesum, impulse_response_decay_time);
+
+
     for (uint i = 0; i < pressure.size(); i++) {
-        pressure[i] = num_particles*temperature[i]/V + filtereddistanceforcesum[i]/(3*V);
+        pressure[i] = epsilon*num_particles*temperature[i]/V+ filtereddistanceforcesum[i]/(3*V);
     }
 }
 
@@ -808,6 +872,8 @@ void mdsystem::calculate_diffusion_coefficient()
 }
 
 void mdsystem::filter(vector<ftype> &unfiltered, vector<ftype> &filtered, ftype impulse_response_decay_time) {
+
+#if FILTER == 0
     ftype f = exp(-dt*sampling_period/impulse_response_decay_time);
     ftype k = 1 - f;
     ftype a, w;
@@ -835,6 +901,18 @@ void mdsystem::filter(vector<ftype> &unfiltered, vector<ftype> &filtered, ftype 
         // Compensate for weights at the same time
         filtered[i] /= total_weight[i];
     }
+#endif
+#if FILTER == 1
+    filtered.resize(unfiltered.size()/ensemblesize);
+    for(uint i = 0; i < filtered.size(); i++){
+        ftype sum = 0;
+        for(uint j = 0; j < ensemblesize; j++){
+            sum += unfiltered[i*ensemblesize+j];
+        }
+        filtered[i] = sum / ensemblesize;
+    }
+
+#endif
 }
 
 ofstream* mdsystem::open_ofstream_file(ofstream &o, const char* path) const
