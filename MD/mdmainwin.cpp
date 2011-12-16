@@ -96,7 +96,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    ftype temperature_in = ftype(6000.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 0
     //Copper (Melting point 1356.6 K)
@@ -133,7 +133,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 10000; // The number of particles
+    uint nrparticles_in = 4000; // The number of particles
 #if  FILTER == KRISTOFERS_FILTER
     uint sample_period_in = 5; // Number of timesteps between each sampling of properties
     uint ensemble_size_in = 0; // Is never used
@@ -141,7 +141,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     uint sample_period_in = 1;
     uint ensemble_size_in = 100; // Number of values used to calculate averages
 #endif
-    uint nrtimesteps_in = 10000; // Desired (or minimum) total number of timesteps
+    uint nrtimesteps_in = 100000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
     ftype impulse_response_decay_time_in = ftype(1) * P_FS;       //the exponent in the impulse response function used to filter the measured values
@@ -149,7 +149,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     // Control
     ftype nrthermostat_time_in = 3.0;
     ftype thermostat_time_in = nrthermostat_time_in * dt_in;
-    ftype deltaEp_in = ftype(0.01);
+    ftype deltaEp_in = ftype(1.0);
 
     // Init flags
     bool thermostat_on_in = !true;           //Works best with nrinst_in = 1
