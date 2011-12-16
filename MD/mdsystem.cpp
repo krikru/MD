@@ -120,6 +120,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     num_sampling_points = (nrtimesteps_in - 1) / sampling_period + 2;
     num_sampling_points = ((num_sampling_points - 1) / ensemble_size + 1) * ensemble_size;
     num_time_steps = (num_sampling_points - 1)*sampling_period;
+    cout<<"num_sampling_points: "<<num_sampling_points<<endl;
+    cout<<"num_time_steps: "<<num_time_steps<<endl;
 #endif
 
     insttemp             .resize(num_sampling_points);
@@ -188,7 +190,6 @@ void mdsystem::run_simulation()
     ftype Cv_sum;
     // For shifting the potential energy
     ftype Ep_shift;
-
     // Start simulating
     for (loop_num = 0; loop_num < num_time_steps; loop_num++) {
         // Check if the simulation has been requested to abort
@@ -207,15 +208,17 @@ void mdsystem::run_simulation()
 
         // Evolve the system in time
         leapfrog(); // This function includes the force calculation
-
         // Update Verlet list if necessary
         update_verlet_list_if_necessary();
 
         // Process events
         print_output_and_process_events();
     }
+
     // Sample unfiltered properties one last time
     sample_unfiltered_properties();
+    //update instEp one last time
+    force_calculation();
     // Now the filtered properties can be calculated
     calculate_filtered_properties();
     output << "Simulation completed." << endl;
@@ -807,10 +810,10 @@ void mdsystem::calculate_mean_square_displacement() {
     if (!equilibrium_reached) {
         // Equilibrium has not previously been reached; don't calculate this property.
         msd[current_sample_index] = 0;
-
         // Check if equilibrium has been reached
-        if (current_sample_index != 0) {
-            ftype variation = (instEp[current_sample_index] - instEp[current_sample_index - 1]) / instEp[current_sample_index];
+        if (current_sample_index > 2) {
+
+            ftype variation = (instEp[current_sample_index - 1] - instEp[current_sample_index - 2]) / instEp[current_sample_index - 1];
             variation = variation >= 0 ? variation : -variation;
             if (variation < dEp_tolerance) { //TODO: Is this a sufficient check? Probably not
                 loop_num_when_equilibrium_reached = loop_num;
