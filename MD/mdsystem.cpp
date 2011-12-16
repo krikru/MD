@@ -134,8 +134,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     distance_force_sum   .resize(num_sampling_points);
 
     if (lattice_type == LT_FCC) {
-        box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
-        num_particles = 4*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+        box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4.0 ), ftype( 1.0 / 3.0 )));
+        num_particles = ftype(4.0)*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
     else {
         cerr << "Lattice type unknown" << endl;
@@ -418,15 +418,15 @@ void mdsystem::init_particles() {
                     (particles[help_index + 0]).pos[2] = z*lattice_constant;
 
                     (particles[help_index + 1]).pos[0] = x*lattice_constant;
-                    (particles[help_index + 1]).pos[1] = (y + 0.5f)*lattice_constant;
-                    (particles[help_index + 1]).pos[2] = (z + 0.5f)*lattice_constant;
+                    (particles[help_index + 1]).pos[1] = (y + ftype(0.5))*lattice_constant;
+                    (particles[help_index + 1]).pos[2] = (z + ftype(0.5))*lattice_constant;
 
-                    (particles[help_index + 2]).pos[0] = (x + 0.5f)*lattice_constant;
+                    (particles[help_index + 2]).pos[0] = (x + ftype(0.5))*lattice_constant;
                     (particles[help_index + 2]).pos[1] = y*lattice_constant;
-                    (particles[help_index + 2]).pos[2] = (z + 0.5f)*lattice_constant;
+                    (particles[help_index + 2]).pos[2] = (z + ftype(0.5))*lattice_constant;
 
-                    (particles[help_index + 3]).pos[0] = (x + 0.5f)*lattice_constant;
-                    (particles[help_index + 3]).pos[1] = (y + 0.5f)*lattice_constant;
+                    (particles[help_index + 3]).pos[0] = (x + ftype(0.5))*lattice_constant;
+                    (particles[help_index + 3]).pos[1] = (y + ftype(0.5))*lattice_constant;
                     (particles[help_index + 3]).pos[2] = z*lattice_constant;
                 } // X
             } // Y
@@ -452,7 +452,7 @@ void mdsystem::init_particles() {
     ftype vel_variance = sum_sqr_vel/num_particles - average_vel.sqr_length();
     ftype scale_factor;
 
-        scale_factor = sqrt(3.0f  * init_temp  / (vel_variance)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
+        scale_factor = sqrt(ftype(3.0)  * init_temp  / (vel_variance)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
 
     for (uint i = 0; i < num_particles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)* scale_factor;
@@ -466,7 +466,7 @@ void mdsystem::calculate_potential_energy_cutoff()
     ftype q;
     q = 1/sqr_inner_cutoff;
     q = q * q * q;
-    E_cutoff = 4 * q * (q - 1);
+    E_cutoff = ftype(4.0) * q * (q - ftype(1.0));
 }
 
 void mdsystem::update_verlet_list_if_necessary()
@@ -790,7 +790,7 @@ void mdsystem::calculate_specific_heat() {
 
     Cv.resize(T2.size());
     for (uint i = 0; i < Cv.size(); i++) {
-        Cv[i] = 1/(ftype(2)/3 + num_particles*(1 - T2[i]/(temperature[i]*temperature[i])));
+        Cv[i] = ftype(1.0)/(ftype(2.0/3.0) + num_particles*(ftype(1.0) - T2[i]/(temperature[i]*temperature[i])));
     }
 }
 
