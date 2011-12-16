@@ -157,8 +157,9 @@ private:
     ofstream* open_ofstream_file(ofstream &o, const char* path) const;
 
     // Arithmetic operations
-    void modulus_position      (vec3 &pos           ) const;
-    vec3 modulus_position_minus(vec3 pos1, vec3 pos2) const;
+    void modulus_position                      (vec3 &pos           ) const;
+    void origin_centered_modulus_position      (vec3 &pos           ) const;
+    vec3 origin_centered_modulus_position_minus(vec3 pos1, vec3 pos2) const;
 
     // Communication with the application
     void print_output_and_process_events();
