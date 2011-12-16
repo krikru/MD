@@ -134,9 +134,13 @@ void mdmainwin::on_start_simulation_pb_clicked()
 
     // Init simulation specific constants
     uint nrparticles_in = 10000; // The number of particles
-    uint ensemblesize_in = 100;  // Number of values used to calculate averages
-    uint sample_period_in = 1;       // Number of timesteps between measurements of properties
-    uint nrtimesteps_in = 100000; // Desired (or minimum) total number of timesteps
+#if  FILTER == KRISTOFERS_FILTER
+    uint sample_period_in = 5; // Number of timesteps between each sampling of properties
+    uint ensemble_size_in = 0; // Is never used
+#elif  FILTER == EMILS_FILTER
+    uint sample_period_in = 1;
+    uint ensemble_size_in = 100; // Number of values used to calculate averages
+#endif
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
     ftype impulse_response_decay_time_in = ftype(1) * P_FS;       //the exponent in the impulse response function used to filter the measured values
@@ -160,7 +164,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     callback<void (*)(void*, string)> output_callback_in(static_write_to_text_browser, this);
     simulation.set_event_callback (event_callback_in );
     simulation.set_output_callback(output_callback_in);
-    simulation.init(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, ensemblesize_in, sample_period_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, impulse_response_decay_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
+    simulation.init(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, ensemble_size_in, sample_period_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, impulse_response_decay_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
     ui->statusbar->showMessage("Simulation finished.");
 
