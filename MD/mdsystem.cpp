@@ -73,6 +73,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     thermostat_time  = thermostat_time_in;
     impulse_response_decay_time = impulse_response_decay_time_in;
 
+    // Convert in parameters to reduced units before using them
     /*
      * Reduced units
      *
