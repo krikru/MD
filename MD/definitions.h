@@ -17,6 +17,9 @@
 // COMPILE TIME OPTIONS
 ////////////////////////////////////////////////////////////////
 
+/***************
+ * Thermostats *
+ ***************/
 // Enumeration of thermostats
 #define  NO_THERMOSTAT           0
 #define  BERENDSEN_THERMOSTAT    1
@@ -28,8 +31,29 @@
 //#define  THERMOSTAT              CHING_CHIS_THERMOSTAT
 #define  THERMOSTAT              LASSES_THERMOSTAT
 
-#define  FILTER                  0 //Kristofers filter
-//#define  FILTER                  1 //average
+/***********
+ * Filters *
+ ***********/
+// Enumeration of filters
+#define  NO_FILTER                           0
+#define  TWO_SIDED_EXPONENTIAL_DECAY_FILTER  1
+#define  ENSEMBLE_AVERAGE_FILTER             2
+
+#define  KRISTOFERS_FILTER  TWO_SIDED_EXPONENTIAL_DECAY_FILTER
+#define  EMILS_FILTER       ENSEMBLE_AVERAGE_FILTER
+
+//#define  FILTER  KRISTOFERS_FILTER
+#define  FILTER  EMILS_FILTER
+
+/*********
+ * Check *
+ *********/
+#if !THERMOSTAT
+#error No thermostat chosen
+#endif
+#if !FILTER
+#error No filter chosen
+#endif
 
 ////////////////////////////////////////////////////////////////
 // MISCELANEOUS DEFINITIONS
