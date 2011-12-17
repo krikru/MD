@@ -120,6 +120,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     num_sampling_points = (nrtimesteps_in - 1) / sampling_period + 2;
     num_sampling_points = ((num_sampling_points - 1) / ensemble_size + 1) * ensemble_size;
     num_time_steps = (num_sampling_points - 1)*sampling_period;
+    cout<<"num_sampling_points: "<<num_sampling_points<<endl;
+    cout<<"num_time_steps: "<<num_time_steps<<endl;
 #endif
 
     insttemp             .resize(num_sampling_points);
@@ -132,8 +134,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     distance_force_sum   .resize(num_sampling_points);
 
     if (lattice_type == LT_FCC) {
-        box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4 ), ftype( 1.0 / 3.0 )));
-        num_particles = 4*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+        box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4.0 ), ftype( 1.0 / 3.0 )));
+        num_particles = ftype(4.0)*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
     else {
         cerr << "Lattice type unknown" << endl;
@@ -189,7 +191,6 @@ void mdsystem::run_simulation()
     ftype Cv_sum;
     // For shifting the potential energy
     ftype Ep_shift;
-
     // Start simulating
     enter_loop_number(0);
     calculate_forces();
@@ -208,15 +209,16 @@ void mdsystem::run_simulation()
 
         // Evolve the system in time
         leapfrog(); // This function includes the force calculation
-
         // Update Verlet list if necessary
         update_verlet_list_if_necessary();
 
         // Process events
         print_output_and_process_events();
     }
+
     // Sample unfiltered properties one last time
     measure_unfiltered_properties();
+
     // Now the filtered properties can be calculated
     calculate_filtered_properties();
     output << "Simulation completed." << endl;
@@ -425,15 +427,15 @@ void mdsystem::init_particles() {
                     (particles[help_index + 0]).pos[2] = z*lattice_constant;
 
                     (particles[help_index + 1]).pos[0] = x*lattice_constant;
-                    (particles[help_index + 1]).pos[1] = (y + 0.5f)*lattice_constant;
-                    (particles[help_index + 1]).pos[2] = (z + 0.5f)*lattice_constant;
+                    (particles[help_index + 1]).pos[1] = (y + ftype(0.5))*lattice_constant;
+                    (particles[help_index + 1]).pos[2] = (z + ftype(0.5))*lattice_constant;
 
-                    (particles[help_index + 2]).pos[0] = (x + 0.5f)*lattice_constant;
+                    (particles[help_index + 2]).pos[0] = (x + ftype(0.5))*lattice_constant;
                     (particles[help_index + 2]).pos[1] = y*lattice_constant;
-                    (particles[help_index + 2]).pos[2] = (z + 0.5f)*lattice_constant;
+                    (particles[help_index + 2]).pos[2] = (z + ftype(0.5))*lattice_constant;
 
-                    (particles[help_index + 3]).pos[0] = (x + 0.5f)*lattice_constant;
-                    (particles[help_index + 3]).pos[1] = (y + 0.5f)*lattice_constant;
+                    (particles[help_index + 3]).pos[0] = (x + ftype(0.5))*lattice_constant;
+                    (particles[help_index + 3]).pos[1] = (y + ftype(0.5))*lattice_constant;
                     (particles[help_index + 3]).pos[2] = z*lattice_constant;
                 } // X
             } // Y
@@ -457,8 +459,7 @@ void mdsystem::init_particles() {
     // Compensate for incorrect start temperature and total velocities and finalize the initialization values
     vec3 average_vel = sum_vel/ftype(num_particles);
     ftype vel_variance = sum_sqr_vel/num_particles - average_vel.sqr_length();
-    ftype scale_factor = sqrt(3.0f  * init_temp  / (vel_variance)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
-
+    ftype scale_factor = sqrt(ftype(3.0)  * init_temp  / (vel_variance)); // Termal energy = 1.5 * P_KB * init_temp = 0.5 m v*v
     for (uint i = 0; i < num_particles; i++) {
         particles[i].vel = (particles[i].vel - average_vel)* scale_factor;
     }
@@ -471,7 +472,7 @@ void mdsystem::calculate_potential_energy_cutoff()
     ftype q;
     q = 1/sqr_inner_cutoff;
     q = q * q * q;
-    E_cutoff = 4 * q * (q - 1);
+    E_cutoff = ftype(4.0) * q * (q - ftype(1.0));
 }
 
 void mdsystem::update_verlet_list_if_necessary()
@@ -815,7 +816,7 @@ void mdsystem::calculate_specific_heat() {
 
     Cv.resize(T2.size());
     for (uint i = 0; i < Cv.size(); i++) {
-        Cv[i] = 1/(ftype(2)/3 + num_particles*(1 - T2[i]/(temperature[i]*temperature[i])));
+        Cv[i] = ftype(1.0)/(ftype(2.0/3.0) + num_particles*(ftype(1.0) - T2[i]/(temperature[i]*temperature[i])));
     }
 }
 
@@ -835,9 +836,8 @@ void mdsystem::calculate_mean_square_displacement() {
     if (!equilibrium_reached) {
         // Equilibrium has not previously been reached; don't calculate this property.
         msd[current_sample_index] = 0;
-
         // Check if equilibrium has been reached
-        if (current_sample_index != 0) {
+        if (current_sample_index >= 1) {
             ftype variation = (instEp[current_sample_index] - instEp[current_sample_index - 1]) / instEp[current_sample_index];
             variation = variation >= 0 ? variation : -variation;
             if (variation < dEp_tolerance) { //TODO: Is this a sufficient check? Probably not
