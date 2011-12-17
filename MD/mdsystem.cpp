@@ -97,8 +97,8 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     inner_cutoff     /= sigma_in_m;
     outer_cutoff     /= sigma_in_m;
     // Temperatures
-    init_temp        *= P_KB/ epsilon_in_j;
-    desired_temp     *= P_KB/ epsilon_in_j;
+    init_temp        *= P_KB / epsilon_in_j;
+    desired_temp     *= P_KB / epsilon_in_j;
     // Times
     dt               /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     thermostat_time  /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
@@ -175,14 +175,15 @@ void mdsystem::run_simulation()
      * goto's.
      */
     // Open the output files. They work like cin
-    ofstream out_etot_data ;
-    ofstream out_ep_data ;
-    ofstream out_ek_data;
-    ofstream out_cv_data;
-    ofstream out_temp_data ;
-    ofstream out_therm_data;
-    ofstream out_msd_data  ;
-    ofstream out_cohe_data ;
+    ofstream out_etot_data  ;
+    ofstream out_ep_data    ;
+    ofstream out_ek_data    ;
+    ofstream out_cv_data    ;
+    ofstream out_temp_data  ;
+    ofstream out_therm_data ;
+    ofstream out_msd_data   ;
+    ofstream out_diff_c_data;
+    ofstream out_cohe_data  ;
     ofstream out_pressure_data;
     // For calculating the average specific heat
     ftype Cv_sum;
@@ -227,15 +228,16 @@ void mdsystem::run_simulation()
      */
     Ep_shift = -instEp[0];
     output << "Opening output files..." << endl;
-    if (!(open_ofstream_file(out_etot_data , "TotalEnergy.dat") &&
-          open_ofstream_file(out_ep_data   , "Potential.dat"  ) &&
-          open_ofstream_file(out_ek_data   , "Kinetic.dat"    ) &&
-          open_ofstream_file(out_cv_data   , "Cv.dat"         ) &&
-          open_ofstream_file(out_temp_data , "Temperature.dat") &&
-          open_ofstream_file(out_therm_data, "Thermostat.dat" ) &&
-          open_ofstream_file(out_msd_data  , "MSD.dat"        ) &&
-          open_ofstream_file(out_pressure_data,"Pressure.dat"     ) &&
-          open_ofstream_file(out_cohe_data , "cohesive.dat"       )
+    if (!(open_ofstream_file(out_etot_data    , "TotalEnergy.dat") &&
+          open_ofstream_file(out_ep_data      , "Potential.dat"  ) &&
+          open_ofstream_file(out_ek_data      , "Kinetic.dat"    ) &&
+          open_ofstream_file(out_cv_data      , "Cv.dat"         ) &&
+          open_ofstream_file(out_temp_data    , "Temperature.dat") &&
+          open_ofstream_file(out_therm_data   , "Thermostat.dat" ) &&
+          open_ofstream_file(out_msd_data     , "MSD.dat"        ) &&
+          open_ofstream_file(out_diff_c_data  , "diff_coeff.dat" ) &&
+          open_ofstream_file(out_pressure_data,"Pressure.dat"    ) &&
+          open_ofstream_file(out_cohe_data    , "cohesive.dat"   )
           )) {
         cerr << "Error: Output files could not be opened" << endl;
     }
@@ -298,6 +300,14 @@ void mdsystem::run_simulation()
                 break;
             }
             out_msd_data   << setprecision(9) << msd[i]*sigma_in_m*sigma_in_m                    << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < diffusion_coefficient.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_diff_c_data   << setprecision(9) << diffusion_coefficient[i]*sigma_in_m*sigma_in_m                    << endl;
             // Process events
             print_output_and_process_events();
         }
@@ -741,6 +751,15 @@ void mdsystem::calculate_forces()
     if (sampling_in_this_loop && Ep_on) {
         instEc[current_sample_index] = -instEp[current_sample_index]/num_particles;
     }
+
+#if THERMOSTAT == LASSES_THERMOSTAT
+    // Add acceleration caused by the thermostat
+    if (thermostat_on) {
+        for (uint i = 0; i < num_particles; i++) {
+            particles[i].acc -= thermostat_value * particles[i].vel;
+        }
+    }
+#endif
 }
 
 void mdsystem::measure_unfiltered_properties() {
@@ -763,8 +782,12 @@ void mdsystem::measure_unfiltered_properties() {
 
     // Calculate thermostat value
     //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
+#if THERMOSTAT == LASSES_THERMOSTAT
+    thermostat_value = thermostat_on ? (1 - desired_temp/insttemp[current_sample_index]) / (2*thermostat_time) : 0;
+#elif THERMOSTAT == CHING_CHIS_THERMOSTAT
     /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
     thermostat_value = thermostat_on ? sqrt(1 +  dt / thermostat_time * (desired_temp / insttemp[current_sample_index] - 1)) : 1;
+#endif
     thermostat_values[current_sample_index] = thermostat_value;
 
     if (msd_on   ) calculate_mean_square_displacement();
