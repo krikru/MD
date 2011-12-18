@@ -331,7 +331,7 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_diff_c_data   << setprecision(9) << diffusion_coefficient[i]*sigma_in_m*sigma_in_m                    << endl;
+            out_diff_c_data   << setprecision(9) << diffusion_coefficient[i]*sigma_in_m*sigma_in_m/sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) << endl;
             // Process events
             print_output_and_process_events();
         }

@@ -78,7 +78,6 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype lattice_constant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
     cout<<"Xenon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.10) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K]//MSD linear at approx. 800K, why??
     ftype desired_temp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
@@ -95,7 +94,6 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
 
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desired_temp_in = ftype(1500); // [K]
 #elif 0
@@ -111,7 +109,6 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype lattice_constant_in = ftype(3.610) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
     cout<<"Copper"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K]
     ftype desired_temp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
@@ -127,7 +124,6 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype lattice_constant_in = ftype(5.260 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
     cout<<"Argon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s] //It seems like it needs to be 0.1 if we want to simulate at 580K (to calculate the specific heat at 20 Celsius) otherwise we get bad results
     ftype temperature_in = ftype(400.0); // [K]
     ftype desired_temp_in = ftype(100.0); //TODO: Why times 0.9?
 #endif
@@ -142,8 +138,9 @@ void mdmainwin::on_start_simulation_pb_clicked()
     uint ensemble_size_in = 10; // Number of values used to calculate averages
     ftype impulse_response_decay_time_in = 0; // Is never used
 #endif
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
     uint num_particles_in  = 500; // The number of particles
-    uint num_time_steps_in = 500; // Desired (or minimum) total number of timesteps
+    uint num_time_steps_in = 50000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
