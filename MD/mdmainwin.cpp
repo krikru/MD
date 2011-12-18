@@ -75,12 +75,11 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype sigma_in = ftype(3.98) * P_ANGSTROM;
     ftype epsilon_in = ftype(320e-16) * P_ERG; //1 erg = 10^-7 J
     ftype mass_in = ftype(131.293) * P_U;
-    ftype latticeconstant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
+    ftype lattice_constant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
     cout<<"Xenon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(200.0); // [K]//MSD linear at approx. 800K, why??
-    ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
+    ftype desired_temp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
     //Cohesive energy: 2.95 eV/atom
@@ -91,13 +90,12 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype sigma_in = ftype(2.65) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.34) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(107.8682) * P_U;
-    ftype latticeconstant_in = ftype(4.090 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
+    ftype lattice_constant_in = ftype(4.090 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
     cout<<"Silver"<<endl;
 
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
-    ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
+    ftype desired_temp_in = ftype(1500); // [K]
 #elif 1
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
@@ -108,12 +106,11 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype sigma_in = ftype(2.338) * P_ANGSTROM;
     ftype epsilon_in = ftype(0.4096) * P_EV; //1 erg = 10^-7 J
     ftype mass_in = ftype(63.546) * P_U;
-    ftype latticeconstant_in = ftype(3.610) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
+    ftype lattice_constant_in = ftype(3.610) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
     cout<<"Copper"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K]
-    ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
+    ftype desired_temp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Argon (Melting point 83.8 K)
     //Cohesive energy: 0.080 eV/atom
@@ -124,35 +121,36 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype sigma_in = ftype(3.40) * P_ANGSTROM;
     ftype epsilon_in = ftype(167e-16) * P_ERG; //1 erg = 10^-7 J
     ftype mass_in = ftype(39.948) * P_U;
-    ftype latticeconstant_in = ftype(5.260 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
+    ftype lattice_constant_in = ftype(5.260 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
     cout<<"Argon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(1.0) * P_FS; // [s] //It seems like it needs to be 0.1 if we want to simulate at 580K (to calculate the specific heat at 20 Celsius) otherwise we get bad results
     ftype temperature_in = ftype(120.0); // [K]
-    ftype desiredtemp_in = ftype(100.0); //TODO: Why times 0.9?
+    ftype desired_temp_in = ftype(100.0); //TODO: Why times 0.9?
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 1000; // The number of particles
 #if  FILTER == KRISTOFERS_FILTER
     uint sample_period_in = 5; // Number of timesteps between each sampling of properties
     uint ensemble_size_in = 0; // Is never used
+    ftype impulse_response_decay_time_in = ftype(100) * P_FS; //the exponent in the impulse response function used to filter the measured values
 #elif  FILTER == EMILS_FILTER
     uint sample_period_in = 1;
-    uint ensemble_size_in = 1000; // Number of values used to calculate averages
+    uint ensemble_size_in = 10; // Number of values used to calculate averages
+    ftype impulse_response_decay_time_in = 0; // Is never used
 #endif
-    uint nrtimesteps_in = 50000; // Desired (or minimum) total number of timesteps
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    uint num_particles_in  = 500; // The number of particles
+    uint num_time_steps_in = 50000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
-    ftype impulse_response_decay_time_in = ftype(1) * P_FS;       //the exponent in the impulse response function used to filter the measured values
 
     // Control
-    ftype nrthermostat_time_in = 3.0;
-    ftype thermostat_time_in = nrthermostat_time_in * dt_in;
-    ftype deltaEp_in = ftype(0.01);
+    ftype num_thermostat_time_in = 10.0;
+    ftype thermostat_time_in = num_thermostat_time_in * dt_in;
+    ftype dEp_tolerance_in = ftype(1.0);
 
     // Init flags
-    bool thermostat_on_in = !true;           //Works best with nrinst_in = 1
+    bool thermostat_on_in = !true; //Works best with nrinst_in = 1
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
@@ -165,7 +163,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     callback<void (*)(void*, string)> output_callback_in(static_write_to_text_browser, this);
     simulation.set_event_callback (event_callback_in );
     simulation.set_output_callback(output_callback_in);
-    simulation.init(nrparticles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, ensemble_size_in, sample_period_in, temperature_in, nrtimesteps_in, latticeconstant_in, lattice_type_in, desiredtemp_in, thermostat_time_in, deltaEp_in, impulse_response_decay_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
+    simulation.init(num_particles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, ensemble_size_in, sample_period_in, temperature_in, num_time_steps_in, lattice_constant_in, lattice_type_in, desired_temp_in, thermostat_time_in, dEp_tolerance_in, impulse_response_decay_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
     ui->statusbar->showMessage("Simulation finished.");
 

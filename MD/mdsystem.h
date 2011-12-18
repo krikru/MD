@@ -87,7 +87,7 @@ private:
     uint          sampling_period;      // Number of timesteps between each measurement
     uint          num_sampling_points;  // The number of samples taken for each property
     uint          current_sample_index; // The index of the current sample that has been/is being taken
-    bool          sampling_in_this_loop;  // If the properties are supposed to be measured in the current loop or not
+    bool          sampling_in_this_loop;// If the properties are supposed to be measured in the current loop or not
     // Unfiltered measurements
     vector<ftype> instEk;               // Instat kinetic energy
     vector<ftype> instEp;               // Instat potential energy
@@ -113,7 +113,7 @@ private:
     // Lennard Jones potential
     ftype dEp_tolerance;      //equilibrium is reached when abs((Ep(current)-Ep(previous))/Ep(current)) is below this value
     bool  equilibrium_reached;
-    uint  loop_num_when_equilibrium_reached;
+    uint  sample_index_when_equilibrium_reached;
     ftype outer_cutoff;
     ftype inner_cutoff;
     ftype E_cutoff;
@@ -143,10 +143,11 @@ private:
     inline void update_single_non_modulated_relative_particle_position(uint i);
     // Simulation
     void leapfrog();
-    void force_calculation();
+    void calculate_forces();
+    void enter_loop_number(uint loop_to_enter);
+    void enter_next_loop();
     // Measurements
-    bool sampling_in_loop(uint loop_number) const;
-    void sample_unfiltered_properties();
+    void measure_unfiltered_properties();
     void calculate_filtered_properties();
     void calculate_specific_heat();
     void calculate_pressure();
