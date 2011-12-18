@@ -97,17 +97,18 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
      *
      * Time unit: sigma * (particle mass / epsilon)^.5
      */
-    // Lengths
+    // Lengths /= sigma_in_m;
     lattice_constant /= sigma_in_m;
     inner_cutoff     /= sigma_in_m;
     outer_cutoff     /= sigma_in_m;
-    // Temperatures
+    // Temperatures *= P_KB / epsilon_in_j;
     init_temp        *= P_KB / epsilon_in_j;
     desired_temp     *= P_KB / epsilon_in_j;
-    // Times
+    // Times /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     dt               /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     thermostat_time  /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     impulse_response_decay_time /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
+    // Pressures *= sigma_in_m * sigma_in_m * sigma_in_m / epsilon_in_j;
 
     sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
@@ -238,6 +239,13 @@ void mdsystem::run_simulation()
      * This function should *just* run the simulation since that is what it
      * says it does.
      */
+
+    /*
+    // Lengths * sigma_in_m;
+    // Temperatures * epsilon_in_j/P_KB;
+    // Times * sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
+    // Pressures * epsilon_in_j / (sigma_in_m * sigma_in_m * sigma_in_m);
+    */
     Ep_shift = -instEp[0];
     output << "Opening output files..." << endl;
     if (!(open_ofstream_file(out_filter_test_data1, "FilterTest1.dat") &&
@@ -276,6 +284,7 @@ void mdsystem::run_simulation()
         filter(dirac_impulse2, filtered_dirac_impulse2, impulse_response_decay_time);
         filter(line          , filtered_line          , impulse_response_decay_time);
 
+        //Tests
         for (uint i = 1; i < filtered_dirac_impulse1.size(); i++) {
             if (abort_activities_requested) {
                 break;
@@ -300,11 +309,13 @@ void mdsystem::run_simulation()
             // Process events
             print_output_and_process_events();
         }
-        for (uint i = 1; i < temperature.size(); i++) {
+        // Lengths * sigma_in_m/P_ANGSTROM [Angstrom]
+        // Energies * epsilon_in_j/P_EV [eV]
+        for (uint i = 1; i < Ek.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
-            out_temp_data  << setprecision(9) << temperature[i] *epsilon_in_j/P_KB          << endl;
+            out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i] + Ep_shift))*epsilon_in_j/P_EV << endl;
             // Process events
             print_output_and_process_events();
         }
@@ -312,15 +323,7 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i] + Ep_shift))*epsilon_in_j/P_EV          << endl;
-            // Process events
-            print_output_and_process_events();
-        }
-        for (uint i = 1; i < Ek.size(); i++) {
-            if (abort_activities_requested) {
-                break;
-            }
-            out_ek_data    << setprecision(9) << Ek[i]*epsilon_in_j/P_EV                    << endl;
+            out_ek_data    << setprecision(9) << Ek[i]*epsilon_in_j/P_EV << endl;
             // Process events
             print_output_and_process_events();
         }
@@ -328,7 +331,7 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_ep_data    << setprecision(9) << (Ep[i] + Ep_shift)*epsilon_in_j/P_EV                    << endl;
+            out_ep_data    << setprecision(9) << (Ep[i] + Ep_shift)*epsilon_in_j/P_EV << endl;
             // Process events
             print_output_and_process_events();
         }
@@ -336,7 +339,45 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_cohe_data  << setprecision(9) << (cohesive_energy[i])/P_EV*epsilon_in_j     << endl;
+            out_cohe_data  << setprecision(9) << cohesive_energy[i]*epsilon_in_j/P_EV << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        // Masses * particle_mass_in_kg [kg]
+        // Times * sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) [s]
+        // Temperatures * epsilon_in_j/P_KB [K]
+        for (uint i = 1; i < temperature.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_temp_data  << setprecision(9) << temperature[i] *epsilon_in_j/P_KB << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        // Pressures * epsilon_in_j / (sigma_in_m * sigma_in_m * sigma_in_m) [Pa]
+        for (uint i = 1; i < pressure.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_pressure_data<<setprecision(9)<< pressure[i]*epsilon_in_j/(sigma_in_m*sigma_in_m*sigma_in_m)<< endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        // Unitless * 1
+        for (uint i = 1; i < thermostat_values.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_therm_data << setprecision(9) << thermostat_values[i] << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        // Others
+        for (uint i = 1; i < msd.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_msd_data   << setprecision(9) << msd[i]*sigma_in_m*sigma_in_m << endl;
             // Process events
             print_output_and_process_events();
         }
@@ -344,15 +385,7 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_cv_data    << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass_in_kg)     << endl;
-            // Process events
-            print_output_and_process_events();
-        }
-        for (uint i = 1; i < msd.size(); i++) {
-            if (abort_activities_requested) {
-                break;
-            }
-            out_msd_data   << setprecision(9) << msd[i]*sigma_in_m*sigma_in_m                    << endl;
+            out_cv_data << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass_in_kg) << endl; // [J/(g*K)]
             // Process events
             print_output_and_process_events();
         }
@@ -361,22 +394,6 @@ void mdsystem::run_simulation()
                 break;
             }
             out_diff_c_data   << setprecision(9) << diffusion_coefficient[i]*sigma_in_m*sigma_in_m/sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) << endl;
-            // Process events
-            print_output_and_process_events();
-        }
-        for (uint i = 1; i < thermostat_values.size(); i++) {
-            if (abort_activities_requested) {
-                break;
-            }
-            out_therm_data << setprecision(9) << thermostat_values[i]                  << endl;
-            // Process events
-            print_output_and_process_events();
-        }
-        for (uint i = 1; i < pressure.size(); i++) {
-            if (abort_activities_requested) {
-                break;
-            }
-            out_pressure_data<<setprecision(9)<< pressure[i]*epsilon_in_j/(sigma_in_m*sigma_in_m*sigma_in_m)<< endl;
             // Process events
             print_output_and_process_events();
         }
@@ -401,14 +418,22 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        output << "Temp            [K]      = " <<setprecision(9) << temperature[i] *epsilon_in_j/P_KB       << endl;
-        output << "Ek + Ep         [eV]     = " <<setprecision(9) << (Ek[i] + (Ep[i]+Ep_shift))*epsilon_in_j/P_EV      << endl;
-        output << "Ek              [eV]     = " <<setprecision(9) << Ek[i]*epsilon_in_j/P_EV                << endl;
-        output << "Ep              [eV]     = " <<setprecision(9) << (Ep[i]+Ep_shift)*epsilon_in_j/P_EV                << endl;
-        output << "Cohesive energy [eV]     = " <<setprecision(9) << (cohesive_energy[i])/P_EV*epsilon_in_j  << endl;
-        output << "Cv              [J/(gK)] = " <<setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass_in_kg)  << endl;
-        output << "msd             [m^2]    = " <<setprecision(9) << msd[i]*sigma_in_m*sigma_in_m        << endl;
-        output << "Pressure        [Pa]     = " <<setprecision(9) << pressure[i]*epsilon_in_j/(sigma_in_m*sigma_in_m*sigma_in_m)     << endl;
+        // Lengths * sigma_in_m/P_ANGSTROM [Angstrom]
+        // Energies * epsilon_in_j/P_EV [eV]
+        output<<"Ek + Ep         [eV]     = "<<setprecision(9)<< (Ek[i] + (Ep[i]+Ep_shift))*epsilon_in_j/P_EV << endl;
+        output<<"Ek              [eV]     = "<<setprecision(9)<< Ek[i]                     *epsilon_in_j/P_EV << endl;
+        output<<"Ep              [eV]     = "<<setprecision(9)<< (Ep[i]+Ep_shift)          *epsilon_in_j/P_EV << endl;
+        output<<"Cohesive energy [eV]     = "<<setprecision(9)<< cohesive_energy[i]        *epsilon_in_j/P_EV << endl;
+        // Masses * particle_mass_in_kg [kg]
+        // Times * sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) [s]
+        // Temperatures * epsilon_in_j/P_KB [K]
+        output<<"Temp            [K]      = "<<setprecision(9)<< temperature[i] *epsilon_in_j/P_KB <<endl;
+        // Pressures * epsilon_in_j / (sigma_in_m * sigma_in_m * sigma_in_m) [Pa]
+        output<<"Pressure        [Pa]     = "<<setprecision(9)<< pressure[i]*epsilon_in_j/(sigma_in_m*sigma_in_m*sigma_in_m) << endl;
+        // Unitless * 1
+        // Others
+        output<<"Cv              [J/(gK)] = "<<setprecision(9)<< Cv[i] * P_KB/(1000 * particle_mass_in_kg) << endl;
+        output<<"msd             [m^2]    = "<<setprecision(9)<< msd[i] * sigma_in_m*sigma_in_m << endl;
 
         // Process events
         print_output_and_process_events();
@@ -933,8 +958,10 @@ void mdsystem::filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, 
     // Left side exponential decay
     a = w = 0;
     for (int i = 0; i < vector_size; i++) {
-        a = f*a + k*unfiltered[i];
-        w = f*w + k              ;
+        a *= f;
+        w *= f;
+        a += k*unfiltered[i];
+        w += k              ;
         filtered    [i] = a;
         total_weight[i] = w;
     }
