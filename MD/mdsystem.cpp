@@ -183,15 +183,16 @@ void mdsystem::run_simulation()
      * goto's.
      */
     // Open the output files. They work like cin
-    ofstream out_etot_data  ;
-    ofstream out_ep_data    ;
-    ofstream out_ek_data    ;
-    ofstream out_cv_data    ;
-    ofstream out_temp_data  ;
-    ofstream out_therm_data ;
-    ofstream out_msd_data   ;
-    ofstream out_diff_c_data;
-    ofstream out_cohe_data  ;
+    ofstream out_filter_test_data    ;
+    ofstream out_etot_data    ;
+    ofstream out_ep_data      ;
+    ofstream out_ek_data      ;
+    ofstream out_cv_data      ;
+    ofstream out_temp_data    ;
+    ofstream out_therm_data   ;
+    ofstream out_msd_data     ;
+    ofstream out_diff_c_data  ;
+    ofstream out_cohe_data    ;
     ofstream out_pressure_data;
     // For calculating the average specific heat
     ftype Cv_sum;
@@ -236,7 +237,8 @@ void mdsystem::run_simulation()
      */
     Ep_shift = -instEp[0];
     output << "Opening output files..." << endl;
-    if (!(open_ofstream_file(out_etot_data    , "TotalEnergy.dat") &&
+    if (!(open_ofstream_file(out_filter_test_data    , "FilterTest.dat") &&
+          open_ofstream_file(out_etot_data    , "TotalEnergy.dat") &&
           open_ofstream_file(out_ep_data      , "Potential.dat"  ) &&
           open_ofstream_file(out_ek_data      , "Kinetic.dat"    ) &&
           open_ofstream_file(out_cv_data      , "Cv.dat"         ) &&
@@ -255,6 +257,20 @@ void mdsystem::run_simulation()
 
         /////////Start writing files////////////////////////////////////////////////////////
 
+        vector<ftype> dirac_impulse(num_sampling_points);
+
+        dirac_impulse[10] = 1;
+        vector<ftype> filtered_dirac_impulse;
+        filter(dirac_impulse, filtered_dirac_impulse, impulse_response_decay_time);
+
+        for (uint i = 1; i < filtered_dirac_impulse.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_filter_test_data  << setprecision(9) << filtered_dirac_impulse[i] << endl;
+            // Process events
+            print_output_and_process_events();
+        }
         for (uint i = 1; i < temperature.size(); i++) {
             if (abort_activities_requested) {
                 break;
@@ -895,9 +911,9 @@ void mdsystem::filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, 
 
     // Right side exponential decay
     a = w = 0;
-    for (int i = vector_size - 1; i >= 0; i--) {
-        a = f*a + k*unfiltered[i];
-        w = f*w + k              ;
+    for (int i = vector_size - 2; i >= 0; i--) {
+        a = f*a + f*k*unfiltered[i+1];
+        w = f*w + f*k                ;
         filtered    [i] += a;
         total_weight[i] += w;
 
