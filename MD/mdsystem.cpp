@@ -58,25 +58,17 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     particle_mass_in_kg = particle_mass_in;
     sigma_in_m          = sigma_in;
     epsilon_in_j        = epsilon_in;
-
     // Copy rest of the parameters
-    // Lengths
-    lattice_constant = lattice_constant_in;
-    outer_cutoff     = outer_cutoff_in;
-    inner_cutoff     = inner_cutoff_in;
-    // Temperatures
-    init_temp        = temperature_in;
-    desired_temp     = desired_temp_in;
-    // Times
-    dt               = dt_in;           // Delta time, the time step to be taken when solving the diff.eq.
-    thermostat_time  = thermostat_time_in;
-    impulse_response_decay_time = impulse_response_decay_time_in;
-    // Unitless
     sampling_period  = sample_period_in;
 #if FILTER == EMILS_FILTER
     ensemble_size    = ensemble_size_in;
 #endif
+    init_temp        = temperature_in;
+    lattice_constant = lattice_constant_in;
     lattice_type     = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
+    dt               = dt_in;           // Delta time, the time step to be taken when solving the diff.eq.
+    outer_cutoff     = outer_cutoff_in;
+    inner_cutoff     = inner_cutoff_in;
     dEp_tolerance    = dEp_tolerance_in;
     diff_c_on        = diff_c_on_in;
     Cv_on            = Cv_on_in;
@@ -84,6 +76,9 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     msd_on           = msd_on_in;
     Ep_on            = Ep_on_in;
     Ek_on            = Ek_on_in;
+    desired_temp     = desired_temp_in;
+    thermostat_time  = thermostat_time_in;
+    impulse_response_decay_time = impulse_response_decay_time_in;
 
     //TODO: Make sure all non-unitless parameters are converted to reduced units
     // Convert in parameters to reduced units before using them
@@ -107,7 +102,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     // Times
     dt               /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     thermostat_time  /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
-    impulse_response_decay_time /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
 
     sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
@@ -183,16 +177,15 @@ void mdsystem::run_simulation()
      * goto's.
      */
     // Open the output files. They work like cin
-    ofstream out_filter_test_data    ;
-    ofstream out_etot_data    ;
-    ofstream out_ep_data      ;
-    ofstream out_ek_data      ;
-    ofstream out_cv_data      ;
-    ofstream out_temp_data    ;
-    ofstream out_therm_data   ;
-    ofstream out_msd_data     ;
-    ofstream out_diff_c_data  ;
-    ofstream out_cohe_data    ;
+    ofstream out_etot_data  ;
+    ofstream out_ep_data    ;
+    ofstream out_ek_data    ;
+    ofstream out_cv_data    ;
+    ofstream out_temp_data  ;
+    ofstream out_therm_data ;
+    ofstream out_msd_data   ;
+    ofstream out_diff_c_data;
+    ofstream out_cohe_data  ;
     ofstream out_pressure_data;
     // For calculating the average specific heat
     ftype Cv_sum;
@@ -237,8 +230,7 @@ void mdsystem::run_simulation()
      */
     Ep_shift = -instEp[0];
     output << "Opening output files..." << endl;
-    if (!(open_ofstream_file(out_filter_test_data    , "FilterTest.dat") &&
-          open_ofstream_file(out_etot_data    , "TotalEnergy.dat") &&
+    if (!(open_ofstream_file(out_etot_data    , "TotalEnergy.dat") &&
           open_ofstream_file(out_ep_data      , "Potential.dat"  ) &&
           open_ofstream_file(out_ek_data      , "Kinetic.dat"    ) &&
           open_ofstream_file(out_cv_data      , "Cv.dat"         ) &&
@@ -257,20 +249,6 @@ void mdsystem::run_simulation()
 
         /////////Start writing files////////////////////////////////////////////////////////
 
-        vector<ftype> dirac_impulse(num_sampling_points);
-
-        dirac_impulse[10] = 1;
-        vector<ftype> filtered_dirac_impulse;
-        filter(dirac_impulse, filtered_dirac_impulse, impulse_response_decay_time);
-
-        for (uint i = 1; i < filtered_dirac_impulse.size(); i++) {
-            if (abort_activities_requested) {
-                break;
-            }
-            out_filter_test_data  << setprecision(9) << filtered_dirac_impulse[i] << endl;
-            // Process events
-            print_output_and_process_events();
-        }
         for (uint i = 1; i < temperature.size(); i++) {
             if (abort_activities_requested) {
                 break;
@@ -331,7 +309,7 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_diff_c_data   << setprecision(9) << diffusion_coefficient[i]*sigma_in_m*sigma_in_m/sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) << endl;
+            out_diff_c_data   << setprecision(9) << diffusion_coefficient[i]*sigma_in_m*sigma_in_m                    << endl;
             // Process events
             print_output_and_process_events();
         }
@@ -372,7 +350,7 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        output << "Temp            [K]      = " <<setprecision(9) << temperature[i] *epsilon_in_j/P_KB       << endl;
+        output << "Temp            [K)      = " <<setprecision(9) << temperature[i] *epsilon_in_j/P_KB       << endl;
         output << "Ek + Ep         [eV]     = " <<setprecision(9) << (Ek[i] + (Ep[i]+Ep_shift))*epsilon_in_j/P_EV      << endl;
         output << "Ek              [eV]     = " <<setprecision(9) << Ek[i]*epsilon_in_j/P_EV                << endl;
         output << "Ep              [eV]     = " <<setprecision(9) << (Ep[i]+Ep_shift)*epsilon_in_j/P_EV                << endl;
@@ -386,14 +364,14 @@ void mdsystem::run_simulation()
     }
 
     Cv_sum = 0;
-    for(uint i = uint(Cv.size()/6); i < Cv.size();i++) {
+    for(uint i = 0; i < Cv.size();i++) {
         if (abort_activities_requested) {
             goto operation_finished;
         }
         Cv_sum += Cv[i]*P_KB/(1000 * particle_mass_in_kg);
     }
     output << "*******************"<<endl;
-    output << "Cv = "<<Cv_sum/ftype(5*Cv.size()/6)<<endl;
+    output << "Cv = "<<Cv_sum/Cv.size()<<endl;
     output << "a=" << lattice_constant<<endl;
     output << "boxsize=" << box_size<<endl;
     output << "dt="<< dt << endl;
@@ -911,9 +889,9 @@ void mdsystem::filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, 
 
     // Right side exponential decay
     a = w = 0;
-    for (int i = vector_size - 2; i >= 0; i--) {
-        a = f*a + f*k*unfiltered[i+1];
-        w = f*w + f*k                ;
+    for (int i = vector_size - 1; i >= 0; i--) {
+        a = f*a + k*unfiltered[i];
+        w = f*w + k              ;
         filtered    [i] += a;
         total_weight[i] += w;
 
