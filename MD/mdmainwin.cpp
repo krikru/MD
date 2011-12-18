@@ -68,7 +68,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #if 0
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     //Cohesive energy: 0.16 eV/atom
-    //Specific heat: 0.097 J/(g*K)
+    //Specific heat: 0.097 J/(g*K) at 293 K, 0.179 J/(g*K) at 100 K (http://www.springerlink.com/content/p2875753h4661128/fulltext.pdf)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -78,12 +78,12 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype lattice_constant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
     cout<<"Xenon"<<endl;
     // Simulation constants
-    ftype temperature_in = ftype(580.0); // [K]//MSD linear at approx. 800K, why??
+    ftype temperature_in = ftype(200.0); // [K]//MSD linear at approx. 800K, why??
     ftype desired_temp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
     //Cohesive energy: 2.95 eV/atom
-    //Specific heat: 0.233 J/(g*k)
+    //Specific heat: 0.233 J/(g*k) at 293 K
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -94,12 +94,12 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Silver"<<endl;
 
     // Simulation constants
-    ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in = ftype(1000.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desired_temp_in = ftype(1500); // [K]
-#elif 0
+#elif 1
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
-    //Specific heat: 0.386 J/(g*K)
+    //Specific heat: 0.386 J/(g*K) at 293 K
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -114,7 +114,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #elif 1
     //Argon (Melting point 83.8 K)
     //Cohesive energy: 0.080 eV/atom
-    //Specific heat: 0.312 J/(g*K)
+    //Specific heat: 0.312 J/(g*K) at 293 K, approx 0.55 J/(g*K) at 60 K (http://www.springerlink.com/content/k328237200233456/fulltext.pdf)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -124,7 +124,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype lattice_constant_in = ftype(5.260 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
     cout<<"Argon"<<endl;
     // Simulation constants
-    ftype temperature_in = ftype(400.0); // [K]
+    ftype temperature_in = ftype(120.0); // [K]
     ftype desired_temp_in = ftype(100.0); //TODO: Why times 0.9?
 #endif
 
@@ -135,12 +135,12 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype impulse_response_decay_time_in = ftype(2500) * P_FS; //the exponent in the impulse response function used to filter the measured values
 #elif  FILTER == EMILS_FILTER
     uint sample_period_in = 1;
-    uint ensemble_size_in = 10; // Number of values used to calculate averages
+    uint ensemble_size_in = 1; // Number of values used to calculate averages
     ftype impulse_response_decay_time_in = 0; // Is never used
 #endif
     ftype dt_in = ftype(1.0) * P_FS; // [s]
-    uint num_particles_in  = 500; // The number of particles
-    uint num_time_steps_in = 50000; // Desired (or minimum) total number of timesteps
+    uint num_particles_in  = 1000; // The number of particles
+    uint num_time_steps_in = 1000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 

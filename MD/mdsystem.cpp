@@ -415,7 +415,7 @@ void mdsystem::run_simulation()
     }
 
     Cv_sum = Cv_num = 0;
-    for(uint i = 0; i < Cv.size();i++) {
+    for(uint i = uint(Cv.size()/6); i < Cv.size();i++) {
         if (abort_activities_requested) {
             goto operation_finished;
         }
