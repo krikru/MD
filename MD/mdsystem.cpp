@@ -198,6 +198,7 @@ void mdsystem::run_simulation()
     ofstream out_pressure_data;
     // For calculating the average specific heat
     ftype Cv_sum;
+    uint  Cv_num;
     // For shifting the potential energy
     ftype Ep_shift;
     // Start simulating
@@ -413,15 +414,16 @@ void mdsystem::run_simulation()
         print_output_and_process_events();
     }
 
-    Cv_sum = 0;
+    Cv_sum = Cv_num = 0;
     for(uint i = 0; i < Cv.size();i++) {
         if (abort_activities_requested) {
             goto operation_finished;
         }
         Cv_sum += Cv[i]*P_KB/(1000 * particle_mass_in_kg);
+        Cv_num++;
     }
     output << "*******************"<<endl;
-    output << "Cv = "<<Cv_sum/Cv.size()<<endl;
+    output << "Cv = "<< Cv_sum/Cv_num <<endl;
     output << "a=" << lattice_constant<<endl;
     output << "boxsize=" << box_size<<endl;
     output << "dt="<< dt << endl;

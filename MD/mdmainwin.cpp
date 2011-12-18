@@ -132,7 +132,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #if  FILTER == KRISTOFERS_FILTER
     uint sample_period_in = 5; // Number of timesteps between each sampling of properties
     uint ensemble_size_in = 0; // Is never used
-    ftype impulse_response_decay_time_in = ftype(100) * P_FS; //the exponent in the impulse response function used to filter the measured values
+    ftype impulse_response_decay_time_in = ftype(2500) * P_FS; //the exponent in the impulse response function used to filter the measured values
 #elif  FILTER == EMILS_FILTER
     uint sample_period_in = 1;
     uint ensemble_size_in = 10; // Number of values used to calculate averages
