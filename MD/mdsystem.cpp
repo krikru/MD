@@ -58,17 +58,25 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     particle_mass_in_kg = particle_mass_in;
     sigma_in_m          = sigma_in;
     epsilon_in_j        = epsilon_in;
+
     // Copy rest of the parameters
+    // Lengths
+    lattice_constant = lattice_constant_in;
+    outer_cutoff     = outer_cutoff_in;
+    inner_cutoff     = inner_cutoff_in;
+    // Temperatures
+    init_temp        = temperature_in;
+    desired_temp     = desired_temp_in;
+    // Times
+    dt               = dt_in;           // Delta time, the time step to be taken when solving the diff.eq.
+    thermostat_time  = thermostat_time_in;
+    impulse_response_decay_time = impulse_response_decay_time_in;
+    // Unitless
     sampling_period  = sample_period_in;
 #if FILTER == EMILS_FILTER
     ensemble_size    = ensemble_size_in;
 #endif
-    init_temp        = temperature_in;
-    lattice_constant = lattice_constant_in;
     lattice_type     = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
-    dt               = dt_in;           // Delta time, the time step to be taken when solving the diff.eq.
-    outer_cutoff     = outer_cutoff_in;
-    inner_cutoff     = inner_cutoff_in;
     dEp_tolerance    = dEp_tolerance_in;
     diff_c_on        = diff_c_on_in;
     Cv_on            = Cv_on_in;
@@ -76,9 +84,6 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     msd_on           = msd_on_in;
     Ep_on            = Ep_on_in;
     Ek_on            = Ek_on_in;
-    desired_temp     = desired_temp_in;
-    thermostat_time  = thermostat_time_in;
-    impulse_response_decay_time = impulse_response_decay_time_in;
 
     //TODO: Make sure all non-unitless parameters are converted to reduced units
     // Convert in parameters to reduced units before using them
@@ -102,6 +107,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     // Times
     dt               /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     thermostat_time  /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
+    impulse_response_decay_time /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
 
     sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
     sqr_inner_cutoff = inner_cutoff*inner_cutoff; // Parameter for the Verlet list
@@ -350,7 +356,7 @@ void mdsystem::run_simulation()
             goto operation_finished;
         }
 
-        output << "Temp            [K)      = " <<setprecision(9) << temperature[i] *epsilon_in_j/P_KB       << endl;
+        output << "Temp            [K]      = " <<setprecision(9) << temperature[i] *epsilon_in_j/P_KB       << endl;
         output << "Ek + Ep         [eV]     = " <<setprecision(9) << (Ek[i] + (Ep[i]+Ep_shift))*epsilon_in_j/P_EV      << endl;
         output << "Ek              [eV]     = " <<setprecision(9) << Ek[i]*epsilon_in_j/P_EV                << endl;
         output << "Ep              [eV]     = " <<setprecision(9) << (Ep[i]+Ep_shift)*epsilon_in_j/P_EV                << endl;
