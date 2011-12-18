@@ -183,7 +183,9 @@ void mdsystem::run_simulation()
      * goto's.
      */
     // Open the output files. They work like cin
-    ofstream out_filter_test_data    ;
+    ofstream out_filter_test_data1;
+    ofstream out_filter_test_data2;
+    ofstream out_filter_test_data3;
     ofstream out_etot_data    ;
     ofstream out_ep_data      ;
     ofstream out_ek_data      ;
@@ -237,7 +239,9 @@ void mdsystem::run_simulation()
      */
     Ep_shift = -instEp[0];
     output << "Opening output files..." << endl;
-    if (!(open_ofstream_file(out_filter_test_data    , "FilterTest.dat") &&
+    if (!(open_ofstream_file(out_filter_test_data1, "FilterTest1.dat") &&
+          open_ofstream_file(out_filter_test_data2, "FilterTest2.dat") &&
+          open_ofstream_file(out_filter_test_data3, "FilterTest3.dat") &&
           open_ofstream_file(out_etot_data    , "TotalEnergy.dat") &&
           open_ofstream_file(out_ep_data      , "Potential.dat"  ) &&
           open_ofstream_file(out_ek_data      , "Kinetic.dat"    ) &&
@@ -257,17 +261,41 @@ void mdsystem::run_simulation()
 
         /////////Start writing files////////////////////////////////////////////////////////
 
-        vector<ftype> dirac_impulse(num_sampling_points);
+        vector<ftype> dirac_impulse1(num_sampling_points);
+        vector<ftype> dirac_impulse2(num_sampling_points);
+        vector<ftype> line(num_sampling_points);
 
-        dirac_impulse[10] = 1;
-        vector<ftype> filtered_dirac_impulse;
-        filter(dirac_impulse, filtered_dirac_impulse, impulse_response_decay_time);
+        dirac_impulse1[int(impulse_response_decay_time/dt/2)] = 1;
+        dirac_impulse2[num_sampling_points - 1 - int(impulse_response_decay_time/dt/4)] = 1;
+        for (int i = 0; i < int(num_sampling_points); i++) line[i] = i - int(num_sampling_points)/3;
+        vector<ftype> filtered_dirac_impulse1;
+        vector<ftype> filtered_dirac_impulse2;
+        vector<ftype> filtered_line;
+        filter(dirac_impulse1, filtered_dirac_impulse1, impulse_response_decay_time);
+        filter(dirac_impulse2, filtered_dirac_impulse2, impulse_response_decay_time);
+        filter(line          , filtered_line          , impulse_response_decay_time);
 
-        for (uint i = 1; i < filtered_dirac_impulse.size(); i++) {
+        for (uint i = 1; i < filtered_dirac_impulse1.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
-            out_filter_test_data  << setprecision(9) << filtered_dirac_impulse[i] << endl;
+            out_filter_test_data1  << setprecision(9) << filtered_dirac_impulse1[i] << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < filtered_dirac_impulse2.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_filter_test_data2  << setprecision(9) << filtered_dirac_impulse2[i] << endl;
+            // Process events
+            print_output_and_process_events();
+        }
+        for (uint i = 1; i < filtered_line.size(); i++) {
+            if (abort_activities_requested) {
+                break;
+            }
+            out_filter_test_data3  << setprecision(9) << filtered_line[i] << endl;
             // Process events
             print_output_and_process_events();
         }
@@ -911,11 +939,13 @@ void mdsystem::filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, 
 
     // Right side exponential decay
     a = w = 0;
-    for (int i = vector_size - 2; i >= 0; i--) {
-        a = f*a + f*k*unfiltered[i+1];
-        w = f*w + f*k                ;
+    for (int i = vector_size - 1; i >= 0; i--) {
+        a *= f;
+        w *= f;
         filtered    [i] += a;
         total_weight[i] += w;
+        a += k*unfiltered[i];
+        w += k              ;
 
         // Compensate for weights at the same time
         filtered[i] /= total_weight[i];
