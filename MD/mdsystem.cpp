@@ -355,14 +355,14 @@ void mdsystem::run_simulation()
     }
 
     Cv_sum = 0;
-    for(uint i = 0; i < Cv.size();i++) {
+    for(uint i = uint(Cv.size()/6); i < Cv.size();i++) {
         if (abort_activities_requested) {
             goto operation_finished;
         }
         Cv_sum += Cv[i]*P_KB/(1000 * particle_mass_in_kg);
     }
     output << "*******************"<<endl;
-    output << "Cv = "<<Cv_sum/Cv.size()<<endl;
+    output << "Cv = "<<Cv_sum/ftype(5*Cv.size()/6)<<endl;
     output << "a=" << lattice_constant<<endl;
     output << "boxsize=" << box_size<<endl;
     output << "dt="<< dt << endl;

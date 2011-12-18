@@ -65,10 +65,10 @@ void mdmainwin::on_start_simulation_pb_clicked()
     srand(random_seed);
 
     // Init element specific constants
-#if 0
+#if 1
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     //Cohesive energy: 0.16 eV/atom
-    //Specific heat: 0.097 J/(g*K)
+    //Specific heat: 0.097 J/(g*K) at 293 K, 0.179 J/(g*K) at 100 K (http://www.springerlink.com/content/p2875753h4661128/fulltext.pdf)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -78,13 +78,13 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype latticeconstant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
     cout<<"Xenon"<<endl;
     // Simulation constants
-    ftype dt_in = ftype(0.10) * P_FS; // [s]
-    ftype temperature_in = ftype(580.0); // [K]//MSD linear at approx. 800K, why??
+    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype temperature_in = ftype(200.0); // [K]//MSD linear at approx. 800K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
 #elif 1
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
     //Cohesive energy: 2.95 eV/atom
-    //Specific heat: 0.233 J/(g*k)
+    //Specific heat: 0.233 J/(g*k) at 293 K
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -98,10 +98,10 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype dt_in = ftype(1.0) * P_FS; // [s]
     ftype temperature_in = ftype(580.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desiredtemp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 0
+#elif 1
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
-    //Specific heat: 0.386 J/(g*K)
+    //Specific heat: 0.386 J/(g*K) at 293 K
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -117,7 +117,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #elif 1
     //Argon (Melting point 83.8 K)
     //Cohesive energy: 0.080 eV/atom
-    //Specific heat: 0.312 J/(g*K)
+    //Specific heat: 0.312 J/(g*K) at 293 K, approx 0.55 J/(g*K) at 60 K (http://www.springerlink.com/content/k328237200233456/fulltext.pdf)
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
@@ -128,20 +128,20 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Argon"<<endl;
     // Simulation constants
     ftype dt_in = ftype(1.0) * P_FS; // [s] //It seems like it needs to be 0.1 if we want to simulate at 580K (to calculate the specific heat at 20 Celsius) otherwise we get bad results
-    ftype temperature_in = ftype(400.0); // [K]
+    ftype temperature_in = ftype(120.0); // [K]
     ftype desiredtemp_in = ftype(100.0); //TODO: Why times 0.9?
 #endif
 
     // Init simulation specific constants
-    uint nrparticles_in = 4000; // The number of particles
+    uint nrparticles_in = 1000; // The number of particles
 #if  FILTER == KRISTOFERS_FILTER
     uint sample_period_in = 5; // Number of timesteps between each sampling of properties
     uint ensemble_size_in = 0; // Is never used
 #elif  FILTER == EMILS_FILTER
     uint sample_period_in = 1;
-    uint ensemble_size_in = 100; // Number of values used to calculate averages
+    uint ensemble_size_in = 1000; // Number of values used to calculate averages
 #endif
-    uint nrtimesteps_in = 100000; // Desired (or minimum) total number of timesteps
+    uint nrtimesteps_in = 50000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
     ftype impulse_response_decay_time_in = ftype(1) * P_FS;       //the exponent in the impulse response function used to filter the measured values
@@ -149,7 +149,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     // Control
     ftype nrthermostat_time_in = 3.0;
     ftype thermostat_time_in = nrthermostat_time_in * dt_in;
-    ftype deltaEp_in = ftype(1.0);
+    ftype deltaEp_in = ftype(0.01);
 
     // Init flags
     bool thermostat_on_in = !true;           //Works best with nrinst_in = 1
