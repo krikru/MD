@@ -181,7 +181,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 
 #if 1
     /*
-     * Make sure end temperature will be approximatelly desired_temp_in no
+     * Make sure the final temperature will be approximatelly desired_temp_in no
      * matter how long the thermostat time is.
      */
     ftype k = exp(-dt_in*num_time_steps_in/thermostat_time_in);
