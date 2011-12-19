@@ -907,12 +907,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="draw_particles_cb">
+           <widget class="QCheckBox" name="close_when_finished_cb">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="text">
-             <string>Draw particles</string>
+             <string>Close when finished</string>
             </property>
            </widget>
           </item>
@@ -951,7 +951,7 @@
      <x>0</x>
      <y>0</y>
      <width>387</width>
-     <height>18</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

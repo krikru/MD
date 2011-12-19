@@ -11,6 +11,7 @@
 // Qt includes
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QTimer>
 
 // Widgets
 #include "mdmainwin.h"
@@ -43,6 +44,9 @@ mdmainwin::mdmainwin(QWidget *parent) :
     tb->setTabStopWidth(tab_width * font_size); /* Tab width in pixels */
     tb->setUndoRedoEnabled(false); /* Don't allow undo */
     tb->setWordWrapMode(QTextOption::WrapAnywhere); /* Use all characters places on each line */
+
+    // Start simulation directly when application has finished loading
+    QTimer::singleShot(0, this, SLOT(on_start_simulation_pb_clicked()));
 }
 
 mdmainwin::~mdmainwin()
@@ -56,6 +60,17 @@ mdmainwin::~mdmainwin()
 
 void mdmainwin::on_start_simulation_pb_clicked()
 {
+    if (simulation.is_operating()) {
+        // Inform the user that an operation is currently going on
+        QMessageBox msg_box;
+        msg_box.setText("An operation is currently being executed.");
+        msg_box.setInformativeText("Please wait until the current operation has finished.");
+        msg_box.setStandardButtons(QMessageBox::Ok);
+        msg_box.setDefaultButton(QMessageBox::Ok);
+        msg_box.exec();
+        return;
+    }
+
 #if 1
     // Randomize the simulation with a random seed based on the current time
     uint random_seed = (unsigned int)time(NULL);
@@ -87,15 +102,15 @@ void mdmainwin::on_start_simulation_pb_clicked()
 
     // Element constants
     uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
-    ftype sigma_in = ftype(2.65) * P_ANGSTROM;
-    ftype epsilon_in = ftype(0.34) * P_EV; //1 erg = 10^-7 J
-    ftype mass_in = ftype(107.8682) * P_U;
-    ftype lattice_constant_in = ftype(4.090 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
+    ftype sigma_in = ftype(2.65) * P_SI_ANGSTROM;
+    ftype epsilon_in = ftype(0.34) * P_SI_EV; //1 erg = 10^-7 J
+    ftype mass_in = ftype(107.8682) * P_SI_U;
+    ftype lattice_constant_in = ftype(4.090 * P_SI_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
     cout<<"Silver"<<endl;
 
     // Simulation constants
     ftype temperature_in = ftype(1000.0); // [K] MSD linear at approx. 12500 K, why??
-    ftype desired_temp_in = ftype(1500); // [K]
+    ftype desired_temp_in = ftype(40000); // [K]
 #elif 1
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
@@ -125,32 +140,38 @@ void mdmainwin::on_start_simulation_pb_clicked()
     cout<<"Argon"<<endl;
     // Simulation constants
     ftype temperature_in = ftype(120.0); // [K]
-    ftype desired_temp_in = ftype(100.0); //TODO: Why times 0.9?
+    ftype desired_temp_in = ftype(100.0); // [K]
 #endif
 
     // Init simulation specific constants
 #if  FILTER == KRISTOFERS_FILTER
     uint sample_period_in = 5; // Number of timesteps between each sampling of properties
     uint ensemble_size_in = 0; // Is never used
-    ftype impulse_response_decay_time_in = ftype(2500) * P_FS; //the exponent in the impulse response function used to filter the measured values
+    ftype default_impulse_response_decay_time_in = ftype(100) * P_SI_FS; //the exponent in the impulse response function used to filter the measured values
+    uint default_num_times_filtering_in = 0; // No filtering.
+    //uint default_num_times_filtering_in = 1; // The number of times to apply the filter every time filtering
+    //uint default_num_times_filtering_in = 2; // Double filtering
+    bool slope_compensate_by_default_in = false;
 #elif  FILTER == EMILS_FILTER
     uint sample_period_in = 1;
     uint ensemble_size_in = 1; // Number of values used to calculate averages
-    ftype impulse_response_decay_time_in = 0; // Is never used
+    ftype default_impulse_response_decay_time_in = 0; // Is never used
+    uint default_num_times_filtering_in = 0; // Is never used
+    bool slope_compensate_by_default_in = 0; // Is never used
 #endif
-    ftype dt_in = ftype(1.0) * P_FS; // [s]
+    ftype dt_in = ftype(1.0) * P_SI_FS; // [s]
+    uint num_time_steps_in = 5000; // Desired (or minimum) total number of timesteps
     uint num_particles_in  = 1000; // The number of particles
-    uint num_time_steps_in = 1000; // Desired (or minimum) total number of timesteps
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
     // Control
-    ftype num_thermostat_time_in = 10.0;
-    ftype thermostat_time_in = num_thermostat_time_in * dt_in;
+    //ftype thermostat_time_in = ftype(500) * P_SI_FS;
+    ftype thermostat_time_in = 100 * num_time_steps_in * dt_in;
     ftype dEp_tolerance_in = ftype(1.0);
 
     // Init flags
-    bool thermostat_on_in = !true; //Works best with nrinst_in = 1
+    bool thermostat_on_in = !true;
     bool diff_c_on_in = true;
     bool Cv_on_in = true;
     bool pressure_on_in = true;
@@ -158,16 +179,28 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool Ep_on_in = true;
     bool Ek_on_in = true;
 
+#if 1
+    /*
+     * Make sure end temperature will be approximatelly desired_temp_in no
+     * matter how long the thermostat time is.
+     */
+    ftype k = exp(-dt_in*num_time_steps_in/thermostat_time_in);
+    desired_temp_in = (desired_temp_in - temperature_in * k)/(1 - k);
+#endif
+
     // Init system and run simulation
     callback<void (*)(void*        )> event_callback_in (static_process_events       , this);
     callback<void (*)(void*, string)> output_callback_in(static_write_to_text_browser, this);
     simulation.set_event_callback (event_callback_in );
     simulation.set_output_callback(output_callback_in);
-    simulation.init(num_particles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, ensemble_size_in, sample_period_in, temperature_in, num_time_steps_in, lattice_constant_in, lattice_type_in, desired_temp_in, thermostat_time_in, dEp_tolerance_in, impulse_response_decay_time_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
+    simulation.init(num_particles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, ensemble_size_in, sample_period_in, temperature_in, num_time_steps_in, lattice_constant_in, lattice_type_in, desired_temp_in, thermostat_time_in, dEp_tolerance_in, default_impulse_response_decay_time_in, default_num_times_filtering_in, slope_compensate_by_default_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
     simulation.run_simulation();
     ui->statusbar->showMessage("Simulation finished.");
 
     std::cout << "Random seed " << random_seed << std::endl;
+    if (ui->close_when_finished_cb->checkState() == Qt::Checked) {
+        this->close();
+    }
 }
 
 void mdmainwin::closeEvent(QCloseEvent *event)

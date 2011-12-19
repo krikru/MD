@@ -32,7 +32,7 @@ class mdsystem
     // Functions that affect the system
     void set_event_callback (callback<void (*)(void*        )> event_callback_in );
     void set_output_callback(callback<void (*)(void*, string)> output_callback_in);
-    void init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype mass_in, ftype dt_in, uint ensemble_size_in, uint sample_period_in, ftype temperature_in, uint nrtimesteps_in, ftype latticeconstant_in, uint lattice_type_in, ftype desiredtemp_in, ftype thermostat_time_in, ftype deltaEp_in, ftype impulse_response_decay_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
+    void init(uint num_particles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype particle_mass_in, ftype dt_in, uint ensemble_size_in, uint sample_period_in, ftype temperature_in, uint num_timesteps_in, ftype lattice_constant_in, uint lattice_type_in, ftype desired_temp_in, ftype thermostat_time_in, ftype dEp_tolerance_in, ftype default_impulse_response_decay_time_in, uint default_num_times_filtering_in, bool slope_compensate_by_default_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in);
     void run_simulation();
     void abort_activities();
     // Functins that not affect the system
@@ -73,11 +73,6 @@ private:
     ftype pos_half_box_size; // Half box side
     ftype neg_half_box_size; // Negated half box side
     // Verlet list
-    bool         cells_used;            // Flag to tell is the cell list is used or not
-    uint         box_size_in_cells;     // Given in one dimension TODO: Change name?
-    ftype        cell_size;             // Could be the same as outer_cutoff but perhaps we should think about that...
-    vector<uint> cell_linklist;         // Contains the particle index of the next particle (with decreasing order of the particles) that is in the same cell as the particle the list entry corresponds to. If these is no more particle in the cell, the entry will be 0.
-    vector<uint> cell_list;             // Contains the largest particle index each cell contains. The list is coded as if each cell would contain particle zero (although it is probably not located there!)
     vector<uint> verlet_particles_list; // List of integernumber, each index points to an element in the verlet_neighbors_list which is the first neighbor to corresponding particle.
     vector<uint> verlet_neighbors_list; // List with index numbers to neighbors.
     ftype        sqr_inner_cutoff;      // Square of the inner cut-off radius in the Verlet list
@@ -105,7 +100,9 @@ private:
     vector<ftype> Ep;                   // Potential energy
     vector<ftype> cohesive_energy;      // Negative potential energy per atom
     // Filtering
-    ftype         impulse_response_decay_time;
+    ftype         default_impulse_response_decay_time;
+    uint          default_num_times_filtering; // The number of times the filter should be applied every time filtering
+    bool          slope_compensate_by_default; // If the filter should compensate for slope in the edges of the graphs by default or not
     // Constrol
     ftype         thermostat_value;  // Varying parameter telling how the velocities should change to adjust the temperature
     ftype         desired_temp;      // The temperature the system strives to obtain
@@ -135,8 +132,7 @@ private:
     // Verlet list
     void update_verlet_list_if_necessary();
     void create_verlet_list();
-    void create_linked_cells();
-    void create_verlet_list_using_linked_cell_list();
+    void create_linked_cells(uint box_size_in_cells, ftype cell_size, vector<uint> &cell_linklist, vector<uint> &cell_list);
     void reset_non_modulated_relative_particle_positions();
     inline void reset_single_non_modulated_relative_particle_positions(uint i);
     void update_non_modulated_relative_particle_positions();
@@ -153,7 +149,7 @@ private:
     void calculate_pressure();
     void calculate_mean_square_displacement();
     void calculate_diffusion_coefficient();
-    void filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, ftype impulse_response_decay_time);
+    void filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, ftype default_impulse_response_decay_time, uint num_times, bool slope_compensate);
     // Output
     ofstream* open_ofstream_file(ofstream &o, const char* path) const;
 

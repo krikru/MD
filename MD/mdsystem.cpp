@@ -43,7 +43,7 @@ void mdsystem::set_output_callback(callback<void (*)(void*, string)> output_call
     finish_operation();
 }
 
-void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype particle_mass_in, ftype dt_in, uint ensemble_size_in, uint sample_period_in, ftype temperature_in, uint nrtimesteps_in, ftype lattice_constant_in, uint lattice_type_in, ftype desired_temp_in, ftype thermostat_time_in, ftype dEp_tolerance_in, ftype impulse_response_decay_time_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
+void mdsystem::init(uint num_particles_in, ftype sigma_in, ftype epsilon_in, ftype inner_cutoff_in, ftype outer_cutoff_in, ftype particle_mass_in, ftype dt_in, uint ensemble_size_in, uint sample_period_in, ftype temperature_in, uint num_timesteps_in, ftype lattice_constant_in, uint lattice_type_in, ftype desired_temp_in, ftype thermostat_time_in, ftype dEp_tolerance_in, ftype default_impulse_response_decay_time_in, uint default_num_times_filtering_in, bool slope_compensate_by_default_in, bool thermostat_on_in, bool diff_c_on_in, bool Cv_on_in, bool pressure_on_in, bool msd_on_in, bool Ep_on_in, bool Ek_on_in)
 {
     // The system is *always* operating when running non-const functions
     start_operation();
@@ -70,10 +70,13 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     // Times
     dt               = dt_in;           // Delta time, the time step to be taken when solving the diff.eq.
     thermostat_time  = thermostat_time_in;
-    impulse_response_decay_time = impulse_response_decay_time_in;
+    default_impulse_response_decay_time = default_impulse_response_decay_time_in;
     // Unitless
     sampling_period  = sample_period_in;
-#if FILTER == EMILS_FILTER
+#if FILTER == KRISTOFERS_FILTER
+    default_num_times_filtering = default_num_times_filtering_in;
+    slope_compensate_by_default = slope_compensate_by_default_in;
+#elif FILTER == EMILS_FILTER
     ensemble_size    = ensemble_size_in;
 #endif
     lattice_type     = lattice_type_in; // One of the supported lattice types listed in enum_lattice_types
@@ -97,17 +100,19 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
      *
      * Time unit: sigma * (particle mass / epsilon)^.5
      */
+    // Masses /= particle_mass_in_kg;
     // Lengths /= sigma_in_m;
     lattice_constant /= sigma_in_m;
     inner_cutoff     /= sigma_in_m;
     outer_cutoff     /= sigma_in_m;
+    // Energies /= epsilon_in_j;
     // Temperatures *= P_KB / epsilon_in_j;
-    init_temp        *= P_KB / epsilon_in_j;
-    desired_temp     *= P_KB / epsilon_in_j;
+    init_temp        *= P_SI_KB / epsilon_in_j;
+    desired_temp     *= P_SI_KB / epsilon_in_j;
     // Times /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     dt               /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     thermostat_time  /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
-    impulse_response_decay_time /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
+    default_impulse_response_decay_time /= sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j);
     // Pressures *= sigma_in_m * sigma_in_m * sigma_in_m / epsilon_in_j;
 
     sqr_outer_cutoff = outer_cutoff*outer_cutoff; // Parameter for the Verlet list
@@ -121,7 +126,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     // Initializations miscellaneous variables
     loop_num = 0;
 #if FILTER == KRISTOFERS_FILTER
-    num_time_steps = ((nrtimesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
+    num_time_steps = ((num_timesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
     num_sampling_points = num_time_steps/sampling_period + 1;
 #elif FILTER == EMILS_FILTER
     num_sampling_points = (nrtimesteps_in - 1) / sampling_period + 2;
@@ -141,7 +146,7 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
     distance_force_sum   .resize(num_sampling_points);
 
     if (lattice_type == LT_FCC) {
-        box_size_in_lattice_constants = int(pow(ftype(nrparticles_in / 4.0 ), ftype( 1.0 / 3.0 )));
+        box_size_in_lattice_constants = int(pow(ftype(num_particles_in / 4.0 ), ftype( 1.0 / 3.0 )));
         num_particles = ftype(4.0)*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
     else {
@@ -149,18 +154,10 @@ void mdsystem::init(uint nrparticles_in, ftype sigma_in, ftype epsilon_in, ftype
         return;
     }
 
-    // Verlet list and box cells
+    // Box
     box_size = lattice_constant*box_size_in_lattice_constants;
     pos_half_box_size = 0.5f * box_size;
     neg_half_box_size = -pos_half_box_size;
-    box_size_in_cells = int(box_size/outer_cutoff);
-    if (box_size_in_cells > 3) {
-        cells_used = true;
-        cell_size = box_size/box_size_in_cells;
-    }
-    else {
-        cells_used = false;
-    }
 
     // Thermostat
     thermostat_on = thermostat_on_in;
@@ -274,15 +271,15 @@ void mdsystem::run_simulation()
         vector<ftype> dirac_impulse2(num_sampling_points);
         vector<ftype> line(num_sampling_points);
 
-        dirac_impulse1[int(impulse_response_decay_time/dt/2)] = 1;
-        dirac_impulse2[num_sampling_points - 1 - int(impulse_response_decay_time/dt/4)] = 1;
+        dirac_impulse1[int(default_impulse_response_decay_time/dt/2)] = 1;
+        dirac_impulse2[num_sampling_points - 1 - int(default_impulse_response_decay_time/dt/4)] = 1;
         for (int i = 0; i < int(num_sampling_points); i++) line[i] = i - int(num_sampling_points)/3;
         vector<ftype> filtered_dirac_impulse1;
         vector<ftype> filtered_dirac_impulse2;
         vector<ftype> filtered_line;
-        filter(dirac_impulse1, filtered_dirac_impulse1, impulse_response_decay_time);
-        filter(dirac_impulse2, filtered_dirac_impulse2, impulse_response_decay_time);
-        filter(line          , filtered_line          , impulse_response_decay_time);
+        filter(dirac_impulse1, filtered_dirac_impulse1, default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
+        filter(dirac_impulse2, filtered_dirac_impulse2, default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
+        filter(line          , filtered_line          , default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
 
         //Tests
         for (uint i = 1; i < filtered_dirac_impulse1.size(); i++) {
@@ -291,7 +288,7 @@ void mdsystem::run_simulation()
             }
             out_filter_test_data1  << setprecision(9) << filtered_dirac_impulse1[i] << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         for (uint i = 1; i < filtered_dirac_impulse2.size(); i++) {
             if (abort_activities_requested) {
@@ -299,7 +296,7 @@ void mdsystem::run_simulation()
             }
             out_filter_test_data2  << setprecision(9) << filtered_dirac_impulse2[i] << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         for (uint i = 1; i < filtered_line.size(); i++) {
             if (abort_activities_requested) {
@@ -307,7 +304,7 @@ void mdsystem::run_simulation()
             }
             out_filter_test_data3  << setprecision(9) << filtered_line[i] << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         // Lengths * sigma_in_m/P_ANGSTROM [Angstrom]
         // Energies * epsilon_in_j/P_EV [eV]
@@ -315,33 +312,33 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i] + Ep_shift))*epsilon_in_j/P_EV << endl;
+            out_etot_data  << setprecision(9) << (Ek[i] + (Ep[i] + Ep_shift))*epsilon_in_j/P_SI_EV << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         for (uint i = 1; i < Ek.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
-            out_ek_data    << setprecision(9) << Ek[i]*epsilon_in_j/P_EV << endl;
+            out_ek_data    << setprecision(9) << Ek[i]*epsilon_in_j/P_SI_EV << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         for (uint i = 1; i < Ep.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
-            out_ep_data    << setprecision(9) << (Ep[i] + Ep_shift)*epsilon_in_j/P_EV << endl;
+            out_ep_data    << setprecision(9) << (Ep[i] + Ep_shift)*epsilon_in_j/P_SI_EV << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         for (uint i = 1; i < cohesive_energy.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
-            out_cohe_data  << setprecision(9) << cohesive_energy[i]*epsilon_in_j/P_EV << endl;
+            out_cohe_data  << setprecision(9) << cohesive_energy[i]*epsilon_in_j/P_SI_EV << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         // Masses * particle_mass_in_kg [kg]
         // Times * sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) [s]
@@ -350,9 +347,9 @@ void mdsystem::run_simulation()
             if (abort_activities_requested) {
                 break;
             }
-            out_temp_data  << setprecision(9) << temperature[i] *epsilon_in_j/P_KB << endl;
+            out_temp_data  << setprecision(9) << temperature[i] *epsilon_in_j/P_SI_KB << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         // Pressures * epsilon_in_j / (sigma_in_m * sigma_in_m * sigma_in_m) [Pa]
         for (uint i = 1; i < pressure.size(); i++) {
@@ -361,7 +358,7 @@ void mdsystem::run_simulation()
             }
             out_pressure_data<<setprecision(9)<< pressure[i]*epsilon_in_j/(sigma_in_m*sigma_in_m*sigma_in_m)<< endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         // Unitless * 1
         for (uint i = 1; i < thermostat_values.size(); i++) {
@@ -370,7 +367,7 @@ void mdsystem::run_simulation()
             }
             out_therm_data << setprecision(9) << thermostat_values[i] << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         // Others
         for (uint i = 1; i < msd.size(); i++) {
@@ -379,15 +376,15 @@ void mdsystem::run_simulation()
             }
             out_msd_data   << setprecision(9) << msd[i]*sigma_in_m*sigma_in_m << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         for (uint i = 1; i < Cv.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
-            out_cv_data << setprecision(9) << Cv[i]*P_KB/(1000 * particle_mass_in_kg) << endl; // [J/(g*K)]
+            out_cv_data << setprecision(9) << Cv[i]*P_SI_KB/(1000 * particle_mass_in_kg) << endl; // [J/(g*K)]
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
         for (uint i = 1; i < diffusion_coefficient.size(); i++) {
             if (abort_activities_requested) {
@@ -395,7 +392,7 @@ void mdsystem::run_simulation()
             }
             out_diff_c_data   << setprecision(9) << diffusion_coefficient[i]*sigma_in_m*sigma_in_m/sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) << endl;
             // Process events
-            print_output_and_process_events();
+            process_events();
         }
 
         /////////Finish writing files///////////////////////////////////////////////////////
@@ -411,6 +408,7 @@ void mdsystem::run_simulation()
         out_pressure_data.close();
     }
     output << "Writing to output files done." << endl;
+    print_output_and_process_events();
 
     for (uint i = 1; i < temperature.size();i++) // TODO: NOTE! not all vectors are of the same size! temperature is filtered and is smaller than for example pressure if emils filter is used
     {
@@ -420,19 +418,19 @@ void mdsystem::run_simulation()
 
         // Lengths * sigma_in_m/P_ANGSTROM [Angstrom]
         // Energies * epsilon_in_j/P_EV [eV]
-        output<<"Ek + Ep         [eV]     = "<<setprecision(9)<< (Ek[i] + (Ep[i]+Ep_shift))*epsilon_in_j/P_EV << endl;
-        output<<"Ek              [eV]     = "<<setprecision(9)<< Ek[i]                     *epsilon_in_j/P_EV << endl;
-        output<<"Ep              [eV]     = "<<setprecision(9)<< (Ep[i]+Ep_shift)          *epsilon_in_j/P_EV << endl;
-        output<<"Cohesive energy [eV]     = "<<setprecision(9)<< cohesive_energy[i]        *epsilon_in_j/P_EV << endl;
+        output<<"E_tot           [eV]     = "<<setprecision(9)<< (Ek[i] + (Ep[i]+Ep_shift))*epsilon_in_j/P_SI_EV << endl;
+        output<<"Ek              [eV]     = "<<setprecision(9)<< Ek[i]                     *epsilon_in_j/P_SI_EV << endl;
+        output<<"Ep              [eV]     = "<<setprecision(9)<< (Ep[i]+Ep_shift)          *epsilon_in_j/P_SI_EV << endl;
+        output<<"Cohesive energy [eV]     = "<<setprecision(9)<< cohesive_energy[i]        *epsilon_in_j/P_SI_EV << endl;
         // Masses * particle_mass_in_kg [kg]
         // Times * sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) [s]
         // Temperatures * epsilon_in_j/P_KB [K]
-        output<<"Temp            [K]      = "<<setprecision(9)<< temperature[i] *epsilon_in_j/P_KB <<endl;
+        output<<"Temp            [K]      = "<<setprecision(9)<< temperature[i] *epsilon_in_j/P_SI_KB <<endl;
         // Pressures * epsilon_in_j / (sigma_in_m * sigma_in_m * sigma_in_m) [Pa]
         output<<"Pressure        [Pa]     = "<<setprecision(9)<< pressure[i]*epsilon_in_j/(sigma_in_m*sigma_in_m*sigma_in_m) << endl;
         // Unitless * 1
         // Others
-        output<<"Cv              [J/(gK)] = "<<setprecision(9)<< Cv[i] * P_KB/(1000 * particle_mass_in_kg) << endl;
+        output<<"Cv              [J/(gK)] = "<<setprecision(9)<< Cv[i] * P_SI_KB/(1000 * particle_mass_in_kg) << endl;
         output<<"msd             [m^2]    = "<<setprecision(9)<< msd[i] * sigma_in_m*sigma_in_m << endl;
 
         // Process events
@@ -444,7 +442,7 @@ void mdsystem::run_simulation()
         if (abort_activities_requested) {
             goto operation_finished;
         }
-        Cv_sum += Cv[i]*P_KB/(1000 * particle_mass_in_kg);
+        Cv_sum += Cv[i]*P_SI_KB/(1000 * particle_mass_in_kg);
         Cv_num++;
     }
     output << "*******************"<<endl;
@@ -572,48 +570,36 @@ void mdsystem::update_verlet_list_if_necessary()
 
 void mdsystem::create_verlet_list()
 {
-    //Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
+    bool         cells_used;            // Flag to tell is the cell list is used or not
+    uint         box_size_in_cells;     // Given in one dimension TODO: Change name?
+    ftype        cell_size;             // Could be the same as outer_cutoff but perhaps we should think about that...
+    vector<uint> cell_linklist;         // Contains the particle index of the next particle (with decreasing order of the particles) that is in the same cell as the particle the list entry corresponds to. If these is no more particle in the cell, the entry will be 0.
+    vector<uint> cell_list;             // Contains the largest particle index each cell contains. The list is coded as if each cell would contain particle zero (although it is probably not located there!)
+
+    // Updating pos_when_verlet_list_created and non_modulated_relative_pos for all particles
     for (uint i = 0; i < num_particles; i++) {
         update_single_non_modulated_relative_particle_position(i);
         particles[i].pos_when_verlet_list_created = particles[i].pos;
     }
 
-    if (cells_used) {
-        create_linked_cells();
+    // Check if the cells should be used for creating the Verlet list
+    box_size_in_cells = uint(box_size/outer_cutoff);
+    if (box_size_in_cells > 3) {
+        // Cells will be used
+        cells_used = true;
+        cell_size = box_size/box_size_in_cells;
+        create_linked_cells(box_size_in_cells, cell_size, cell_linklist, cell_list);
     }
-    create_verlet_list_using_linked_cell_list();
-}
+    else {
+        cells_used = false;
+    }
 
-void mdsystem::create_linked_cells() {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
-    int cellindex = 0;
-    cell_list.resize(box_size_in_cells*box_size_in_cells*box_size_in_cells);
-    cell_linklist.resize(num_particles);
-    for (uint i = 0; i < cell_list.size() ; i++) {
-        cell_list[i] = 0; // Beware! Particle zero is a member of all cells!
-    }
-    for (uint i = 0; i < num_particles; i++) {
-        uint help_x = int(particles[i].pos[0] / cell_size);
-        uint help_y = int(particles[i].pos[1] / cell_size);
-        uint help_z = int(particles[i].pos[2] / cell_size);
-        if (help_x == box_size_in_cells || help_y == box_size_in_cells || help_z == box_size_in_cells) { // This actually occationally happens
-            help_x -= help_x == box_size_in_cells;
-            help_y -= help_y == box_size_in_cells;
-            help_z -= help_z == box_size_in_cells;
-        }
-        cellindex = help_x + box_size_in_cells * (help_y + box_size_in_cells * help_z);
-        cell_linklist[i] = cell_list[cellindex];
-        cell_list[cellindex] = i;
-    }
-}
-
-void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ctreates the verlet_lists (verlet_vectors) using the linked cell lists
+    //Creating new verlet_list
     uint cellindex = 0;
     uint neighbour_particle_index = 0;
     verlet_particles_list.resize(num_particles);
-    verlet_neighbors_list.resize(0); //The elements will be push_back'ed to the Verlet list
-
-    //Creating new verlet_list
     verlet_particles_list[0] = 0;
+    verlet_neighbors_list.resize(0); //The elements will be push_back'ed to the Verlet list
     for (uint i = 0; i < num_particles;) { // Loop through all particles
         // Init this neighbour list and point to the next list
         verlet_neighbors_list.push_back(0); // Reset number of neighbours
@@ -684,6 +670,28 @@ void mdsystem::create_verlet_list_using_linked_cell_list() { // This function ct
         if (i < num_particles) { // Point to the next particle list
             verlet_particles_list[i] = next_particle_list;
         }
+    }
+}
+
+void mdsystem::create_linked_cells(uint box_size_in_cells, ftype cell_size, vector<uint> &cell_linklist, vector<uint> &cell_list) {//Assuming origo in the corner of the bulk, and positions given according to boundaryconditions i.e. between zero and lenght of the bulk.
+    int cellindex = 0;
+    cell_list.resize(box_size_in_cells*box_size_in_cells*box_size_in_cells);
+    cell_linklist.resize(num_particles);
+    for (uint i = 0; i < cell_list.size() ; i++) {
+        cell_list[i] = 0; // Beware! Particle zero is a member of all cells!
+    }
+    for (uint i = 0; i < num_particles; i++) {
+        uint help_x = int(particles[i].pos[0] / cell_size);
+        uint help_y = int(particles[i].pos[1] / cell_size);
+        uint help_z = int(particles[i].pos[2] / cell_size);
+        if (help_x == box_size_in_cells || help_y == box_size_in_cells || help_z == box_size_in_cells) { // This actually occationally happens
+            help_x -= help_x == box_size_in_cells;
+            help_y -= help_y == box_size_in_cells;
+            help_z -= help_z == box_size_in_cells;
+        }
+        cellindex = help_x + box_size_in_cells * (help_y + box_size_in_cells * help_z);
+        cell_linklist[i] = cell_list[cellindex];
+        cell_list[cellindex] = i;
     }
 }
 
@@ -873,34 +881,61 @@ void mdsystem::measure_unfiltered_properties() {
 }
 
 void mdsystem::calculate_filtered_properties() {
-    filter(insttemp, temperature, impulse_response_decay_time);
+    filter(insttemp, temperature, default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
     if (Cv_on) calculate_specific_heat();            
     if (pressure_on) calculate_pressure();
     if (Ep_on) {
-        filter(instEp, Ep, impulse_response_decay_time);
-        filter(instEc, cohesive_energy, impulse_response_decay_time);
+        filter(instEp, Ep             , default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
+        filter(instEc, cohesive_energy, default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
     }
-    if (Ek_on) filter(instEk, Ek, impulse_response_decay_time);
+    if (Ek_on) filter(instEk, Ek, default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
 }
 
 void mdsystem::calculate_specific_heat() {
-    vector<ftype> instT2(insttemp.size());
-    vector<ftype> T2;
-    for (uint i = 0; i < insttemp.size(); i++){
-        instT2[i] = insttemp[i]*insttemp[i];
-    }
-    filter(instT2, T2, impulse_response_decay_time);
+    ftype impulse_response_decay_time = ftype(2000)*P_RU_FS;
+    ftype num_times_filtering = 1;
+    bool  slope_compensate = false;
+    vector<ftype> filtered_temp;
+#if 0
+    vector<ftype> unfiltered_temp2(insttemp.size());
+    vector<ftype> filtered_temp2;
 
-    Cv.resize(T2.size());
-    for (uint i = 0; i < Cv.size(); i++) {
-        Cv[i] = ftype(1.0)/(ftype(2.0/3.0) + num_particles*(ftype(1.0) - T2[i]/(temperature[i]*temperature[i])));
+    // Calculate local variance of insttemp
+    for (uint i = 0; i < insttemp.size(); i++){
+        unfiltered_temp2[i] = insttemp[i]*insttemp[i];
     }
+    filter(insttemp        , filtered_temp , impulse_response_decay_time, num_times_filtering);
+    filter(unfiltered_temp2, filtered_temp2, impulse_response_decay_time, num_times_filtering);
+
+    // Calculate Cv
+    Cv.resize(filtered_temp.size());
+    for (uint i = 0; i < Cv.size(); i++) {
+        Cv[i] = ftype(1.0)/(ftype(2.0/3.0) - num_particles*(filtered_temp2[i]/(filtered_temp[i]*filtered_temp[i]) - 1));
+    }
+#else
+    vector<ftype> unfiltered_var(insttemp.size());
+    vector<ftype> filtered_var;
+
+    // Calculate local variance of insttemp
+    filter(insttemp, filtered_temp, impulse_response_decay_time, num_times_filtering, slope_compensate);
+    for (uint i = 0; i < insttemp.size(); i++){
+        //unfiltered_var[i] = insttemp[i]*insttemp[i] - filtered_temp[i]*filtered_temp[i];
+        unfiltered_var[i] = (insttemp[i] - filtered_temp[i])*(insttemp[i] - filtered_temp[i]);
+    }
+    filter(unfiltered_var, filtered_var, impulse_response_decay_time, num_times_filtering, false);
+
+    // Calculate Cv
+    Cv.resize(filtered_temp.size());
+    for (uint i = 0; i < Cv.size(); i++) {
+        Cv[i] = ftype(1.0)/(ftype(2.0/3.0) - num_particles*filtered_var[i]/(filtered_temp[i]*filtered_temp[i]));
+    }
+#endif
 }
 
 void mdsystem::calculate_pressure() {
     ftype V = box_size*box_size*box_size;
     vector<ftype> filtered_distance_force_sum;
-    filter(distance_force_sum, filtered_distance_force_sum, impulse_response_decay_time);
+    filter(distance_force_sum, filtered_distance_force_sum, default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
 
     pressure.resize(filtered_distance_force_sum.size());
     for (uint i = 0; i < pressure.size(); i++) {
@@ -945,39 +980,83 @@ void mdsystem::calculate_diffusion_coefficient()
     }
 }
 
-void mdsystem::filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, ftype impulse_response_decay_time)
+void mdsystem::filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, ftype impulse_response_decay_time, uint num_times, bool slope_compensate)
 {
 #if FILTER == KRISTOFERS_FILTER
-    ftype f = exp(-dt*sampling_period/impulse_response_decay_time);
-    ftype k = 1 - f;
-    ftype a, w;
-    int vector_size = unfiltered.size();
-    vector<ftype> total_weight(vector_size);
-    filtered.resize(vector_size);
-
-    // Left side exponential decay
-    a = w = 0;
-    for (int i = 0; i < vector_size; i++) {
-        a *= f;
-        w *= f;
-        a += k*unfiltered[i];
-        w += k              ;
-        filtered    [i] = a;
-        total_weight[i] = w;
+    if (num_times < 0) {
+        throw invalid_argument("Negative number of times filtering");
     }
 
-    // Right side exponential decay
-    a = w = 0;
-    for (int i = vector_size - 1; i >= 0; i--) {
-        a *= f;
-        w *= f;
-        filtered    [i] += a;
-        total_weight[i] += w;
-        a += k*unfiltered[i];
-        w += k              ;
+    uint vector_size = unfiltered.size();
+    filtered.resize(vector_size);
 
-        // Compensate for weights at the same time
-        filtered[i] /= total_weight[i];
+    if (num_times == 0) {
+        for (uint i = 0; i < vector_size; i++) {
+            filtered[i] = unfiltered[i];
+        }
+        return;
+    }
+
+    ftype f = exp(-dt*sampling_period/impulse_response_decay_time);
+    ftype k = 1 - f;
+    ftype x, y, w;
+    vector<ftype> total_weight(vector_size);
+    const vector<ftype> *source;
+    vector<ftype> *destination;
+    vector<ftype> temp_vec(num_times > 1 ? vector_size : 0);
+    vector<ftype> filtered_index(vector_size);
+
+    source = &unfiltered;
+    for (; num_times > 0; num_times--) {
+        destination = (num_times & 1) ? &filtered : &temp_vec;
+        // Left side exponential decay
+        x = y = w = 0;
+        for (int i = 0; i < int(vector_size); i++) {
+            x *= f;
+            y *= f;
+            w *= f;
+            x += k*i           ;
+            y += k*(*source)[i];
+            w += k             ;
+            filtered_index[i] = x;
+            (*destination)[i] = y;
+            total_weight  [i] = w;
+        }
+
+        // Right side exponential decay
+        x = y = w = 0;
+        for (int i = int(vector_size) - 1; i >= 0; i--) {
+            x *= f;
+            y *= f;
+            w *= f;
+            filtered_index[i] += x;
+            (*destination)[i] += y;
+            total_weight  [i] += w;
+            x += k*i           ;
+            y += k*(*source)[i];
+            w += k             ;
+
+            // Compensate for weights at the same time
+            (*destination)[i] /= total_weight[i];
+            filtered_index[i] /= total_weight[i];
+        }
+
+        if (slope_compensate) {
+            vector<ftype> dy_dx(vector_size);
+            dy_dx[0] = (4*((*destination)[1]-(*destination)[0])+(*destination)[0]-(*destination)[2])/
+                       (4*(filtered_index[1]-filtered_index[0])+filtered_index[0]-filtered_index[2]);
+            for (int i = 1; i < int(vector_size) - 1; i++) {
+                dy_dx[i] = ((*destination)[i+1]-(*destination)[i-1])/
+                        (filtered_index[i+1]-filtered_index[i-1]);
+            }
+            dy_dx[vector_size-1] = (4*((*destination)[vector_size-1]-(*destination)[vector_size-2])-(*destination)[vector_size-1]+(*destination)[vector_size-3])/
+                                   (4*(filtered_index[vector_size-1]-filtered_index[vector_size-2])-filtered_index[vector_size-1]+filtered_index[vector_size-3]);
+            for (int i = 0; i < int(vector_size); i++) {
+                (*destination)[i] += (i-filtered_index[i])*dy_dx[i];
+            }
+        }
+
+        source = destination;
     }
 #elif FILTER == EMILS_FILTER
     filtered.resize(unfiltered.size()/ensemble_size);

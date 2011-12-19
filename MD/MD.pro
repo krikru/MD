@@ -23,11 +23,15 @@ HEADERS  += mdmainwin.h \
     base_float_vec3.h \
     particle.h \
     callback.h \
-    settings.h
+    settings.h \
+    preprocessing.h
 
 FORMS    += mdmainwin.ui
 
 RESOURCES +=
+
+
+
 
 
 
