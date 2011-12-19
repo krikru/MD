@@ -282,7 +282,7 @@ void mdsystem::run_simulation()
         filter(line          , filtered_line          , default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
 
         //Tests
-        for (uint i = 1; i < filtered_dirac_impulse1.size(); i++) {
+        for (uint i = 0; i < filtered_dirac_impulse1.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -290,7 +290,7 @@ void mdsystem::run_simulation()
             // Process events
             process_events();
         }
-        for (uint i = 1; i < filtered_dirac_impulse2.size(); i++) {
+        for (uint i = 0; i < filtered_dirac_impulse2.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -298,7 +298,7 @@ void mdsystem::run_simulation()
             // Process events
             process_events();
         }
-        for (uint i = 1; i < filtered_line.size(); i++) {
+        for (uint i = 0; i < filtered_line.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -308,7 +308,7 @@ void mdsystem::run_simulation()
         }
         // Lengths * sigma_in_m/P_ANGSTROM [Angstrom]
         // Energies * epsilon_in_j/P_EV [eV]
-        for (uint i = 1; i < Ek.size(); i++) {
+        for (uint i = 0; i < Ek.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -316,7 +316,7 @@ void mdsystem::run_simulation()
             // Process events
             process_events();
         }
-        for (uint i = 1; i < Ek.size(); i++) {
+        for (uint i = 0; i < Ek.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -324,7 +324,7 @@ void mdsystem::run_simulation()
             // Process events
             process_events();
         }
-        for (uint i = 1; i < Ep.size(); i++) {
+        for (uint i = 0; i < Ep.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -332,7 +332,7 @@ void mdsystem::run_simulation()
             // Process events
             process_events();
         }
-        for (uint i = 1; i < cohesive_energy.size(); i++) {
+        for (uint i = 0; i < cohesive_energy.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -343,7 +343,7 @@ void mdsystem::run_simulation()
         // Masses * particle_mass_in_kg [kg]
         // Times * sqrt(particle_mass_in_kg * sigma_in_m * sigma_in_m / epsilon_in_j) [s]
         // Temperatures * epsilon_in_j/P_KB [K]
-        for (uint i = 1; i < temperature.size(); i++) {
+        for (uint i = 0; i < temperature.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -352,7 +352,7 @@ void mdsystem::run_simulation()
             process_events();
         }
         // Pressures * epsilon_in_j / (sigma_in_m * sigma_in_m * sigma_in_m) [Pa]
-        for (uint i = 1; i < pressure.size(); i++) {
+        for (uint i = 0; i < pressure.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -361,7 +361,7 @@ void mdsystem::run_simulation()
             process_events();
         }
         // Unitless * 1
-        for (uint i = 1; i < thermostat_values.size(); i++) {
+        for (uint i = 0; i < thermostat_values.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -370,7 +370,7 @@ void mdsystem::run_simulation()
             process_events();
         }
         // Others
-        for (uint i = 1; i < msd.size(); i++) {
+        for (uint i = 0; i < msd.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -378,7 +378,7 @@ void mdsystem::run_simulation()
             // Process events
             process_events();
         }
-        for (uint i = 1; i < Cv.size(); i++) {
+        for (uint i = 0; i < Cv.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -386,7 +386,7 @@ void mdsystem::run_simulation()
             // Process events
             process_events();
         }
-        for (uint i = 1; i < diffusion_coefficient.size(); i++) {
+        for (uint i = 0; i < diffusion_coefficient.size(); i++) {
             if (abort_activities_requested) {
                 break;
             }
@@ -410,7 +410,7 @@ void mdsystem::run_simulation()
     output << "Writing to output files done." << endl;
     print_output_and_process_events();
 
-    for (uint i = 1; i < temperature.size();i++) // TODO: NOTE! not all vectors are of the same size! temperature is filtered and is smaller than for example pressure if emils filter is used
+    for (uint i = 0; i < temperature.size();i++) // TODO: NOTE! not all vectors are of the same size (depending on which filter that is used)! Temperature is filtered and is smaller than for example pressure if emils filter is used
     {
         if (abort_activities_requested) {
             goto operation_finished;

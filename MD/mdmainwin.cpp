@@ -110,7 +110,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
 
     // Simulation constants
     ftype temperature_in = ftype(1000.0); // [K] MSD linear at approx. 12500 K, why??
-    ftype desired_temp_in = ftype(40000); // [K]
+    ftype desired_temp_in = ftype(1500); // [K]
 #elif 1
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
@@ -148,8 +148,8 @@ void mdmainwin::on_start_simulation_pb_clicked()
     uint sample_period_in = 5; // Number of timesteps between each sampling of properties
     uint ensemble_size_in = 0; // Is never used
     ftype default_impulse_response_decay_time_in = ftype(100) * P_SI_FS; //the exponent in the impulse response function used to filter the measured values
-    uint default_num_times_filtering_in = 0; // No filtering.
-    //uint default_num_times_filtering_in = 1; // The number of times to apply the filter every time filtering
+    //uint default_num_times_filtering_in = 0; // No filtering.
+    uint default_num_times_filtering_in = 1; // The number of times to apply the filter every time filtering
     //uint default_num_times_filtering_in = 2; // Double filtering
     bool slope_compensate_by_default_in = false;
 #elif  FILTER == EMILS_FILTER
@@ -160,7 +160,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool slope_compensate_by_default_in = 0; // Is never used
 #endif
     ftype dt_in = ftype(1.0) * P_SI_FS; // [s]
-    uint num_time_steps_in = 5000; // Desired (or minimum) total number of timesteps
+    uint num_time_steps_in = 500; // Desired (or minimum) total number of timesteps
     uint num_particles_in  = 1000; // The number of particles
     ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
