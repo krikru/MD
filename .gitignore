@@ -48,6 +48,3 @@ _ReSharper*/
 
 #Add names of folders to be ignored here
 *-build-*
-
-#And finally, ignore changes in the following files:
-Documents/Filter.xlsx
