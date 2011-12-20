@@ -67,7 +67,7 @@ private slots:
     void on_energy_potential_cb_clicked         (bool checked);
     void on_cohesive_energy_cb_clicked          (bool checked);
     void on_store_particle_possitions_cb_clicked(bool checked);
-    void on_draw_particles_cb_clicked           (bool checked);
+    //void on_draw_particles_cb_clicked           (bool checked);
     // Push buttons
     void on_save_element_pb_clicked    ();
     void on_load_element_pb_clicked    ();

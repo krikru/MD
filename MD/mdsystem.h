@@ -144,6 +144,7 @@ private:
     void enter_next_loop();
     // Measurements
     void measure_unfiltered_properties();
+    void calculate_thermostate_value();
     void calculate_filtered_properties();
     void calculate_specific_heat();
     void calculate_pressure();

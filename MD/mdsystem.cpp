@@ -410,6 +410,7 @@ void mdsystem::run_simulation()
     output << "Writing to output files done." << endl;
     print_output_and_process_events();
 
+#if  PRINT_OUTPUT
     for (uint i = 0; i < temperature.size();i++) // TODO: NOTE! not all vectors are of the same size (depending on which filter that is used)! Temperature is filtered and is smaller than for example pressure if emils filter is used
     {
         if (abort_activities_requested) {
@@ -436,6 +437,7 @@ void mdsystem::run_simulation()
         // Process events
         print_output_and_process_events();
     }
+#endif
 
     Cv_sum = Cv_num = 0;
     for(uint i = uint(Cv.size()/6); i < Cv.size();i++) {
@@ -592,6 +594,7 @@ void mdsystem::create_verlet_list()
     }
     else {
         cells_used = false;
+        cell_size = 0; // Not used (make warning shut-up)
     }
 
     //Creating new verlet_list
@@ -866,21 +869,57 @@ void mdsystem::measure_unfiltered_properties() {
     insttemp[current_sample_index] =  sum_sqr_vel / (3 * num_particles);
     if (Ek_on) instEk[current_sample_index] = 0.5f * sum_sqr_vel;
 
-    // Calculate thermostat value
-    //TODO: What if the temperature (insttemp) is zero? Has to randomize new velocities in that case.
-#if THERMOSTAT == LASSES_THERMOSTAT
-    thermostat_value = thermostat_on ? (1 - desired_temp/insttemp[current_sample_index]) / (2*thermostat_time) : 0;
-#elif THERMOSTAT == CHING_CHIS_THERMOSTAT
-    /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-    thermostat_value = thermostat_on ? sqrt(1 +  dt / thermostat_time * (desired_temp / insttemp[current_sample_index] - 1)) : 1;
-#endif
-    thermostat_values[current_sample_index] = thermostat_value;
+    calculate_thermostate_value();
 
     if (msd_on   ) calculate_mean_square_displacement();
     if (diff_c_on) calculate_diffusion_coefficient   ();
 }
 
-void mdsystem::calculate_filtered_properties() {
+void mdsystem::calculate_thermostate_value()
+{
+#if THERMOSTAT == LASSES_THERMOSTAT // Additive
+    const ftype thermostat_value_when_extreme_cooling = 1/dt;
+    const ftype thermostat_value_when_inactive = 0;
+#elif THERMOSTAT == CHING_CHIS_THERMOSTAT // Multiplicative
+    const ftype thermostat_value_when_extreme_cooling = 0;
+    const ftype thermostat_value_when_inactive = 1;
+#endif
+
+    if (thermostat_on && insttemp[current_sample_index] > 0) {
+#if THERMOSTAT == LASSES_THERMOSTAT
+        thermostat_value = (1 - desired_temp/insttemp[current_sample_index]) / (2*thermostat_time);
+        thermostat_value = thermostat_value < 1/dt ? thermostat_value : 1/dt;
+#elif THERMOSTAT == CHING_CHIS_THERMOSTAT
+        ftype arg = 1 +  dt / thermostat_time * (desired_temp / insttemp[current_sample_index] - 1);
+        thermostat_value = arg > 0                 ? sqrt(arg)        : 0   ;
+#endif
+        if (thermostat_value != thermostat_value_when_extreme_cooling) {
+            if (current_sample_index != 0 && thermostat_values[current_sample_index-1] == thermostat_value_when_extreme_cooling) {
+                //output << "Thermostat can relax a bit. " << 100*loop_num/num_time_steps << " % done." << endl;
+            }
+        }
+        else if (current_sample_index == 0 || thermostat_values[current_sample_index-1] != thermostat_value_when_extreme_cooling) {
+            //output << "Thermostat working at maximum to cool the system. " << 100*loop_num/num_time_steps << " % done." << endl;
+        }
+    }
+    else {
+        thermostat_value = thermostat_value_when_inactive;
+        if (thermostat_on) {
+            if (current_sample_index == 0) {
+                output << "Thermostat does not function at 0 K" << endl;
+            }
+            else if (insttemp[0] > 0 && insttemp[current_sample_index-1] > 0) {
+                output << "Zero Kelvin reached. " << 100*loop_num/num_time_steps << " % done." << endl;
+            }
+        }
+    }
+
+
+    thermostat_values[current_sample_index] = thermostat_value;
+}
+
+void mdsystem::calculate_filtered_properties()
+{
     filter(insttemp, temperature, default_impulse_response_decay_time, default_num_times_filtering, slope_compensate_by_default);
     if (Cv_on) calculate_specific_heat();            
     if (pressure_on) calculate_pressure();

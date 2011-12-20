@@ -28,8 +28,8 @@
 #define  CHING_CHIS_THERMOSTAT   BERENDSEN_THERMOSTAT
 #define  LASSES_THERMOSTAT       NOSE_HOOVER_THERMOSTAT
 
-//#define  THERMOSTAT              CHING_CHIS_THERMOSTAT
-#define  THERMOSTAT              LASSES_THERMOSTAT
+#define  THERMOSTAT              CHING_CHIS_THERMOSTAT /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
+//#define  THERMOSTAT              LASSES_THERMOSTAT
 
 /***********
  * Filters *
@@ -59,15 +59,16 @@
 // MISCELANEOUS DEFINITIONS
 ////////////////////////////////////////////////////////////////
 
-#define  USE_DOUBLE_PRECITION  0
+#define  USE_DOUBLE_PRECISION  0
 #define  SHIFT_EP              1
+#define  PRINT_OUTPUT          0
 
 ////////////////////////////////////////////////////////////////
 // TYPEDEFS
 ////////////////////////////////////////////////////////////////
 
 typedef  unsigned int            uint ;
-#if USE_DOUBLE_PRECITION
+#if USE_DOUBLE_PRECISION
 typedef  double                  ftype;
 #else
 typedef  float                   ftype;
