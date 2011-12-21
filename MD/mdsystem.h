@@ -36,6 +36,7 @@ class mdsystem
     void run_simulation();
     void abort_activities();
     // Functins that not affect the system
+    bool is_initialized() const;
     bool is_operating() const;
     uint get_loop_num() const;
     uint get_max_loops_num() const;
@@ -51,6 +52,7 @@ private:
     callback<void (*)(void*, string)> output_callback;
     bool abort_activities_requested;
     stringstream output;
+    bool system_initialized;
     // Conversion between reduced units and SI units
     // NOTE! DO NOT USE THESE VARIABLES FOR OTHER THAN CONVERSIONS!
     ftype particle_mass_in_kg; // The mass of one atom
@@ -64,7 +66,7 @@ private:
     uint             num_particles; // The number of particles in the system
     uint             lattice_type;  // (enum_lattice_types)
     vector<particle> particles;     // The elements in the vector particles are particle objects
-    // Initialization
+    // Initialization (only used to initialize the system)
     ftype init_temp;                     // The temperature the system has when it is initialized
     ftype lattice_constant;              // The lattice constant
     uint  box_size_in_lattice_constants; // Length of one side of the box in conventional unit cells //TODO: Move away this variable

@@ -22,7 +22,10 @@ using std::ofstream;
 mdsystem::mdsystem()
 {
     operating = false;
+    start_operation();
     abort_activities_requested = false;
+    system_initialized = false;
+    finish_operation();
 }
 
 ////////////////////////////////////////////////////////////////
@@ -128,14 +131,16 @@ void mdsystem::init(uint num_particles_in, ftype sigma_in, ftype epsilon_in, fty
 #if FILTER == KRISTOFERS_FILTER
     num_time_steps = ((num_timesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
     num_sampling_points = num_time_steps/sampling_period + 1;
+    output << "num_time_steps: " << num_time_steps << endl;
+    output << "num_sampling_points: " << num_sampling_points << endl;
 #elif FILTER == EMILS_FILTER
     num_sampling_points = (num_timesteps_in - 1) / sampling_period + 2;
     uint num_ensambles = (num_sampling_points - 1) / ensemble_size + 1;
     num_sampling_points = num_ensambles * ensemble_size;
     num_time_steps = (num_sampling_points - 1)*sampling_period;
-    output << "num_ensambles: " << num_ensambles << endl;
-    output << "num_sampling_points: " << num_sampling_points << endl;
     output << "num_time_steps: " << num_time_steps << endl;
+    output << "num_sampling_points: " << num_sampling_points << endl;
+    output << "num_ensambles: " << num_ensambles << endl;
 #endif
 
     insttemp             .resize(num_sampling_points);
@@ -149,12 +154,13 @@ void mdsystem::init(uint num_particles_in, ftype sigma_in, ftype epsilon_in, fty
 
     if (lattice_type == LT_FCC) {
         box_size_in_lattice_constants = int(pow(ftype(num_particles_in / 4.0 ), ftype( 1.0 / 3.0 )));
-        num_particles = ftype(4.0)*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
+        num_particles = 4*box_size_in_lattice_constants*box_size_in_lattice_constants*box_size_in_lattice_constants;   // Calculate the new number of atoms; all can't fit in the box since n is an integer
     }
     else {
-        cerr << "Lattice type unknown" << endl;
-        return;
+        output << "Lattice type unknown" << endl;
+        goto operation_finished;
     }
+    output << "num_particles: " << num_particles << endl;
 
     // Box
     box_size = lattice_constant*box_size_in_lattice_constants;
@@ -170,6 +176,10 @@ void mdsystem::init(uint num_particles_in, ftype sigma_in, ftype epsilon_in, fty
     create_verlet_list();
     calculate_potential_energy_cutoff();
 
+    // Flag the system as initialized
+    system_initialized = true;
+
+operation_finished:
     // Finish the operation
     finish_operation();
 }
@@ -468,6 +478,11 @@ void mdsystem::abort_activities()
      * changed cannot be locked for writing to a single thread
      */
     abort_activities_requested = true;
+}
+
+bool mdsystem::is_initialized() const
+{
+    return system_initialized;
 }
 
 bool mdsystem::is_operating() const

@@ -139,11 +139,11 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype temperature_in  = ftype(300.0); // [K] MSD linear at approx. 12500 K, why??
     ftype desired_temp_in = ftype(300.0); // [K]
 #elif 1 // Melting
-    ftype temperature_in  = ftype(1000.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in  = ftype(300.0); // [K] MSD linear until approx. 10000 K, why??
     ftype desired_temp_in = ftype(40000); // [K]
     very_slowly_changing_total_energy = true;
 #elif 1 // Solidifying
-    ftype temperature_in  = ftype(41000.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype temperature_in  = ftype(41000.0); // [K]
     ftype desired_temp_in = ftype(-10000); // [K]
     very_slowly_changing_total_energy = true;
 #endif
@@ -196,12 +196,14 @@ void mdmainwin::on_start_simulation_pb_clicked()
     uint default_num_times_filtering_in = 1; // Filter once
     //uint default_num_times_filtering_in = 2; // Double filtering
     bool slope_compensate_by_default_in = false;
+
     uint ensemble_size_in = 0; // Is never used
 #elif  FILTER == EMILS_FILTER
     uint sample_period_in = 5;
     uint ensemble_size_in = 100; // Number of values used to calculate averages
     uint default_num_times_filtering_in = 0; // Is never used
     bool slope_compensate_by_default_in = 0; // Is never used
+
     ftype default_impulse_response_decay_time_in = 0; // Is never used
 #endif
 
@@ -210,7 +212,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
      */
     ftype dt_in              = ftype(1.0) * P_SI_FS; // [s]
     uint  num_time_steps_in  = 500; // Desired (or minimum) total number of timesteps
-    uint  num_particles_in   = 5000; // The number of particles
+    uint  num_particles_in   = 5000; // The desired (or maximum) number of particles
     ftype thermostat_time_in = ftype(500) * P_SI_FS;
     ftype inner_cutoff_in    = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in    = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
@@ -245,8 +247,13 @@ void mdmainwin::on_start_simulation_pb_clicked()
     simulation.set_event_callback (event_callback_in );
     simulation.set_output_callback(output_callback_in);
     simulation.init(num_particles_in, sigma_in, epsilon_in, inner_cutoff_in, outer_cutoff_in, mass_in, dt_in, ensemble_size_in, sample_period_in, temperature_in, num_time_steps_in, lattice_constant_in, lattice_type_in, desired_temp_in, thermostat_time_in, dEp_tolerance_in, default_impulse_response_decay_time_in, default_num_times_filtering_in, slope_compensate_by_default_in, thermostat_on_in, diff_c_on_in, Cv_on_in, pressure_on_in, msd_on_in, Ep_on_in, Ek_on_in);
-    simulation.run_simulation();
-    ui->statusbar->showMessage("Simulation finished.");
+    if (simulation.is_initialized()) {
+        simulation.run_simulation();
+        ui->statusbar->showMessage("Simulation finished.");
+    }
+    else {
+        ui->statusbar->showMessage("Initialization failed");
+    }
 
     std::cout << "Random seed " << random_seed << std::endl;
     if (ui->close_when_finished_cb->checkState() == Qt::Checked) {
