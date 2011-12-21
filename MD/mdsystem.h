@@ -139,6 +139,8 @@ private:
     inline void update_single_non_modulated_relative_particle_position(uint i);
     // Simulation
     void leapfrog();
+    void update_positions(ftype time_step);
+    void update_velocities(ftype time_step);
     void calculate_forces();
     void enter_loop_number(uint loop_to_enter);
     void enter_next_loop();
@@ -150,6 +152,7 @@ private:
     void calculate_pressure();
     void calculate_mean_square_displacement();
     void calculate_diffusion_coefficient();
+    // Filtering
     void filter(const vector<ftype> &unfiltered, vector<ftype> &filtered, ftype default_impulse_response_decay_time, uint num_times, bool slope_compensate);
     // Output
     ofstream* open_ofstream_file(ofstream &o, const char* path) const;

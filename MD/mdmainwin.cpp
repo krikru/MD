@@ -71,122 +71,173 @@ void mdmainwin::on_start_simulation_pb_clicked()
         return;
     }
 
+    bool very_slowly_changing_total_energy = false;
+    // Init element specific constants
+
+    /*
+     * Randomization of the simulation (on/off)
+     */
 #if 1
-    // Randomize the simulation with a random seed based on the current time
+    // Start unique simulations each time, based on the current time
     uint random_seed = (unsigned int)time(NULL);
 #else
+    // Start identical simulations each time
     uint random_seed = 0;
 #endif
     srand(random_seed);
 
-    // Init element specific constants
-#if 0
+    /*
+     * Select element (xenon, silver, copper or argon)
+     */
+
+#define  XENON   1
+#define  SILVER  2
+#define  COPPER  3
+#define  ARGON   4
+
+//#define  ELEMENT  XENON
+#define  ELEMENT  SILVER
+//#define  ELEMENT  COPPER
+//#define  ELEMENT  ARGON
+
+#if  ELEMENT == XENON
+    /*********
+     * Xenon *
+     *********/
     //Let's use the Xenon (Xe) atom in an fcc lattice (Melting point 161.4 K)
     //Cohesive energy: 0.16 eV/atom
     //Specific heat: 0.097 J/(g*K) at 293 K, 0.179 J/(g*K) at 100 K (http://www.springerlink.com/content/p2875753h4661128/fulltext.pdf)
 
     // Element constants
-    uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
-    ftype sigma_in = ftype(3.98) * P_ANGSTROM;
-    ftype epsilon_in = ftype(320e-16) * P_ERG; //1 erg = 10^-7 J
-    ftype mass_in = ftype(131.293) * P_U;
-    ftype lattice_constant_in = ftype(6.200 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
-    cout<<"Xenon"<<endl;
+    ftype sigma_in            = ftype(3.98) * P_SI_ANGSTROM;
+    ftype epsilon_in          = ftype(320e-16) * P_SI_ERG;
+    ftype mass_in             = ftype(131.293) * P_SI_U;
+    uint  lattice_type_in     = LT_FCC; // (enum_lattice_types)
+    ftype lattice_constant_in = ftype(6.200 * P_SI_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 6.200 Å)
+    cout << "Xenon" << endl;
     // Simulation constants
-    ftype temperature_in = ftype(200.0); // [K]//MSD linear at approx. 800K, why??
+    ftype temperature_in  = ftype(200.0); // [K]//MSD linear at approx. 800K, why??
     ftype desired_temp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 1
+#elif  ELEMENT == SILVER
+    /**********
+     * Silver *
+     **********/
     //Let's use the Silver (Ag) atom in an fcc lattice (Melting point 1235.08 K) as it is stable at even 500 K
     //Cohesive energy: 2.95 eV/atom
     //Specific heat: 0.233 J/(g*k) at 293 K
 
     // Element constants
-    uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
-    ftype sigma_in = ftype(2.65) * P_SI_ANGSTROM;
-    ftype epsilon_in = ftype(0.34) * P_SI_EV; //1 erg = 10^-7 J
-    ftype mass_in = ftype(107.8682) * P_SI_U;
+    ftype sigma_in            = ftype(2.65) * P_SI_ANGSTROM;
+    ftype epsilon_in          = ftype(0.34) * P_SI_EV;
+    ftype mass_in             = ftype(107.8682) * P_SI_U;
+    uint  lattice_type_in     = LT_FCC; // (enum_lattice_types)
     ftype lattice_constant_in = ftype(4.090 * P_SI_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 4.090 Å)
-    cout<<"Silver"<<endl;
+    cout << "Silver" << endl;
 
     // Simulation constants
-    ftype temperature_in = ftype(1000.0); // [K] MSD linear at approx. 12500 K, why??
-    ftype desired_temp_in = ftype(1500); // [K]
-#elif 1
+#if 1 // Keeping a temperature
+    ftype temperature_in  = ftype(300.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype desired_temp_in = ftype(300.0); // [K]
+#elif 1 // Melting
+    ftype temperature_in  = ftype(1000.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype desired_temp_in = ftype(40000); // [K]
+    very_slowly_changing_total_energy = true;
+#elif 1 // Solidifying
+    ftype temperature_in  = ftype(41000.0); // [K] MSD linear at approx. 12500 K, why??
+    ftype desired_temp_in = ftype(-10000); // [K]
+    very_slowly_changing_total_energy = true;
+#endif
+#elif  ELEMENT == COPPER
+    /**********
+     * Copper *
+     **********/
     //Copper (Melting point 1356.6 K)
     //Cohesive energy: 3.49 eV/atom
     //Specific heat: 0.386 J/(g*K) at 293 K
 
     // Element constants
-    uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
-    ftype sigma_in = ftype(2.338) * P_ANGSTROM;
-    ftype epsilon_in = ftype(0.4096) * P_EV; //1 erg = 10^-7 J
-    ftype mass_in = ftype(63.546) * P_U;
-    ftype lattice_constant_in = ftype(3.610) * P_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
-    cout<<"Copper"<<endl;
+    ftype sigma_in            = ftype(2.338) * P_SI_ANGSTROM;
+    ftype epsilon_in          = ftype(0.4096) * P_SI_EV;
+    ftype mass_in             = ftype(63.546) * P_SI_U;
+    uint  lattice_type_in     = LT_FCC; // (enum_lattice_types)
+    ftype lattice_constant_in = ftype(3.610) * P_SI_ANGSTROM;//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 3.610 Å)
+    cout << "Copper" << endl;
     // Simulation constants
-    ftype temperature_in = ftype(580.0); // [K]
+    ftype temperature_in  = ftype(580.0); // [K]
     ftype desired_temp_in = temperature_in*ftype(0.9); //TODO: Why times 0.9?
-#elif 1
+#elif  ELEMENT == ARGON
+    /*********
+     * Argon *
+     *********/
     //Argon (Melting point 83.8 K)
     //Cohesive energy: 0.080 eV/atom
     //Specific heat: 0.312 J/(g*K) at 293 K, approx 0.55 J/(g*K) at 60 K (http://www.springerlink.com/content/k328237200233456/fulltext.pdf)
 
     // Element constants
-    uint  lattice_type_in = LT_FCC; // (enum_lattice_types)
-    ftype sigma_in = ftype(3.40) * P_ANGSTROM;
-    ftype epsilon_in = ftype(167e-16) * P_ERG; //1 erg = 10^-7 J
-    ftype mass_in = ftype(39.948) * P_U;
-    ftype lattice_constant_in = ftype(5.260 * P_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
-    cout<<"Argon"<<endl;
+    ftype sigma_in            = ftype(3.40) * P_SI_ANGSTROM;
+    ftype epsilon_in          = ftype(167e-16) * P_SI_ERG;
+    ftype mass_in             = ftype(39.948) * P_SI_U;
+    uint  lattice_type_in     = LT_FCC; // (enum_lattice_types)
+    ftype lattice_constant_in = ftype(5.260 * P_SI_ANGSTROM);//ftype((pow(2.0, 1.0/6.0)*sigma_in) * M_SQRT2);//(Listed lattice constant 5.260 Å)
+    cout << "Argon" << endl;
     // Simulation constants
-    ftype temperature_in = ftype(120.0); // [K]
+    ftype temperature_in  = ftype(120.0); // [K]
     ftype desired_temp_in = ftype(100.0); // [K]
 #endif
 
-    // Init simulation specific constants
+    /*
+     * Sampling and filtering of properties
+     */
 #if  FILTER == KRISTOFERS_FILTER
     uint sample_period_in = 5; // Number of timesteps between each sampling of properties
-    uint ensemble_size_in = 0; // Is never used
-    ftype default_impulse_response_decay_time_in = ftype(100) * P_SI_FS; //the exponent in the impulse response function used to filter the measured values
+    ftype default_impulse_response_decay_time_in = ftype(100) * P_SI_FS; //The exponent factor in the impulse response function used to filter the measured values
+    /* Select the number of times to apply the filter every time filtering */
     //uint default_num_times_filtering_in = 0; // No filtering.
-    uint default_num_times_filtering_in = 1; // The number of times to apply the filter every time filtering
+    uint default_num_times_filtering_in = 1; // Filter once
     //uint default_num_times_filtering_in = 2; // Double filtering
     bool slope_compensate_by_default_in = false;
+    uint ensemble_size_in = 0; // Is never used
 #elif  FILTER == EMILS_FILTER
-    uint sample_period_in = 1;
-    uint ensemble_size_in = 1; // Number of values used to calculate averages
-    ftype default_impulse_response_decay_time_in = 0; // Is never used
+    uint sample_period_in = 5;
+    uint ensemble_size_in = 100; // Number of values used to calculate averages
     uint default_num_times_filtering_in = 0; // Is never used
     bool slope_compensate_by_default_in = 0; // Is never used
+    ftype default_impulse_response_decay_time_in = 0; // Is never used
 #endif
-    ftype dt_in = ftype(1.0) * P_SI_FS; // [s]
-    uint num_time_steps_in = 500; // Desired (or minimum) total number of timesteps
-    uint num_particles_in  = 1000; // The number of particles
-    ftype inner_cutoff_in = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
-    ftype outer_cutoff_in = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
 
-    // Control
-    //ftype thermostat_time_in = ftype(500) * P_SI_FS;
-    ftype thermostat_time_in = 100 * num_time_steps_in * dt_in;
-    ftype dEp_tolerance_in = ftype(1.0);
-
-    // Init flags
-    bool thermostat_on_in = !true;
-    bool diff_c_on_in = true;
-    bool Cv_on_in = true;
-    bool pressure_on_in = true;
-    bool msd_on_in = true;
-    bool Ep_on_in = true;
-    bool Ek_on_in = true;
-
-#if 1
     /*
-     * Make sure the final temperature will be approximatelly desired_temp_in no
-     * matter how long the thermostat time is.
+     * Simulation specific constants
      */
-    ftype k = exp(-dt_in*num_time_steps_in/thermostat_time_in);
-    desired_temp_in = (desired_temp_in - temperature_in * k)/(1 - k);
-#endif
+    ftype dt_in              = ftype(1.0) * P_SI_FS; // [s]
+    uint  num_time_steps_in  = 500; // Desired (or minimum) total number of timesteps
+    uint  num_particles_in   = 5000; // The number of particles
+    ftype thermostat_time_in = ftype(500) * P_SI_FS;
+    ftype inner_cutoff_in    = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
+    ftype outer_cutoff_in    = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
+    ftype dEp_tolerance_in   = ftype(1.0);
+
+    /*
+     * Simulatin flags
+     */
+    // Control
+    bool thermostat_on_in = true;
+    // Measurement
+    bool diff_c_on_in   = true;
+    bool Cv_on_in       = true;
+    bool pressure_on_in = true;
+    bool msd_on_in      = true;
+    bool Ep_on_in       = true;
+    bool Ek_on_in       = true;
+
+    if (very_slowly_changing_total_energy) {
+        /*
+         * Make sure the final temperature will be approximatelly
+         * desired_temp_in no matter how long the thermostat time is.
+         */
+        thermostat_time_in = 100 * num_time_steps_in * dt_in;
+        ftype k = exp(-dt_in*num_time_steps_in/thermostat_time_in);
+        desired_temp_in = (desired_temp_in - temperature_in * k)/(1 - k);
+    }
 
     // Init system and run simulation
     callback<void (*)(void*        )> event_callback_in (static_process_events       , this);
@@ -422,10 +473,12 @@ void mdmainwin::on_settings_bb_rejected()
     ui->statusbar->showMessage("Settings rejected");
 }
 
+/*
 void mdmainwin::on_draw_particles_cb_clicked(bool checked)
 {
     ui->statusbar->showMessage("Code needed");
 }
+*/
 
 void mdmainwin::on_save_element_pb_clicked()
 {

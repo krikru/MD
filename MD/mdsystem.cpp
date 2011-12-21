@@ -129,11 +129,13 @@ void mdsystem::init(uint num_particles_in, ftype sigma_in, ftype epsilon_in, fty
     num_time_steps = ((num_timesteps_in - 1) / sampling_period + 1) * sampling_period; // Make the smallest multiple of sample_period that has at least the specified size
     num_sampling_points = num_time_steps/sampling_period + 1;
 #elif FILTER == EMILS_FILTER
-    num_sampling_points = (nrtimesteps_in - 1) / sampling_period + 2;
-    num_sampling_points = ((num_sampling_points - 1) / ensemble_size + 1) * ensemble_size;
+    num_sampling_points = (num_timesteps_in - 1) / sampling_period + 2;
+    uint num_ensambles = (num_sampling_points - 1) / ensemble_size + 1;
+    num_sampling_points = num_ensambles * ensemble_size;
     num_time_steps = (num_sampling_points - 1)*sampling_period;
-    cout<<"num_sampling_points: "<<num_sampling_points<<endl;
-    cout<<"num_time_steps: "<<num_time_steps<<endl;
+    output << "num_ensambles: " << num_ensambles << endl;
+    output << "num_sampling_points: " << num_sampling_points << endl;
+    output << "num_time_steps: " << num_time_steps << endl;
 #endif
 
     insttemp             .resize(num_sampling_points);
@@ -199,36 +201,35 @@ void mdsystem::run_simulation()
     uint  Cv_num;
     // For shifting the potential energy
     ftype Ep_shift;
+
     // Start simulating
     enter_loop_number(0);
     calculate_forces();
+    measure_unfiltered_properties();
     while (loop_num < num_time_steps) {
         // Check if the simulation has been requested to abort
         if (abort_activities_requested) {
             goto operation_finished;
         }
 
-        if (sampling_in_this_loop) {
-            measure_unfiltered_properties();
-        }
-        else {
+        if (!sampling_in_this_loop) {
             calculate_forces();
         }
 
         // Evolve the system in time
         leapfrog(); // This function includes the force calculation
-        // Update Verlet list if necessary
-        update_verlet_list_if_necessary();
+
+        if (sampling_in_this_loop) {
+            measure_unfiltered_properties();
+        }
 
         // Process events
         print_output_and_process_events();
     }
 
-    // Sample unfiltered properties one last time
-    measure_unfiltered_properties();
-
     // Now the filtered properties can be calculated
     calculate_filtered_properties();
+    output << "*******************" << endl;
     output << "Simulation completed." << endl;
 
     /*
@@ -410,7 +411,7 @@ void mdsystem::run_simulation()
     output << "Writing to output files done." << endl;
     print_output_and_process_events();
 
-#if  PRINT_OUTPUT
+#if  PRINT_OUTPUT_TO_TEXT_BOX
     for (uint i = 0; i < temperature.size();i++) // TODO: NOTE! not all vectors are of the same size (depending on which filter that is used)! Temperature is filtered and is smaller than for example pressure if emils filter is used
     {
         if (abort_activities_requested) {
@@ -552,11 +553,28 @@ void mdsystem::calculate_potential_energy_cutoff()
     E_cutoff = ftype(4.0) * q * (q - ftype(1.0));
 }
 
+void mdsystem::update_positions(ftype time_step)
+{
+    for (uint i = 0; i < num_particles; i++) {
+        particles[i].pos += time_step * particles[i].vel;
+        modulus_position(particles[i].pos);
+    }
+    update_verlet_list_if_necessary();
+}
+
+void mdsystem::update_velocities(ftype time_step)
+{
+    for (uint i = 0; i < num_particles; i++) {
+        particles[i].vel += time_step * particles[i].acc;
+    }
+}
+
 void mdsystem::update_verlet_list_if_necessary()
 {
     // Check if largest displacement too large for not updating the Verlet list
     ftype sqr_limit = (sqr_outer_cutoff + sqr_inner_cutoff - 2*sqrt(sqr_outer_cutoff*sqr_inner_cutoff));
     uint i;
+    // Check if any particle has move to much
     for (i = 0; i < num_particles; i++) {
         ftype sqr_displacement = origin_centered_modulus_position_minus(particles[i].pos, particles[i].pos_when_verlet_list_created).sqr_length();
         if (sqr_displacement > sqr_limit) {
@@ -565,7 +583,7 @@ void mdsystem::update_verlet_list_if_necessary()
     }
     if (i < num_particles) {
         // Displacement that is to large was found
-        output << "Verlet list updated. " << int(100*loop_num/num_time_steps) << " % done" <<endl;
+        output << "Verlet list updated. Simulation " << 100*loop_num/num_time_steps << " % done" <<endl;
         create_verlet_list();
     }
 }
@@ -746,9 +764,7 @@ void mdsystem::leapfrog()
 
     // Update velocities
     if (sampling_in_this_loop) { // Only take half the time step
-        for (uint i = 0; i < num_particles; i++) {
-            particles[i].vel += (0.5*dt) * particles[i].acc;
-        }
+        update_velocities(dt/2);
     }
     else {
 #if THERMOSTAT == CHING_CHIS_THERMOSTAT
@@ -758,16 +774,11 @@ void mdsystem::leapfrog()
             }
         }
 #endif
-        for (uint i = 0; i < num_particles; i++) { // Take the whole time step
-            particles[i].vel += dt * particles[i].acc;
-        }
+        update_velocities(dt);
     }
 
     // Update positions
-    for (uint i = 0; i < num_particles; i++) {
-        particles[i].pos += dt * particles[i].vel;
-        modulus_position(particles[i].pos);
-    }
+    update_positions(dt);
 
     /*
      * Now the particle has updated both the velocity and the position, so it is
@@ -788,9 +799,10 @@ void mdsystem::leapfrog()
         }
 #endif
         // Take a half timestep to let the position "catch up" with the velocity
-        for (uint i = 0; i < num_particles; i++) {
-            particles[i].vel += (0.5*dt) * particles[i].acc;
-        }
+        update_velocities(dt/2);
+
+        // Also measure unfiltered properties
+        measure_unfiltered_properties();
     }
 }
 
@@ -895,11 +907,11 @@ void mdsystem::calculate_thermostate_value()
 #endif
         if (thermostat_value != thermostat_value_when_extreme_cooling) {
             if (current_sample_index != 0 && thermostat_values[current_sample_index-1] == thermostat_value_when_extreme_cooling) {
-                //output << "Thermostat can relax a bit. " << 100*loop_num/num_time_steps << " % done." << endl;
+                output << "Thermostat can relax a bit. " << 100*loop_num/num_time_steps << " % done." << endl;
             }
         }
         else if (current_sample_index == 0 || thermostat_values[current_sample_index-1] != thermostat_value_when_extreme_cooling) {
-            //output << "Thermostat working at maximum to cool the system. " << 100*loop_num/num_time_steps << " % done." << endl;
+            output << "Thermostat working at maximum to cool the system. Simulation " << 100*loop_num/num_time_steps << " % done." << endl;
         }
     }
     else {
@@ -914,7 +926,7 @@ void mdsystem::calculate_thermostate_value()
         }
     }
 
-
+    // Store thermostat value
     thermostat_values[current_sample_index] = thermostat_value;
 }
 

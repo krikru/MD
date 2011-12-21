@@ -28,8 +28,8 @@
 #define  CHING_CHIS_THERMOSTAT   BERENDSEN_THERMOSTAT
 #define  LASSES_THERMOSTAT       NOSE_HOOVER_THERMOSTAT
 
-#define  THERMOSTAT              CHING_CHIS_THERMOSTAT /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
-//#define  THERMOSTAT              LASSES_THERMOSTAT
+//#define  THERMOSTAT              CHING_CHIS_THERMOSTAT /////Using Smooth scaling Thermostat (Berendsen et. al, 1984)/////
+#define  THERMOSTAT              LASSES_THERMOSTAT
 
 /***********
  * Filters *
@@ -59,9 +59,9 @@
 // MISCELANEOUS DEFINITIONS
 ////////////////////////////////////////////////////////////////
 
-#define  USE_DOUBLE_PRECISION  0
-#define  SHIFT_EP              1
-#define  PRINT_OUTPUT          0
+#define  USE_DOUBLE_PRECISION      0
+#define  SHIFT_EP                  1
+#define  PRINT_OUTPUT_TO_TEXT_BOX  0
 
 ////////////////////////////////////////////////////////////////
 // TYPEDEFS
