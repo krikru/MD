@@ -71,9 +71,6 @@ void mdmainwin::on_start_simulation_pb_clicked()
         return;
     }
 
-    bool very_slowly_changing_total_energy = false;
-    // Init element specific constants
-
     /*
      * Randomization of the simulation (on/off)
      */
@@ -141,11 +138,11 @@ void mdmainwin::on_start_simulation_pb_clicked()
 #elif 1 // Melting
     ftype temperature_in  = ftype(300.0); // [K] MSD linear until approx. 10000 K, why??
     ftype desired_temp_in = ftype(40000); // [K]
-    very_slowly_changing_total_energy = true;
+#define  VERY_SLOWLY_CHANGING_TOTAL_ENERGY
 #elif 1 // Solidifying
     ftype temperature_in  = ftype(41000.0); // [K]
     ftype desired_temp_in = ftype(-10000); // [K]
-    very_slowly_changing_total_energy = true;
+#define  VERY_SLOWLY_CHANGING_TOTAL_ENERGY
 #endif
 #elif  ELEMENT == COPPER
     /**********
@@ -200,10 +197,10 @@ void mdmainwin::on_start_simulation_pb_clicked()
     uint ensemble_size_in = 0; // Is never used
 #elif  FILTER == EMILS_FILTER
     uint sample_period_in = 5;
-    uint ensemble_size_in = 100; // Number of values used to calculate averages
-    uint default_num_times_filtering_in = 0; // Is never used
-    bool slope_compensate_by_default_in = 0; // Is never used
+    uint ensemble_size_in = 50; // Number of values used to calculate averages
 
+    uint default_num_times_filtering_in = 0;          // Is never used
+    bool slope_compensate_by_default_in = 0;          // Is never used
     ftype default_impulse_response_decay_time_in = 0; // Is never used
 #endif
 
@@ -216,7 +213,7 @@ void mdmainwin::on_start_simulation_pb_clicked()
     ftype thermostat_time_in = ftype(500) * P_SI_FS;
     ftype inner_cutoff_in    = ftype(2.5) * sigma_in; //TODO: Make sure this is 2.0 times sigma
     ftype outer_cutoff_in    = ftype(1.1) * inner_cutoff_in; //Fewer neighbors -> faster, but too thin skin is not good either. TODO: Change skin thickness to a good one
-    ftype dEp_tolerance_in   = ftype(1.0);
+    ftype dEp_tolerance_in   = ftype(1.0); //TODO: Depricate?
 
     /*
      * Simulatin flags
@@ -231,15 +228,15 @@ void mdmainwin::on_start_simulation_pb_clicked()
     bool Ep_on_in       = true;
     bool Ek_on_in       = true;
 
-    if (very_slowly_changing_total_energy) {
-        /*
-         * Make sure the final temperature will be approximatelly
-         * desired_temp_in no matter how long the thermostat time is.
-         */
-        thermostat_time_in = 100 * num_time_steps_in * dt_in;
-        ftype k = exp(-dt_in*num_time_steps_in/thermostat_time_in);
-        desired_temp_in = (desired_temp_in - temperature_in * k)/(1 - k);
-    }
+#ifdef VERY_SLOWLY_CHANGING_TOTAL_ENERGY
+    /*
+     * Make sure the final temperature will be approximatelly
+     * desired_temp_in no matter how long the thermostat time is.
+     */
+    thermostat_time_in = 100 * num_time_steps_in * dt_in;
+    ftype k = exp(-dt_in*num_time_steps_in/thermostat_time_in);
+    desired_temp_in = (desired_temp_in - temperature_in * k)/(1 - k);
+#endif
 
     // Init system and run simulation
     callback<void (*)(void*        )> event_callback_in (static_process_events       , this);
