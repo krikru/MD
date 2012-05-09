@@ -36,7 +36,7 @@ public:
     base_float_vec3<T>& operator*=(const T                  );
     base_float_vec3<T>& operator/=(const T                  );
     T&                  operator[](const int)      ;
-    T                   operator[](const int) const;
+    T const&            operator[](const int) const;
 
     base_float_vec3<T> operator-() const;
 
@@ -135,7 +135,7 @@ T& base_float_vec3<T>::operator[](const int i)
 }
 
 template<typename T>
-T base_float_vec3<T>::operator[](const int i) const
+T const& base_float_vec3<T>::operator[](const int i) const
 {
     return e[i];
 }
@@ -216,7 +216,7 @@ base_float_vec3<T> base_float_vec3<T>::normalized() const
     T len = length();
     if (!len) throw domain_error("Trying to normalize a zero-length base_float_vec3<T>");
     T k = 1/len;
-    return base_float_vec3<T>(e[0]/k, e[1]*k, e[2]*k);
+    return base_float_vec3<T>(e[0]*k, e[1]*k, e[2]*k);
 }
 
 template<typename T>
